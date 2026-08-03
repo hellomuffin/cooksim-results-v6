@@ -1,0 +1,85 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CookSim — supervising a cook you can only watch</title><style>
+:root{--bg:#0b0d10;--card:#12161b;--line:#232a33;--fg:#e6edf3;--dim:#93a1b1;
+      --cook:#FFC94F;--vlm:#4FA3FF;--good:#4ade80;--bad:#f87171;--warn:#fbbf24}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:1500px;margin:0 auto;padding:32px 22px 90px}
+h1{font-size:30px;margin:0 0 6px;letter-spacing:-.02em}
+h2{font-size:22px;margin:44px 0 8px;letter-spacing:-.01em;
+   border-top:1px solid var(--line);padding-top:26px}
+h3{font-size:17px;margin:26px 0 8px}
+p{margin:10px 0}
+.sub{color:var(--dim);font-size:15px;margin:0 0 22px}
+.note{background:var(--card);border:1px solid var(--line);border-radius:10px;
+      padding:14px 18px;margin:18px 0;color:var(--dim);font-size:14px}
+.note b{color:var(--fg)}
+.note ul{margin:8px 0 0;padding-left:20px}
+.note li{margin:3px 0}
+.grid{display:grid;gap:18px;margin:16px 0}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:1100px){.g2,.g3{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+      padding:14px;min-width:0}
+.card h4{margin:0 0 4px;font-size:15px}
+.card .meta{color:var(--dim);font-size:13px;margin:0 0 10px}
+video{width:100%;border-radius:8px;background:#000;display:block}
+.score{font-size:27px;font-weight:700;letter-spacing:-.02em}
+.score small{font-size:13px;font-weight:400;color:var(--dim);letter-spacing:0}
+table{border-collapse:collapse;width:100%;font-size:13px;margin:8px 0}
+th,td{border-bottom:1px solid var(--line);padding:5px 7px;text-align:left;
+      vertical-align:top}
+th{color:var(--dim);font-weight:600}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.bar{height:5px;border-radius:3px;background:#243040;overflow:hidden;margin-top:3px}
+.bar i{display:block;height:100%;background:var(--vlm)}
+.tag{display:inline-block;font-size:11.5px;padding:1.5px 7px;border-radius:999px;
+     border:1px solid var(--line);color:var(--dim);margin-right:5px}
+.tag.won{color:var(--good);border-color:#1e5e3a}
+.tag.bad{color:var(--bad);border-color:#6b2323}
+.tag.inc{color:var(--warn);border-color:#6b5320}
+.tag.clean{color:var(--good);border-color:#1e5e3a}
+details{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+summary{cursor:pointer;color:var(--dim);font-size:13px;user-select:none}
+.tx{max-height:420px;overflow:auto;margin-top:8px;font-size:13px}
+.tx div{margin:4px 0;display:flex;gap:8px}
+.tx .t{color:#5b6b7c;font-variant-numeric:tabular-nums;flex:0 0 42px}
+.tx .c{color:var(--cook)}
+.tx .v{color:var(--vlm)}
+.miss{color:var(--dim);font-style:italic}
+</style></head><body><div class="wrap">
+<h1>CookSim — supervising a cook you can only watch</h1><p class="sub">Results from an online-interaction benchmark for VLM assistants.</p>
+<div class="note">
+<b>How every episode on this page was produced</b> — one configuration, checked
+mechanically by <code>tools/config_audit.py</code> (30 checks) before any of it ran.
+<ul>
+<li><b>Harness:</b> <code>e2e_stepin_rollout.py</code> — nothing is scripted. The error or
+    intent is injected covertly into the cook's plan; the assistant must notice it from
+    what it sees.</li>
+<li><b>Pause treatment:</b> speaking costs the cook game time, listening is free. The world
+    keeps running while anyone talks — the pan keeps cooking.</li>
+<li><b>Observation:</b> one side-by-side composite per tick — top-down on the LEFT (the
+    coordinate frame), the cook's first-person view on the RIGHT — rendered photoreal.</li>
+<li><b>Every episode ran twice</b>, once per observation tier, and both are shown.</li>
+<li><b>Video:</b> 1.5× playback (1 tick = 0.8s) with the speech sped by the
+    same factor, the way a player speeds audio when you watch at 1.5×. The frame
+    never holds: a caption you read is spoken over ticks that are still advancing.</li>
+</ul></div>
+<p>CookSim is a cooperative-cooking simulator used to benchmark an
+<b>AI assistant that supervises a cook it can only watch</b>. A cook works a kitchen; the
+assistant sees a camera pair and can only talk. The question is whether it catches real
+mistakes, respects legitimate choices, and helps without becoming a cost of its own.</p>
+<p>These pages cover 64 episodes produced under a single configuration. Every episode was
+run twice — once with the assistant seeing only pixels, once with a structured readout of
+the kitchen — and both runs are shown, scored, and transcribed. Runs the harness cut off
+before a verdict are labelled as undetermined rather than counted as failures.</p>
+<div class="grid g2">
+<div class="card"><h4><a href="cooksim_present_videos.html" style="color:var(--vlm);text-decoration:none">Watch an episode →</a></h4><p class="meta">Four narrated runs at 1.5×, with the assistant&#x27;s own view beside the kitchen. Start here if you have not seen CookSim before.</p></div>
+<div class="card"><h4><a href="eval_ranking.html" style="color:var(--vlm);text-decoration:none">Does seeing more make it better? →</a></h4><p class="meta">Twelve runs of one scenario — two cooks × two observation tiers × three repeats — with the repeats shown side by side and no cross-cook leaderboard.</p></div>
+<div class="card"><h4><a href="intent_scenarios.html" style="color:var(--vlm);text-decoration:none">When the cook is not wrong →</a></h4><p class="meta">Four runs in which the cook deliberately changes its own plan. Can the assistant tell a choice from a mistake, and leave it alone?</p></div>
+<div class="card"><h4><a href="e2e_newrecipes.html" style="color:var(--vlm);text-decoration:none">A recipe it was never tuned on →</a></h4><p class="meta">Four runs on a longer scenario where a mis-preparation early only becomes visible much later.</p></div>
+</div>
+</div></body></html>
