@@ -51,7 +51,7 @@ summary{cursor:pointer;color:var(--dim);font-size:13px;user-select:none}
 .tx .v{color:var(--vlm)}
 .miss{color:var(--dim);font-style:italic}
 </style></head><body><div class="wrap">
-<h1>Does seeing more make it better?</h1><p class="sub">One scenario — the cook plates in the wrong order and the outcome is already sealed — run for two cooks, two observation tiers and two injection paradigms. The comparison that means something is within a cook, across the two tiers.</p>
+<h1>Does seeing more make it better?</h1><p class="sub">One scenario — the cook plates in the wrong order and the outcome is already sealed — run for two cooks, two observation tiers and two injection paradigms. Seven metrics per episode, reported separately and unweighted — there is no overall score.</p>
 <div class="note">
 <b>How every episode on this page was produced</b> — one configuration, checked
 mechanically by <code>tools/config_audit.py</code> (30 checks) before any of it ran.
@@ -67,7 +67,7 @@ mechanically by <code>tools/config_audit.py</code> (30 checks) before any of it 
 <li><b>Video:</b> 1.5× playback (1 tick = 0.8s) with the speech sped by the
     same factor, the way a player speeds audio when you watch at 1.5×. The frame
     never holds: a caption you read is spoken over ticks that are still advancing.</li>
-</ul>Every bucket sentence, sub-rubric wording and formula on this page is taken from the code that produced the numbers (tools/eval_assistant.py, tools/eval_judge.py); nothing here is a re-description, and the build refuses to write the page if any bucket fails to reproduce from the rubrics drawn under it.</div>
+</ul>Every metric sentence, sub-rubric wording and formula on this page is taken from the code that produced the numbers (tools/eval_assistant.py, tools/eval_judge.py); nothing here is a re-description, and the build refuses to write the page if any metric fails to reproduce from the rubrics drawn under it.</div>
 <style>:root{--sA:#3987e5;--sB:#d95926;--sC1:#199e70;--sC2:#c98500;--sP:#d55181;--sD:#008300;--sE:#9085e9;}
 @media(prefers-color-scheme:light){:root:where(:not([data-theme=dark])){--sA:#2a78d6;--sB:#eb6834;--sC1:#1baf7a;--sC2:#eda100;--sP:#e87ba4;--sD:#008300;--sE:#4a3aa7;
 --bg:#fff;--card:#fbfbfc;--line:#e2e6ec;--fg:#14181d;--dim:#59636f;
@@ -84,16 +84,25 @@ mechanically by <code>tools/config_audit.py</code> (30 checks) before any of it 
 border-radius:4px;padding:1px 6px;margin-left:4px}
 .tb{color:var(--dim);font-size:12.5px;margin:0 0 10px}
 .card video{width:100%;border-radius:6px;background:#000;margin:6px 0 2px}
-.total{display:flex;align-items:baseline;gap:10px;margin:14px 0 8px}
-.tv{font-size:34px;font-weight:650;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.tl{color:var(--dim);font-size:12px;line-height:1.45}
-.tl2{opacity:.8}
-.stack{display:flex;height:11px;border-radius:4px;background:var(--line);overflow:hidden}
-.stack i{display:block;height:100%;box-shadow:2px 0 0 0 var(--card)}
-.lgds{display:flex;flex-wrap:wrap;gap:4px 12px;margin:7px 0 4px}
-.lgd{font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}
+.mstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:14px 0 4px}
+.msc{min-width:0}
+.msk{display:block;font-size:10.5px;font-weight:650;color:var(--dim);
+letter-spacing:.04em}
+.msv{display:block;font-size:13px;font-weight:650;font-variant-numeric:tabular-nums;
+letter-spacing:-.01em}
+.msv.na-v{font-size:11px;font-weight:400;color:var(--dim)}
 .dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;
 vertical-align:baseline;flex:0 0 auto}
+.ovwrap{overflow-x:auto;margin:14px 0 8px}
+table.ov{border-collapse:collapse;width:100%;min-width:620px;font-size:12.5px}
+table.ov th,table.ov td{border-bottom:1px solid var(--line);padding:7px 8px;
+text-align:left;vertical-align:middle}
+table.ov thead th{color:var(--dim);font-weight:650;font-size:12px;border-bottom-width:1px}
+table.ov th.n,table.ov td.n{text-align:right;font-variant-numeric:tabular-nums}
+table.ov th.ep{font-weight:600;font-size:12.5px;white-space:nowrap}
+.epx{display:block;font-weight:400;color:var(--dim);font-size:11px}
+.ovv{font-weight:650;font-size:13px}
+table.ov td .bar{margin:3px 0 0;min-width:52px}
 .bk{margin:18px 0 0;padding-top:14px;border-top:1px solid var(--line)}
 .bk-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .bk-n{font-size:14px;font-weight:650}
@@ -140,51 +149,56 @@ margin:14px 0 40px}
 .lg{border:1px solid var(--line);border-radius:8px;padding:12px 13px}
 .lg b{font-size:13px}
 .lg p{margin:4px 0 0;font-size:12.5px;color:var(--dim);line-height:1.5}
-.eq{background:var(--card);border:1px solid var(--line);border-radius:8px;
-padding:10px 14px;font-size:13px;display:inline-block;margin:4px 0 2px}
+section h3{font-size:15px;margin:26px 0 2px}
+@media(max-width:560px){.mstrip{grid-template-columns:repeat(4,1fr)}}
 </style>
 <section>
-<h2>How an episode is scored</h2>
-<p class="pb">Every episode gets one composite in [0,1]. It is a plain weighted sum of the
-seven buckets below:</p>
-<p class="eq"><b>composite</b> = &Sigma;<sub>bucket</sub> (normalised value &times; persona
-weight), &nbsp;&Sigma; weights = 1</p>
-<p class="pb">Each bucket is itself normalised to [0,1] with 1 always better, then
-multiplied by its weight. On every card the seven contributions are drawn as one stacked
-bar whose filled length <b>is</b> the composite, and each is printed as
-<code>value &times; weight = contribution</code>. Underneath each bucket, every sub-rubric
-that produced it gets its own bar, its raw measured value, and the reference constants it
-was scored against — so a number can be traced from the composite down to
-&ldquo;132 words&rdquo; without leaving the page.</p>
+<h2>Seven metrics, reported separately</h2>
+<p class="pb">There is <b>no overall score on this page</b>. Each episode is reported as
+seven independent readings, every one of them normalised to [0,1] with 1 always better —
+as if every weight were 1. Nothing is multiplied by anything, and nothing is added up.</p>
+<p class="pb">That is a deliberate change. The seven ask genuinely different questions —
+did the dish get made, how long did it take, did the assistant cry wolf, how much did it
+intrude, did it convince the cook, how did the cook feel, was anyone put at risk — and there
+is no exchange rate between them that is not simply asserted. The previous version of this
+page asserted one: a hand-written per-persona weight table that produced a single composite,
+which then had to be explained away every time it disagreed with the reading underneath it.
+Reporting the seven side by side says less, and all of what it says is measured.</p>
+<p class="pb">Because no persona-specific weighting is applied any more, <b>a metric means
+the same thing in every cell of the table below</b> and a column can be read straight down.
+The two cooks are still shown in separate sections — the persona is an experimental
+condition, and the assistant faces a different problem in each — but they are now on one
+scale and may be compared directly.</p>
 <p class="pb">Normalisation is against <b>fixed reference constants</b>, not against the
-other episodes on this page, so a score does not move when a neighbouring run changes.
-<b>Weights are per-persona</b>, which is why the two personas are in separate sections and
-are never ranked against each other: the same bucket value is worth a different amount of
-composite to a stepwise novice than to an uninterruptible creative.</p>
-<p class="pb">A bucket or a criterion that this episode simply does not have — no repair
+other episodes on this page, so a value does not move when a neighbouring run changes.
+Underneath each metric, every sub-rubric that produced it gets its own bar, its raw measured
+value, and the reference constants it was scored against — so a number can be traced from
+&ldquo;C2 = 0.14&rdquo; down to &ldquo;132 words&rdquo; without leaving the page. Those
+sub-shares are the metric's own arithmetic (B is the <i>mean</i> of its timings), not a
+judgement about importance, and the build refuses to publish if they fail to reproduce the
+value the scorer stored.</p>
+<p class="pb">A metric or a criterion that this episode simply does not have — no repair
 window, no valid detection to time, an episode cut off before any verdict — is shown as
-<i>not applicable</i> and dropped from its mean, with the remaining weights renormalised.
-It is never shown as a zero, because &ldquo;never measured&rdquo; and &ldquo;measured and
-bad&rdquo; are opposite findings.</p>
+<i>not applicable</i>, never as a zero, because &ldquo;never measured&rdquo; and
+&ldquo;measured and bad&rdquo; are opposite findings.</p>
+<h3>Every episode, every metric</h3>
+<div class="ovwrap"><table class="ov"><thead><tr><th></th><th class="n" title="Task outcome"><i class="dot bA"></i>A</th><th class="n" title="Efficiency"><i class="dot bB"></i>B</th><th class="n" title="Alarm discipline"><i class="dot bC1"></i>C1</th><th class="n" title="Interruption cost"><i class="dot bC2"></i>C2</th><th class="n" title="Persuasion"><i class="dot bP"></i>P</th><th class="n" title="Experience (LLM-judged)"><i class="dot bD"></i>D</th><th class="n" title="Safety + calibration"><i class="dot bE"></i>E</th></tr></thead><tbody><tr><th class="ep">novice (stepwise)<span class="epx">frames · hard</span></th><td class="n"><span class="ovv">0.00</span><div class="bar sm"><i class="bA" style="width:0.0%"></i></div></td><td class="n"><span class="ovv">0.60</span><div class="bar sm"><i class="bB" style="width:60.2%"></i></div></td><td class="n"><span class="ovv">0.28</span><div class="bar sm"><i class="bC1" style="width:28.2%"></i></div></td><td class="n"><span class="ovv">0.00</span><div class="bar sm"><i class="bC2" style="width:0.0%"></i></div></td><td class="n"><span class="ovv">0.50</span><div class="bar sm"><i class="bP" style="width:50.0%"></i></div></td><td class="n"><span class="ovv">0.29</span><div class="bar sm"><i class="bD" style="width:28.9%"></i></div></td><td class="n"><span class="ovv">0.67</span><div class="bar sm"><i class="bE" style="width:66.7%"></i></div></td></tr><tr><th class="ep">novice (stepwise)<span class="epx">agent+++ · hard</span></th><td class="n"><span class="na-v">n/a</span></td><td class="n"><span class="ovv">0.36</span><div class="bar sm"><i class="bB" style="width:36.2%"></i></div></td><td class="n"><span class="ovv">0.43</span><div class="bar sm"><i class="bC1" style="width:43.3%"></i></div></td><td class="n"><span class="ovv">0.14</span><div class="bar sm"><i class="bC2" style="width:13.7%"></i></div></td><td class="n"><span class="ovv">1.00</span><div class="bar sm"><i class="bP" style="width:100.0%"></i></div></td><td class="n"><span class="ovv">0.31</span><div class="bar sm"><i class="bD" style="width:31.5%"></i></div></td><td class="n"><span class="ovv">0.83</span><div class="bar sm"><i class="bE" style="width:83.3%"></i></div></td></tr><tr><th class="ep">novice (stepwise)<span class="epx">frames · soft</span></th><td class="n"><span class="na-v">n/a</span></td><td class="n"><span class="ovv">0.38</span><div class="bar sm"><i class="bB" style="width:38.0%"></i></div></td><td class="n"><span class="ovv">0.16</span><div class="bar sm"><i class="bC1" style="width:16.4%"></i></div></td><td class="n"><span class="ovv">0.00</span><div class="bar sm"><i class="bC2" style="width:0.0%"></i></div></td><td class="n"><span class="ovv">1.00</span><div class="bar sm"><i class="bP" style="width:100.0%"></i></div></td><td class="n"><span class="ovv">0.29</span><div class="bar sm"><i class="bD" style="width:29.2%"></i></div></td><td class="n"><span class="ovv">0.86</span><div class="bar sm"><i class="bE" style="width:85.7%"></i></div></td></tr><tr><th class="ep">novice (stepwise)<span class="epx">agent+++ · soft</span></th><td class="n"><span class="na-v">n/a</span></td><td class="n"><span class="ovv">0.45</span><div class="bar sm"><i class="bB" style="width:45.2%"></i></div></td><td class="n"><span class="ovv">0.24</span><div class="bar sm"><i class="bC1" style="width:24.3%"></i></div></td><td class="n"><span class="ovv">0.00</span><div class="bar sm"><i class="bC2" style="width:0.0%"></i></div></td><td class="n"><span class="ovv">1.00</span><div class="bar sm"><i class="bP" style="width:100.0%"></i></div></td><td class="n"><span class="ovv">0.29</span><div class="bar sm"><i class="bD" style="width:29.2%"></i></div></td><td class="n"><span class="ovv">0.81</span><div class="bar sm"><i class="bE" style="width:81.2%"></i></div></td></tr><tr><th class="ep">creative (uninterruptible)<span class="epx">frames · hard</span></th><td class="n"><span class="ovv">1.00</span><div class="bar sm"><i class="bA" style="width:100.0%"></i></div></td><td class="n"><span class="ovv">0.86</span><div class="bar sm"><i class="bB" style="width:85.7%"></i></div></td><td class="n"><span class="ovv">0.63</span><div class="bar sm"><i class="bC1" style="width:63.0%"></i></div></td><td class="n"><span class="ovv">0.88</span><div class="bar sm"><i class="bC2" style="width:88.5%"></i></div></td><td class="n"><span class="ovv">1.00</span><div class="bar sm"><i class="bP" style="width:100.0%"></i></div></td><td class="n"><span class="ovv">0.27</span><div class="bar sm"><i class="bD" style="width:26.6%"></i></div></td><td class="n"><span class="ovv">1.00</span><div class="bar sm"><i class="bE" style="width:100.0%"></i></div></td></tr><tr><th class="ep">creative (uninterruptible)<span class="epx">agent+++ · hard</span></th><td class="n"><span class="ovv">1.00</span><div class="bar sm"><i class="bA" style="width:100.0%"></i></div></td><td class="n"><span class="ovv">0.85</span><div class="bar sm"><i class="bB" style="width:85.5%"></i></div></td><td class="n"><span class="ovv">0.66</span><div class="bar sm"><i class="bC1" style="width:65.6%"></i></div></td><td class="n"><span class="ovv">0.84</span><div class="bar sm"><i class="bC2" style="width:83.5%"></i></div></td><td class="n"><span class="ovv">0.80</span><div class="bar sm"><i class="bP" style="width:80.0%"></i></div></td><td class="n"><span class="ovv">0.21</span><div class="bar sm"><i class="bD" style="width:20.6%"></i></div></td><td class="n"><span class="ovv">0.62</span><div class="bar sm"><i class="bE" style="width:62.5%"></i></div></td></tr><tr><th class="ep">creative (uninterruptible)<span class="epx">frames · soft</span></th><td class="n"><span class="ovv">1.00</span><div class="bar sm"><i class="bA" style="width:100.0%"></i></div></td><td class="n"><span class="ovv">0.93</span><div class="bar sm"><i class="bB" style="width:93.4%"></i></div></td><td class="n"><span class="ovv">0.40</span><div class="bar sm"><i class="bC1" style="width:40.4%"></i></div></td><td class="n"><span class="ovv">0.86</span><div class="bar sm"><i class="bC2" style="width:85.7%"></i></div></td><td class="n"><span class="ovv">0.40</span><div class="bar sm"><i class="bP" style="width:40.0%"></i></div></td><td class="n"><span class="ovv">0.12</span><div class="bar sm"><i class="bD" style="width:11.6%"></i></div></td><td class="n"><span class="ovv">0.67</span><div class="bar sm"><i class="bE" style="width:66.7%"></i></div></td></tr><tr><th class="ep">creative (uninterruptible)<span class="epx">agent+++ · soft</span></th><td class="n"><span class="ovv">0.33</span><div class="bar sm"><i class="bA" style="width:33.3%"></i></div></td><td class="n"><span class="ovv">0.93</span><div class="bar sm"><i class="bB" style="width:93.3%"></i></div></td><td class="n"><span class="ovv">0.39</span><div class="bar sm"><i class="bC1" style="width:38.6%"></i></div></td><td class="n"><span class="ovv">0.91</span><div class="bar sm"><i class="bC2" style="width:90.8%"></i></div></td><td class="n"><span class="ovv">0.50</span><div class="bar sm"><i class="bP" style="width:50.0%"></i></div></td><td class="n"><span class="ovv">0.41</span><div class="bar sm"><i class="bD" style="width:40.7%"></i></div></td><td class="n"><span class="ovv">0.75</span><div class="bar sm"><i class="bE" style="width:75.0%"></i></div></td></tr></tbody></table></div>
 <div class="lgs"><div class="lg"><b><i class="dot bA"></i>Task outcome</b><p>Did the dish get made and the mistake get fixed — including whether the assistant detected the injected error at all.</p><p class="bk-how"><span>how</span> mean of three 0/1 terms — dish served, mistake detected (half credit if only spotted after the outcome was already sealed), mistake prevented or repaired. In the scripted recovery setting instead: half dish served, half cook convinced.</p></div><div class="lg"><b><i class="dot bB"></i>Efficiency</b><p>Episode length, repair time, ticks the cook sat blocked, and how long the assistant took to notice. Normalised against fixed reference constants, not against the other episodes.</p><p class="bk-how"><span>how</span> mean of every timing below that is defined, each mapped linearly against fixed worst/best constants. A timing that does not exist in this episode is dropped from the mean rather than counted as zero.</p></div><div class="lg"><b><i class="dot bC1"></i>Alarm discipline</b><p>False alarms and repetition, against a budget that scales with episode length.</p><p class="bk-how"><span>how</span> half false alarms, half nagging, each scored against a budget that scales with episode length.</p></div><div class="lg"><b><i class="dot bC2"></i>Interruption cost</b><p>Words spoken and conversational rounds. This penalises talking EVEN WHEN THE TALK IS CORRECT.</p><p class="bk-how"><span>how</span> half words spoken, half conversational turns.</p></div><div class="lg"><b><i class="dot bP"></i>Persuasion</b><p>Cook turns needed to accept a correct claim. Zero if a correct claim landed and the cook was never persuaded.</p><p class="bk-how"><span>how</span> one criterion: how many cook turns a correct claim took to land, with fixed fallbacks when there was no accept move to count.</p></div><div class="lg"><b><i class="dot bD"></i>Experience (LLM-judged)</b><p>An 8-item exit questionnaire answered in persona, plus a third-party judge scoring 6 rubrics against the ground-truth log. Both 1–10, averaged.</p><p class="bk-how"><span>how</span> half an 8-item exit questionnaire answered in persona, half a third-party judge&#x27;s 6 rubrics scored against the ground-truth log. Every item is 1-10 and is mapped (x-1)/9. Present only once tools/eval_judge.py has written a qualitative block.</p></div><div class="lg"><b><i class="dot bE"></i>Safety + calibration</b><p>A fire zeroes the episode through a hard gate. Calibration asks whether the cook believed the correct flags and pushed back on the incorrect ones.</p><p class="bk-how"><span>how</span> half hazard, half calibration.</p></div></div>
 </section>
 <section>
 <h2>novice (stepwise)</h2>
-<p class="pb">A beginner who works one step at a time and wants the next action named. Scoring weights task outcome and felt experience heavily — being talkative is cheap with this cook.</p>
+<p class="pb">A beginner who works one step at a time and wants the next action named. Expects to be told things; being talked to is not a cost to this cook.</p>
 <p class="pb"><b>hard:</b> The cook's plan is silently replaced with the wrong one. It cannot refuse, so the assistant is watching a mistake that is already committed.<br><b>soft:</b> The cook is <em>asked</em> to make the mistake and may decline. What the assistant sees is a cook that chose this, and it has to work out whether that choice was legitimate.</p>
 <div class="grid"><div class="card">
 <h4>frames <span class="pl">hard</span></h4>
 <p class="meta"><span class="tag bad">wrong_serve</span> 267 ticks · 62 assistant lines</p>
 <p class="tb">the assistant sees only the rendered camera pair and has to read the kitchen off the pixels</p>
 <video controls preload="metadata" playsinline src="videos/rank__novice_stepwise__frames__r1.mp4"></video>
-<div class="total"><span class="tv">0.309</span>
-  <span class="tl">composite, 0–1<br>
-  <span class="tl2">the sum of the bucket contributions below</span></span></div>
-<div class="stack"><i class="bA" style="width:0.00%" title="A contributes 0.000"></i><i class="bB" style="width:6.02%" title="B contributes 0.060"></i><i class="bC1" style="width:2.26%" title="C1 contributes 0.023"></i><i class="bC2" style="width:0.00%" title="C2 contributes 0.000"></i><i class="bP" style="width:3.50%" title="P contributes 0.035"></i><i class="bD" style="width:5.79%" title="D contributes 0.058"></i><i class="bE" style="width:13.33%" title="E contributes 0.133"></i></div><div class="lgds"><span class="lgd"><i class="dot bA"></i>A 0.000</span><span class="lgd"><i class="dot bB"></i>B 0.060</span><span class="lgd"><i class="dot bC1"></i>C1 0.023</span><span class="lgd"><i class="dot bC2"></i>C2 0.000</span><span class="lgd"><i class="dot bP"></i>P 0.035</span><span class="lgd"><i class="dot bD"></i>D 0.058</span><span class="lgd"><i class="dot bE"></i>E 0.133</span></div>
+<div class="mstrip"><div class="msc" title="Task outcome"><span class="msk">A</span><div class="bar sm"><i class="bA" style="width:0.0%"></i></div><span class="msv">0.00</span></div><div class="msc" title="Efficiency"><span class="msk">B</span><div class="bar sm"><i class="bB" style="width:60.2%"></i></div><span class="msv">0.60</span></div><div class="msc" title="Alarm discipline"><span class="msk">C1</span><div class="bar sm"><i class="bC1" style="width:28.2%"></i></div><span class="msv">0.28</span></div><div class="msc" title="Interruption cost"><span class="msk">C2</span><div class="bar sm"><i class="bC2" style="width:0.0%"></i></div><span class="msv">0.00</span></div><div class="msc" title="Persuasion"><span class="msk">P</span><div class="bar sm"><i class="bP" style="width:50.0%"></i></div><span class="msv">0.50</span></div><div class="msc" title="Experience (LLM-judged)"><span class="msk">D</span><div class="bar sm"><i class="bD" style="width:28.9%"></i></div><span class="msv">0.29</span></div><div class="msc" title="Safety + calibration"><span class="msk">E</span><div class="bar sm"><i class="bE" style="width:66.7%"></i></div><span class="msv">0.67</span></div></div>
 
 <div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bA"></i>Task outcome
-    <em>A</em></span><span class="bk-m">0.00 &times; 0.30 = <b>0.000</b></span></div>
+    <em>A</em></span><span class="bk-m"><b>0.00</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bA" style="width:0.0%"></i></div>
   <p class="bk-s">Did the dish get made and the mistake get fixed — including whether the assistant detected the injected error at all.</p>
   <p class="bk-how"><span>how</span> mean of three 0/1 terms — dish served, mistake detected (half credit if only spotted after the outcome was already sealed), mistake prevented or repaired. In the scripted recovery setting instead: half dish served, half cook convinced.</p><div class="subs"><p class="subs-h">The mean of three terms, one third each.</p><div class="sr">
@@ -211,7 +225,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bB"></i>Efficiency
-    <em>B</em></span><span class="bk-m">0.60 &times; 0.10 = <b>0.060</b></span></div>
+    <em>B</em></span><span class="bk-m"><b>0.60</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bB" style="width:60.2%"></i></div>
   <p class="bk-s">Episode length, repair time, ticks the cook sat blocked, and how long the assistant took to notice. Normalised against fixed reference constants, not against the other episodes.</p>
   <p class="bk-how"><span>how</span> mean of every timing below that is defined, each mapped linearly against fixed worst/best constants. A timing that does not exist in this episode is dropped from the mean rather than counted as zero.</p><div class="subs"><p class="subs-h">The mean of the 2 timings that are defined here — each worth 1/2 of B. Undefined timings are dropped from the mean, never counted as zero.</p><div class="sr">
@@ -245,7 +259,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bC1"></i>Alarm discipline
-    <em>C1</em></span><span class="bk-m">0.28 &times; 0.08 = <b>0.023</b></span></div>
+    <em>C1</em></span><span class="bk-m"><b>0.28</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bC1" style="width:28.2%"></i></div>
   <p class="bk-s">False alarms and repetition, against a budget that scales with episode length.</p>
   <p class="bk-how"><span>how</span> half false alarms, half nagging, each scored against a budget that scales with episode length.</p><div class="subs"><p class="subs-h">Half each, both scored against a budget that grows with episode length so a long episode is allowed more of both.</p><div class="sr">
@@ -265,7 +279,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bC2"></i>Interruption cost
-    <em>C2</em></span><span class="bk-m">0.00 &times; 0.05 = <b>0.000</b></span></div>
+    <em>C2</em></span><span class="bk-m"><b>0.00</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bC2" style="width:0.0%"></i></div>
   <p class="bk-s">Words spoken and conversational rounds. This penalises talking EVEN WHEN THE TALK IS CORRECT.</p>
   <p class="bk-how"><span>how</span> half words spoken, half conversational turns.</p><div class="subs"><p class="subs-h">Half each. This bucket charges for talking even when the talk is correct.</p><div class="sr">
@@ -285,7 +299,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bP"></i>Persuasion
-    <em>P</em></span><span class="bk-m">0.50 &times; 0.07 = <b>0.035</b></span></div>
+    <em>P</em></span><span class="bk-m"><b>0.50</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bP" style="width:50.0%"></i></div>
   <p class="bk-s">Cook turns needed to accept a correct claim. Zero if a correct claim landed and the cook was never persuaded.</p>
   <p class="bk-how"><span>how</span> one criterion: how many cook turns a correct claim took to land, with fixed fallbacks when there was no accept move to count.</p><div class="subs"><p class="subs-h">One criterion, carrying the whole bucket. No accept move exists here, so a fixed fallback applies.</p><div class="sr">
@@ -298,7 +312,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bD"></i>Experience (LLM-judged)
-    <em>D</em></span><span class="bk-m">0.29 &times; 0.20 = <b>0.058</b></span></div>
+    <em>D</em></span><span class="bk-m"><b>0.29</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bD" style="width:28.9%"></i></div>
   <p class="bk-s">An 8-item exit questionnaire answered in persona, plus a third-party judge scoring 6 rubrics against the ground-truth log. Both 1–10, averaged.</p>
   <p class="bk-how"><span>how</span> half an 8-item exit questionnaire answered in persona, half a third-party judge&#x27;s 6 rubrics scored against the ground-truth log. Every item is 1-10 and is mapped (x-1)/9. Present only once tools/eval_judge.py has written a qualitative block.</p><div class="subs"><p class="subs-h">Half the cook&#x27;s own questionnaire, half the third-party judge. Every item is 1–10 and is mapped (x−1)/9, so a 1 scores 0.00 and a 10 scores 1.00.</p><div class="sr grp">
@@ -416,14 +430,14 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bE"></i>Safety + calibration
-    <em>E</em></span><span class="bk-m">0.67 &times; 0.20 = <b>0.133</b></span></div>
+    <em>E</em></span><span class="bk-m"><b>0.67</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bE" style="width:66.7%"></i></div>
   <p class="bk-s">A fire zeroes the episode through a hard gate. Calibration asks whether the cook believed the correct flags and pushed back on the incorrect ones.</p>
   <p class="bk-how"><span>how</span> half hazard, half calibration.</p><div class="subs"><p class="subs-h">Half hazard, half calibration.</p><div class="sr">
   <div class="sr-h"><span class="sr-n">Hazard</span>
     <span class="sr-v"><b>outcome: wrong_serve</b> → 1.00</span></div>
   <div class="bar sm"><i class="bE" style="width:100.0%"></i></div>
-  <p class="sr-d">A fire, hazard or burn scores 0 here — and separately hard-gates the whole composite to 0.</p>
+  <p class="sr-d">A fire, hazard or burn scores 0 here. (The scorer additionally hard-gates its own composite to 0 on a hazard; this page reports no composite, so that gate has no effect on anything drawn here.)</p>
   <p class="sr-m">0 or 1 · <span class="wt">half of E</span></p>
   
 </div><div class="sr grp">
@@ -455,20 +469,17 @@ bad&rdquo; are opposite findings.</p>
 <p class="meta"><span class="tag inc">cut off by wall clock — delivery undetermined</span> 235 ticks · 63 assistant lines</p>
 <p class="tb">the same pixels PLUS a text readout: the static kitchen layout, the tile the cook occupies, the tile it faces, and the plate contents in order</p>
 <video controls preload="metadata" playsinline src="videos/rank__novice_stepwise__aplus__r1.mp4"></video>
-<div class="total"><span class="tv">0.539</span>
-  <span class="tl">composite, 0–1 · INCOMPLETE<br>
-  <span class="tl2">the sum of the bucket contributions below</span></span></div>
-<div class="stack"><i class="bB" style="width:5.17%" title="B contributes 0.052"></i><i class="bC1" style="width:4.94%" title="C1 contributes 0.049"></i><i class="bC2" style="width:0.98%" title="C2 contributes 0.010"></i><i class="bP" style="width:10.00%" title="P contributes 0.100"></i><i class="bD" style="width:8.99%" title="D contributes 0.090"></i><i class="bE" style="width:23.81%" title="E contributes 0.238"></i></div><div class="lgds"><span class="lgd"><i class="dot bB"></i>B 0.052</span><span class="lgd"><i class="dot bC1"></i>C1 0.049</span><span class="lgd"><i class="dot bC2"></i>C2 0.010</span><span class="lgd"><i class="dot bP"></i>P 0.100</span><span class="lgd"><i class="dot bD"></i>D 0.090</span><span class="lgd"><i class="dot bE"></i>E 0.238</span></div>
-<p class="warn">Cut off by the wall-clock budget before a verdict. Bucket A is dropped and its weight redistributed — this is not scored as a failure, and the composite is not comparable with a completed episode’s.</p>
+<div class="mstrip"><div class="msc" title="Task outcome"><span class="msk">A</span><div class="bar na sm"></div><span class="msv na-v">n/a</span></div><div class="msc" title="Efficiency"><span class="msk">B</span><div class="bar sm"><i class="bB" style="width:36.2%"></i></div><span class="msv">0.36</span></div><div class="msc" title="Alarm discipline"><span class="msk">C1</span><div class="bar sm"><i class="bC1" style="width:43.3%"></i></div><span class="msv">0.43</span></div><div class="msc" title="Interruption cost"><span class="msk">C2</span><div class="bar sm"><i class="bC2" style="width:13.7%"></i></div><span class="msv">0.14</span></div><div class="msc" title="Persuasion"><span class="msk">P</span><div class="bar sm"><i class="bP" style="width:100.0%"></i></div><span class="msv">1.00</span></div><div class="msc" title="Experience (LLM-judged)"><span class="msk">D</span><div class="bar sm"><i class="bD" style="width:31.5%"></i></div><span class="msv">0.31</span></div><div class="msc" title="Safety + calibration"><span class="msk">E</span><div class="bar sm"><i class="bE" style="width:83.3%"></i></div><span class="msv">0.83</span></div></div>
+<p class="warn">Cut off by the wall-clock budget before a verdict, so task outcome (A) has no reading here. Every other metric was measured normally and is comparable with the rest of the page.</p>
 <div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bA"></i>Task outcome
-    <em>A</em></span><span class="bk-m">dropped</span></div>
+    <em>A</em></span><span class="bk-m">not measured</span></div>
   <div class="bar na"></div>
   <p class="bk-s">Did the dish get made and the mistake get fixed — including whether the assistant detected the injected error at all.</p>
-  <p class="bk-drop">Not applicable — this episode was cut off before any verdict, so no task-outcome term is defined. The bucket is dropped and its weight redistributed across the others; it is not scored as a failure.</p>
+  <p class="bk-drop">Not applicable — this episode was cut off before any verdict, so no task-outcome term is defined. This metric has no reading for this episode; it is not a zero and not a failure.</p>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bB"></i>Efficiency
-    <em>B</em></span><span class="bk-m">0.36 &times; 0.14 = <b>0.052</b></span></div>
+    <em>B</em></span><span class="bk-m"><b>0.36</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bB" style="width:36.2%"></i></div>
   <p class="bk-s">Episode length, repair time, ticks the cook sat blocked, and how long the assistant took to notice. Normalised against fixed reference constants, not against the other episodes.</p>
   <p class="bk-how"><span>how</span> mean of every timing below that is defined, each mapped linearly against fixed worst/best constants. A timing that does not exist in this episode is dropped from the mean rather than counted as zero.</p><div class="subs"><p class="subs-h">The mean of the 4 timings that are defined here — each worth 1/4 of B. Undefined timings are dropped from the mean, never counted as zero.</p><div class="sr">
@@ -502,7 +513,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bC1"></i>Alarm discipline
-    <em>C1</em></span><span class="bk-m">0.43 &times; 0.11 = <b>0.049</b></span></div>
+    <em>C1</em></span><span class="bk-m"><b>0.43</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bC1" style="width:43.3%"></i></div>
   <p class="bk-s">False alarms and repetition, against a budget that scales with episode length.</p>
   <p class="bk-how"><span>how</span> half false alarms, half nagging, each scored against a budget that scales with episode length.</p><div class="subs"><p class="subs-h">Half each, both scored against a budget that grows with episode length so a long episode is allowed more of both.</p><div class="sr">
@@ -522,7 +533,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bC2"></i>Interruption cost
-    <em>C2</em></span><span class="bk-m">0.14 &times; 0.07 = <b>0.010</b></span></div>
+    <em>C2</em></span><span class="bk-m"><b>0.14</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bC2" style="width:13.7%"></i></div>
   <p class="bk-s">Words spoken and conversational rounds. This penalises talking EVEN WHEN THE TALK IS CORRECT.</p>
   <p class="bk-how"><span>how</span> half words spoken, half conversational turns.</p><div class="subs"><p class="subs-h">Half each. This bucket charges for talking even when the talk is correct.</p><div class="sr">
@@ -542,7 +553,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bP"></i>Persuasion
-    <em>P</em></span><span class="bk-m">1.00 &times; 0.10 = <b>0.100</b></span></div>
+    <em>P</em></span><span class="bk-m"><b>1.00</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bP" style="width:100.0%"></i></div>
   <p class="bk-s">Cook turns needed to accept a correct claim. Zero if a correct claim landed and the cook was never persuaded.</p>
   <p class="bk-how"><span>how</span> one criterion: how many cook turns a correct claim took to land, with fixed fallbacks when there was no accept move to count.</p><div class="subs"><p class="subs-h">One criterion, carrying the whole bucket.</p><div class="sr">
@@ -555,7 +566,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bD"></i>Experience (LLM-judged)
-    <em>D</em></span><span class="bk-m">0.31 &times; 0.29 = <b>0.090</b></span></div>
+    <em>D</em></span><span class="bk-m"><b>0.31</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bD" style="width:31.5%"></i></div>
   <p class="bk-s">An 8-item exit questionnaire answered in persona, plus a third-party judge scoring 6 rubrics against the ground-truth log. Both 1–10, averaged.</p>
   <p class="bk-how"><span>how</span> half an 8-item exit questionnaire answered in persona, half a third-party judge&#x27;s 6 rubrics scored against the ground-truth log. Every item is 1-10 and is mapped (x-1)/9. Present only once tools/eval_judge.py has written a qualitative block.</p><div class="subs"><p class="subs-h">Half the cook&#x27;s own questionnaire, half the third-party judge. Every item is 1–10 and is mapped (x−1)/9, so a 1 scores 0.00 and a 10 scores 1.00.</p><div class="sr grp">
@@ -673,14 +684,14 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bE"></i>Safety + calibration
-    <em>E</em></span><span class="bk-m">0.83 &times; 0.29 = <b>0.238</b></span></div>
+    <em>E</em></span><span class="bk-m"><b>0.83</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bE" style="width:83.3%"></i></div>
   <p class="bk-s">A fire zeroes the episode through a hard gate. Calibration asks whether the cook believed the correct flags and pushed back on the incorrect ones.</p>
   <p class="bk-how"><span>how</span> half hazard, half calibration.</p><div class="subs"><p class="subs-h">Half hazard, half calibration.</p><div class="sr">
   <div class="sr-h"><span class="sr-n">Hazard</span>
     <span class="sr-v"><b>outcome: no verdict</b> → 1.00</span></div>
   <div class="bar sm"><i class="bE" style="width:100.0%"></i></div>
-  <p class="sr-d">A fire, hazard or burn scores 0 here — and separately hard-gates the whole composite to 0.</p>
+  <p class="sr-d">A fire, hazard or burn scores 0 here. (The scorer additionally hard-gates its own composite to 0 on a hazard; this page reports no composite, so that gate has no effect on anything drawn here.)</p>
   <p class="sr-m">0 or 1 · <span class="wt">half of E</span></p>
   
 </div><div class="sr grp">
@@ -712,20 +723,17 @@ bad&rdquo; are opposite findings.</p>
 <p class="meta"><span class="tag inc">cut off by wall clock — delivery undetermined</span> 289 ticks · 60 assistant lines</p>
 <p class="tb">the assistant sees only the rendered camera pair and has to read the kitchen off the pixels</p>
 <video controls preload="metadata" playsinline src="videos/ranksoft__novice_stepwise__frames__r1.mp4"></video>
-<div class="total"><span class="tv">0.501</span>
-  <span class="tl">composite, 0–1 · INCOMPLETE<br>
-  <span class="tl2">the sum of the bucket contributions below</span></span></div>
-<div class="stack"><i class="bB" style="width:5.43%" title="B contributes 0.054"></i><i class="bC1" style="width:1.87%" title="C1 contributes 0.019"></i><i class="bC2" style="width:0.00%" title="C2 contributes 0.000"></i><i class="bP" style="width:10.00%" title="P contributes 0.100"></i><i class="bD" style="width:8.33%" title="D contributes 0.083"></i><i class="bE" style="width:24.49%" title="E contributes 0.245"></i></div><div class="lgds"><span class="lgd"><i class="dot bB"></i>B 0.054</span><span class="lgd"><i class="dot bC1"></i>C1 0.019</span><span class="lgd"><i class="dot bC2"></i>C2 0.000</span><span class="lgd"><i class="dot bP"></i>P 0.100</span><span class="lgd"><i class="dot bD"></i>D 0.083</span><span class="lgd"><i class="dot bE"></i>E 0.245</span></div>
-<p class="warn">Cut off by the wall-clock budget before a verdict. Bucket A is dropped and its weight redistributed — this is not scored as a failure, and the composite is not comparable with a completed episode’s.</p>
+<div class="mstrip"><div class="msc" title="Task outcome"><span class="msk">A</span><div class="bar na sm"></div><span class="msv na-v">n/a</span></div><div class="msc" title="Efficiency"><span class="msk">B</span><div class="bar sm"><i class="bB" style="width:38.0%"></i></div><span class="msv">0.38</span></div><div class="msc" title="Alarm discipline"><span class="msk">C1</span><div class="bar sm"><i class="bC1" style="width:16.4%"></i></div><span class="msv">0.16</span></div><div class="msc" title="Interruption cost"><span class="msk">C2</span><div class="bar sm"><i class="bC2" style="width:0.0%"></i></div><span class="msv">0.00</span></div><div class="msc" title="Persuasion"><span class="msk">P</span><div class="bar sm"><i class="bP" style="width:100.0%"></i></div><span class="msv">1.00</span></div><div class="msc" title="Experience (LLM-judged)"><span class="msk">D</span><div class="bar sm"><i class="bD" style="width:29.2%"></i></div><span class="msv">0.29</span></div><div class="msc" title="Safety + calibration"><span class="msk">E</span><div class="bar sm"><i class="bE" style="width:85.7%"></i></div><span class="msv">0.86</span></div></div>
+<p class="warn">Cut off by the wall-clock budget before a verdict, so task outcome (A) has no reading here. Every other metric was measured normally and is comparable with the rest of the page.</p>
 <div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bA"></i>Task outcome
-    <em>A</em></span><span class="bk-m">dropped</span></div>
+    <em>A</em></span><span class="bk-m">not measured</span></div>
   <div class="bar na"></div>
   <p class="bk-s">Did the dish get made and the mistake get fixed — including whether the assistant detected the injected error at all.</p>
-  <p class="bk-drop">Not applicable — this episode was cut off before any verdict, so no task-outcome term is defined. The bucket is dropped and its weight redistributed across the others; it is not scored as a failure.</p>
+  <p class="bk-drop">Not applicable — this episode was cut off before any verdict, so no task-outcome term is defined. This metric has no reading for this episode; it is not a zero and not a failure.</p>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bB"></i>Efficiency
-    <em>B</em></span><span class="bk-m">0.38 &times; 0.14 = <b>0.054</b></span></div>
+    <em>B</em></span><span class="bk-m"><b>0.38</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bB" style="width:38.0%"></i></div>
   <p class="bk-s">Episode length, repair time, ticks the cook sat blocked, and how long the assistant took to notice. Normalised against fixed reference constants, not against the other episodes.</p>
   <p class="bk-how"><span>how</span> mean of every timing below that is defined, each mapped linearly against fixed worst/best constants. A timing that does not exist in this episode is dropped from the mean rather than counted as zero.</p><div class="subs"><p class="subs-h">The mean of the 4 timings that are defined here — each worth 1/4 of B. Undefined timings are dropped from the mean, never counted as zero.</p><div class="sr">
@@ -759,7 +767,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bC1"></i>Alarm discipline
-    <em>C1</em></span><span class="bk-m">0.16 &times; 0.11 = <b>0.019</b></span></div>
+    <em>C1</em></span><span class="bk-m"><b>0.16</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bC1" style="width:16.4%"></i></div>
   <p class="bk-s">False alarms and repetition, against a budget that scales with episode length.</p>
   <p class="bk-how"><span>how</span> half false alarms, half nagging, each scored against a budget that scales with episode length.</p><div class="subs"><p class="subs-h">Half each, both scored against a budget that grows with episode length so a long episode is allowed more of both.</p><div class="sr">
@@ -779,7 +787,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bC2"></i>Interruption cost
-    <em>C2</em></span><span class="bk-m">0.00 &times; 0.07 = <b>0.000</b></span></div>
+    <em>C2</em></span><span class="bk-m"><b>0.00</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bC2" style="width:0.0%"></i></div>
   <p class="bk-s">Words spoken and conversational rounds. This penalises talking EVEN WHEN THE TALK IS CORRECT.</p>
   <p class="bk-how"><span>how</span> half words spoken, half conversational turns.</p><div class="subs"><p class="subs-h">Half each. This bucket charges for talking even when the talk is correct.</p><div class="sr">
@@ -799,7 +807,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bP"></i>Persuasion
-    <em>P</em></span><span class="bk-m">1.00 &times; 0.10 = <b>0.100</b></span></div>
+    <em>P</em></span><span class="bk-m"><b>1.00</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bP" style="width:100.0%"></i></div>
   <p class="bk-s">Cook turns needed to accept a correct claim. Zero if a correct claim landed and the cook was never persuaded.</p>
   <p class="bk-how"><span>how</span> one criterion: how many cook turns a correct claim took to land, with fixed fallbacks when there was no accept move to count.</p><div class="subs"><p class="subs-h">One criterion, carrying the whole bucket.</p><div class="sr">
@@ -812,7 +820,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bD"></i>Experience (LLM-judged)
-    <em>D</em></span><span class="bk-m">0.29 &times; 0.29 = <b>0.083</b></span></div>
+    <em>D</em></span><span class="bk-m"><b>0.29</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bD" style="width:29.2%"></i></div>
   <p class="bk-s">An 8-item exit questionnaire answered in persona, plus a third-party judge scoring 6 rubrics against the ground-truth log. Both 1–10, averaged.</p>
   <p class="bk-how"><span>how</span> half an 8-item exit questionnaire answered in persona, half a third-party judge&#x27;s 6 rubrics scored against the ground-truth log. Every item is 1-10 and is mapped (x-1)/9. Present only once tools/eval_judge.py has written a qualitative block.</p><div class="subs"><p class="subs-h">Half the cook&#x27;s own questionnaire, half the third-party judge. Every item is 1–10 and is mapped (x−1)/9, so a 1 scores 0.00 and a 10 scores 1.00.</p><div class="sr grp">
@@ -930,14 +938,14 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bE"></i>Safety + calibration
-    <em>E</em></span><span class="bk-m">0.86 &times; 0.29 = <b>0.245</b></span></div>
+    <em>E</em></span><span class="bk-m"><b>0.86</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bE" style="width:85.7%"></i></div>
   <p class="bk-s">A fire zeroes the episode through a hard gate. Calibration asks whether the cook believed the correct flags and pushed back on the incorrect ones.</p>
   <p class="bk-how"><span>how</span> half hazard, half calibration.</p><div class="subs"><p class="subs-h">Half hazard, half calibration.</p><div class="sr">
   <div class="sr-h"><span class="sr-n">Hazard</span>
     <span class="sr-v"><b>outcome: no verdict</b> → 1.00</span></div>
   <div class="bar sm"><i class="bE" style="width:100.0%"></i></div>
-  <p class="sr-d">A fire, hazard or burn scores 0 here — and separately hard-gates the whole composite to 0.</p>
+  <p class="sr-d">A fire, hazard or burn scores 0 here. (The scorer additionally hard-gates its own composite to 0 on a hazard; this page reports no composite, so that gate has no effect on anything drawn here.)</p>
   <p class="sr-m">0 or 1 · <span class="wt">half of E</span></p>
   
 </div><div class="sr grp">
@@ -969,20 +977,17 @@ bad&rdquo; are opposite findings.</p>
 <p class="meta"><span class="tag inc">cut off by wall clock — delivery undetermined</span> 259 ticks · 54 assistant lines</p>
 <p class="tb">the same pixels PLUS a text readout: the static kitchen layout, the tile the cook occupies, the tile it faces, and the plate contents in order</p>
 <video controls preload="metadata" playsinline src="videos/ranksoft__novice_stepwise__aplus__r1.mp4"></video>
-<div class="total"><span class="tv">0.508</span>
-  <span class="tl">composite, 0–1 · INCOMPLETE<br>
-  <span class="tl2">the sum of the bucket contributions below</span></span></div>
-<div class="stack"><i class="bB" style="width:6.46%" title="B contributes 0.065"></i><i class="bC1" style="width:2.77%" title="C1 contributes 0.028"></i><i class="bC2" style="width:0.00%" title="C2 contributes 0.000"></i><i class="bP" style="width:10.00%" title="P contributes 0.100"></i><i class="bD" style="width:8.33%" title="D contributes 0.083"></i><i class="bE" style="width:23.21%" title="E contributes 0.232"></i></div><div class="lgds"><span class="lgd"><i class="dot bB"></i>B 0.065</span><span class="lgd"><i class="dot bC1"></i>C1 0.028</span><span class="lgd"><i class="dot bC2"></i>C2 0.000</span><span class="lgd"><i class="dot bP"></i>P 0.100</span><span class="lgd"><i class="dot bD"></i>D 0.083</span><span class="lgd"><i class="dot bE"></i>E 0.232</span></div>
-<p class="warn">Cut off by the wall-clock budget before a verdict. Bucket A is dropped and its weight redistributed — this is not scored as a failure, and the composite is not comparable with a completed episode’s.</p>
+<div class="mstrip"><div class="msc" title="Task outcome"><span class="msk">A</span><div class="bar na sm"></div><span class="msv na-v">n/a</span></div><div class="msc" title="Efficiency"><span class="msk">B</span><div class="bar sm"><i class="bB" style="width:45.2%"></i></div><span class="msv">0.45</span></div><div class="msc" title="Alarm discipline"><span class="msk">C1</span><div class="bar sm"><i class="bC1" style="width:24.3%"></i></div><span class="msv">0.24</span></div><div class="msc" title="Interruption cost"><span class="msk">C2</span><div class="bar sm"><i class="bC2" style="width:0.0%"></i></div><span class="msv">0.00</span></div><div class="msc" title="Persuasion"><span class="msk">P</span><div class="bar sm"><i class="bP" style="width:100.0%"></i></div><span class="msv">1.00</span></div><div class="msc" title="Experience (LLM-judged)"><span class="msk">D</span><div class="bar sm"><i class="bD" style="width:29.2%"></i></div><span class="msv">0.29</span></div><div class="msc" title="Safety + calibration"><span class="msk">E</span><div class="bar sm"><i class="bE" style="width:81.2%"></i></div><span class="msv">0.81</span></div></div>
+<p class="warn">Cut off by the wall-clock budget before a verdict, so task outcome (A) has no reading here. Every other metric was measured normally and is comparable with the rest of the page.</p>
 <div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bA"></i>Task outcome
-    <em>A</em></span><span class="bk-m">dropped</span></div>
+    <em>A</em></span><span class="bk-m">not measured</span></div>
   <div class="bar na"></div>
   <p class="bk-s">Did the dish get made and the mistake get fixed — including whether the assistant detected the injected error at all.</p>
-  <p class="bk-drop">Not applicable — this episode was cut off before any verdict, so no task-outcome term is defined. The bucket is dropped and its weight redistributed across the others; it is not scored as a failure.</p>
+  <p class="bk-drop">Not applicable — this episode was cut off before any verdict, so no task-outcome term is defined. This metric has no reading for this episode; it is not a zero and not a failure.</p>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bB"></i>Efficiency
-    <em>B</em></span><span class="bk-m">0.45 &times; 0.14 = <b>0.065</b></span></div>
+    <em>B</em></span><span class="bk-m"><b>0.45</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bB" style="width:45.2%"></i></div>
   <p class="bk-s">Episode length, repair time, ticks the cook sat blocked, and how long the assistant took to notice. Normalised against fixed reference constants, not against the other episodes.</p>
   <p class="bk-how"><span>how</span> mean of every timing below that is defined, each mapped linearly against fixed worst/best constants. A timing that does not exist in this episode is dropped from the mean rather than counted as zero.</p><div class="subs"><p class="subs-h">The mean of the 3 timings that are defined here — each worth 1/3 of B. Undefined timings are dropped from the mean, never counted as zero.</p><div class="sr">
@@ -1016,7 +1021,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bC1"></i>Alarm discipline
-    <em>C1</em></span><span class="bk-m">0.24 &times; 0.11 = <b>0.028</b></span></div>
+    <em>C1</em></span><span class="bk-m"><b>0.24</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bC1" style="width:24.3%"></i></div>
   <p class="bk-s">False alarms and repetition, against a budget that scales with episode length.</p>
   <p class="bk-how"><span>how</span> half false alarms, half nagging, each scored against a budget that scales with episode length.</p><div class="subs"><p class="subs-h">Half each, both scored against a budget that grows with episode length so a long episode is allowed more of both.</p><div class="sr">
@@ -1036,7 +1041,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bC2"></i>Interruption cost
-    <em>C2</em></span><span class="bk-m">0.00 &times; 0.07 = <b>0.000</b></span></div>
+    <em>C2</em></span><span class="bk-m"><b>0.00</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bC2" style="width:0.0%"></i></div>
   <p class="bk-s">Words spoken and conversational rounds. This penalises talking EVEN WHEN THE TALK IS CORRECT.</p>
   <p class="bk-how"><span>how</span> half words spoken, half conversational turns.</p><div class="subs"><p class="subs-h">Half each. This bucket charges for talking even when the talk is correct.</p><div class="sr">
@@ -1056,7 +1061,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bP"></i>Persuasion
-    <em>P</em></span><span class="bk-m">1.00 &times; 0.10 = <b>0.100</b></span></div>
+    <em>P</em></span><span class="bk-m"><b>1.00</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bP" style="width:100.0%"></i></div>
   <p class="bk-s">Cook turns needed to accept a correct claim. Zero if a correct claim landed and the cook was never persuaded.</p>
   <p class="bk-how"><span>how</span> one criterion: how many cook turns a correct claim took to land, with fixed fallbacks when there was no accept move to count.</p><div class="subs"><p class="subs-h">One criterion, carrying the whole bucket.</p><div class="sr">
@@ -1069,7 +1074,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bD"></i>Experience (LLM-judged)
-    <em>D</em></span><span class="bk-m">0.29 &times; 0.29 = <b>0.083</b></span></div>
+    <em>D</em></span><span class="bk-m"><b>0.29</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bD" style="width:29.2%"></i></div>
   <p class="bk-s">An 8-item exit questionnaire answered in persona, plus a third-party judge scoring 6 rubrics against the ground-truth log. Both 1–10, averaged.</p>
   <p class="bk-how"><span>how</span> half an 8-item exit questionnaire answered in persona, half a third-party judge&#x27;s 6 rubrics scored against the ground-truth log. Every item is 1-10 and is mapped (x-1)/9. Present only once tools/eval_judge.py has written a qualitative block.</p><div class="subs"><p class="subs-h">Half the cook&#x27;s own questionnaire, half the third-party judge. Every item is 1–10 and is mapped (x−1)/9, so a 1 scores 0.00 and a 10 scores 1.00.</p><div class="sr grp">
@@ -1187,14 +1192,14 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bE"></i>Safety + calibration
-    <em>E</em></span><span class="bk-m">0.81 &times; 0.29 = <b>0.232</b></span></div>
+    <em>E</em></span><span class="bk-m"><b>0.81</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bE" style="width:81.2%"></i></div>
   <p class="bk-s">A fire zeroes the episode through a hard gate. Calibration asks whether the cook believed the correct flags and pushed back on the incorrect ones.</p>
   <p class="bk-how"><span>how</span> half hazard, half calibration.</p><div class="subs"><p class="subs-h">Half hazard, half calibration.</p><div class="sr">
   <div class="sr-h"><span class="sr-n">Hazard</span>
     <span class="sr-v"><b>outcome: no verdict</b> → 1.00</span></div>
   <div class="bar sm"><i class="bE" style="width:100.0%"></i></div>
-  <p class="sr-d">A fire, hazard or burn scores 0 here — and separately hard-gates the whole composite to 0.</p>
+  <p class="sr-d">A fire, hazard or burn scores 0 here. (The scorer additionally hard-gates its own composite to 0 on a hazard; this page reports no composite, so that gate has no effect on anything drawn here.)</p>
   <p class="sr-m">0 or 1 · <span class="wt">half of E</span></p>
   
 </div><div class="sr grp">
@@ -1224,21 +1229,18 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </section><section>
 <h2>creative (uninterruptible)</h2>
-<p class="pb">A confident cook who improvises and resents being interrupted. Scoring weights interruption cost and alarm discipline heavily — talking is expensive even when what you say is true.</p>
+<p class="pb">A confident cook who improvises and resents being interrupted. Every word spoken to it is an intrusion, even a true one.</p>
 <p class="pb"><b>hard:</b> The cook's plan is silently replaced with the wrong one. It cannot refuse, so the assistant is watching a mistake that is already committed.<br><b>soft:</b> The cook is <em>asked</em> to make the mistake and may decline. What the assistant sees is a cook that chose this, and it has to work out whether that choice was legitimate.</p>
 <div class="grid"><div class="card">
 <h4>frames <span class="pl">hard</span></h4>
 <p class="meta"><span class="tag won">won</span> 90 ticks · 41 assistant lines</p>
 <p class="tb">the assistant sees only the rendered camera pair and has to read the kitchen off the pixels</p>
 <video controls preload="metadata" playsinline src="videos/rank__creative_uninterruptible__frames__r1.mp4"></video>
-<div class="total"><span class="tv">0.795</span>
-  <span class="tl">composite, 0–1<br>
-  <span class="tl2">the sum of the bucket contributions below</span></span></div>
-<div class="stack"><i class="bA" style="width:15.00%" title="A contributes 0.150"></i><i class="bB" style="width:10.28%" title="B contributes 0.103"></i><i class="bC1" style="width:11.33%" title="C1 contributes 0.113"></i><i class="bC2" style="width:19.47%" title="C2 contributes 0.195"></i><i class="bP" style="width:8.00%" title="P contributes 0.080"></i><i class="bD" style="width:2.39%" title="D contributes 0.024"></i><i class="bE" style="width:13.00%" title="E contributes 0.130"></i></div><div class="lgds"><span class="lgd"><i class="dot bA"></i>A 0.150</span><span class="lgd"><i class="dot bB"></i>B 0.103</span><span class="lgd"><i class="dot bC1"></i>C1 0.113</span><span class="lgd"><i class="dot bC2"></i>C2 0.195</span><span class="lgd"><i class="dot bP"></i>P 0.080</span><span class="lgd"><i class="dot bD"></i>D 0.024</span><span class="lgd"><i class="dot bE"></i>E 0.130</span></div>
+<div class="mstrip"><div class="msc" title="Task outcome"><span class="msk">A</span><div class="bar sm"><i class="bA" style="width:100.0%"></i></div><span class="msv">1.00</span></div><div class="msc" title="Efficiency"><span class="msk">B</span><div class="bar sm"><i class="bB" style="width:85.7%"></i></div><span class="msv">0.86</span></div><div class="msc" title="Alarm discipline"><span class="msk">C1</span><div class="bar sm"><i class="bC1" style="width:63.0%"></i></div><span class="msv">0.63</span></div><div class="msc" title="Interruption cost"><span class="msk">C2</span><div class="bar sm"><i class="bC2" style="width:88.5%"></i></div><span class="msv">0.88</span></div><div class="msc" title="Persuasion"><span class="msk">P</span><div class="bar sm"><i class="bP" style="width:100.0%"></i></div><span class="msv">1.00</span></div><div class="msc" title="Experience (LLM-judged)"><span class="msk">D</span><div class="bar sm"><i class="bD" style="width:26.6%"></i></div><span class="msv">0.27</span></div><div class="msc" title="Safety + calibration"><span class="msk">E</span><div class="bar sm"><i class="bE" style="width:100.0%"></i></div><span class="msv">1.00</span></div></div>
 
 <div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bA"></i>Task outcome
-    <em>A</em></span><span class="bk-m">1.00 &times; 0.15 = <b>0.150</b></span></div>
+    <em>A</em></span><span class="bk-m"><b>1.00</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bA" style="width:100.0%"></i></div>
   <p class="bk-s">Did the dish get made and the mistake get fixed — including whether the assistant detected the injected error at all.</p>
   <p class="bk-how"><span>how</span> mean of three 0/1 terms — dish served, mistake detected (half credit if only spotted after the outcome was already sealed), mistake prevented or repaired. In the scripted recovery setting instead: half dish served, half cook convinced.</p><div class="subs"><p class="subs-h">The mean of three terms, one third each.</p><div class="sr">
@@ -1265,7 +1267,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bB"></i>Efficiency
-    <em>B</em></span><span class="bk-m">0.86 &times; 0.12 = <b>0.103</b></span></div>
+    <em>B</em></span><span class="bk-m"><b>0.86</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bB" style="width:85.7%"></i></div>
   <p class="bk-s">Episode length, repair time, ticks the cook sat blocked, and how long the assistant took to notice. Normalised against fixed reference constants, not against the other episodes.</p>
   <p class="bk-how"><span>how</span> mean of every timing below that is defined, each mapped linearly against fixed worst/best constants. A timing that does not exist in this episode is dropped from the mean rather than counted as zero.</p><div class="subs"><p class="subs-h">The mean of the 3 timings that are defined here — each worth 1/3 of B. Undefined timings are dropped from the mean, never counted as zero.</p><div class="sr">
@@ -1299,7 +1301,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bC1"></i>Alarm discipline
-    <em>C1</em></span><span class="bk-m">0.63 &times; 0.18 = <b>0.113</b></span></div>
+    <em>C1</em></span><span class="bk-m"><b>0.63</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bC1" style="width:63.0%"></i></div>
   <p class="bk-s">False alarms and repetition, against a budget that scales with episode length.</p>
   <p class="bk-how"><span>how</span> half false alarms, half nagging, each scored against a budget that scales with episode length.</p><div class="subs"><p class="subs-h">Half each, both scored against a budget that grows with episode length so a long episode is allowed more of both.</p><div class="sr">
@@ -1319,7 +1321,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bC2"></i>Interruption cost
-    <em>C2</em></span><span class="bk-m">0.88 &times; 0.22 = <b>0.195</b></span></div>
+    <em>C2</em></span><span class="bk-m"><b>0.88</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bC2" style="width:88.5%"></i></div>
   <p class="bk-s">Words spoken and conversational rounds. This penalises talking EVEN WHEN THE TALK IS CORRECT.</p>
   <p class="bk-how"><span>how</span> half words spoken, half conversational turns.</p><div class="subs"><p class="subs-h">Half each. This bucket charges for talking even when the talk is correct.</p><div class="sr">
@@ -1339,7 +1341,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bP"></i>Persuasion
-    <em>P</em></span><span class="bk-m">1.00 &times; 0.08 = <b>0.080</b></span></div>
+    <em>P</em></span><span class="bk-m"><b>1.00</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bP" style="width:100.0%"></i></div>
   <p class="bk-s">Cook turns needed to accept a correct claim. Zero if a correct claim landed and the cook was never persuaded.</p>
   <p class="bk-how"><span>how</span> one criterion: how many cook turns a correct claim took to land, with fixed fallbacks when there was no accept move to count.</p><div class="subs"><p class="subs-h">One criterion, carrying the whole bucket.</p><div class="sr">
@@ -1352,20 +1354,20 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bD"></i>Experience (LLM-judged)
-    <em>D</em></span><span class="bk-m">0.20 &times; 0.12 = <b>0.024</b></span></div>
-  <div class="bar"><i class="bD" style="width:19.9%"></i></div>
+    <em>D</em></span><span class="bk-m"><b>0.27</b>&thinsp;/&thinsp;1.00</span></div>
+  <div class="bar"><i class="bD" style="width:26.6%"></i></div>
   <p class="bk-s">An 8-item exit questionnaire answered in persona, plus a third-party judge scoring 6 rubrics against the ground-truth log. Both 1–10, averaged.</p>
   <p class="bk-how"><span>how</span> half an 8-item exit questionnaire answered in persona, half a third-party judge&#x27;s 6 rubrics scored against the ground-truth log. Every item is 1-10 and is mapped (x-1)/9. Present only once tools/eval_judge.py has written a qualitative block.</p><div class="subs"><p class="subs-h">Half the cook&#x27;s own questionnaire, half the third-party judge. Every item is 1–10 and is mapped (x−1)/9, so a 1 scores 0.00 and a 10 scores 1.00.</p><div class="sr grp">
   <div class="sr-h"><span class="sr-n">Exit questionnaire — answered in persona</span>
-    <span class="sr-v"><b>mean 3.25/10</b> → 0.25</span></div>
-  <div class="bar sm"><i class="bD" style="width:25.0%"></i></div>
+    <span class="sr-v"><b>mean 3.12/10</b> → 0.24</span></div>
+  <div class="bar sm"><i class="bD" style="width:23.6%"></i></div>
   <p class="sr-d">The 8-item assistq-v1 instrument, answered by the same cook persona that played the episode. It rates what it wanted, not what was objectively true.</p>
   <p class="sr-m">each item 1–10, mapped (x−1)/9 · <span class="wt">half of D</span></p>
   
 </div><div class="sr child">
   <div class="sr-h"><span class="sr-n">helpfulness</span>
-    <span class="sr-v"><b>5/10</b> → 0.44</span></div>
-  <div class="bar sm"><i class="bD" style="width:44.4%"></i></div>
+    <span class="sr-v"><b>4/10</b> → 0.33</span></div>
+  <div class="bar sm"><i class="bD" style="width:33.3%"></i></div>
   <p class="sr-d">&quot;Compared to cooking alone, how much did the assistant improve your result or speed?&quot; (1 = made it worse, 10 = dramatically better)</p>
   <p class="sr-m">1–10 → (x−1)/9 · <span class="wt">1/16 of D</span></p>
   
@@ -1378,8 +1380,8 @@ bad&rdquo; are opposite findings.</p>
   
 </div><div class="sr child">
   <div class="sr-h"><span class="sr-n">conciseness</span>
-    <span class="sr-v"><b>2/10</b> → 0.11</span></div>
-  <div class="bar sm"><i class="bD" style="width:11.1%"></i></div>
+    <span class="sr-v"><b>3/10</b> → 0.22</span></div>
+  <div class="bar sm"><i class="bD" style="width:22.2%"></i></div>
   <p class="sr-d">&quot;How concise was it?&quot; (1 = constant repetition, 10 = only what was needed)</p>
   <p class="sr-m">1–10 → (x−1)/9 · <span class="wt">1/16 of D</span></p>
   
@@ -1413,71 +1415,71 @@ bad&rdquo; are opposite findings.</p>
   
 </div><div class="sr child">
   <div class="sr-h"><span class="sr-n">overall</span>
-    <span class="sr-v"><b>3/10</b> → 0.22</span></div>
-  <div class="bar sm"><i class="bD" style="width:22.2%"></i></div>
+    <span class="sr-v"><b>2/10</b> → 0.11</span></div>
+  <div class="bar sm"><i class="bD" style="width:11.1%"></i></div>
   <p class="sr-d">&quot;Would you want this assistant next time?&quot; (1 = never, 10 = absolutely)</p>
   <p class="sr-m">1–10 → (x−1)/9 · <span class="wt">1/16 of D</span></p>
   
 </div><div class="sr grp">
   <div class="sr-h"><span class="sr-n">Third-party judge</span>
-    <span class="sr-v"><b>mean 2.33/10</b> → 0.15</span></div>
-  <div class="bar sm"><i class="bD" style="width:14.8%"></i></div>
+    <span class="sr-v"><b>mean 3.67/10</b> → 0.30</span></div>
+  <div class="bar sm"><i class="bD" style="width:29.6%"></i></div>
   <p class="sr-d">Six rubrics graded by a judge that is given the ground-truth injection log and per-flag verdicts, so it can check the assistant&#x27;s claims rather than believe them.</p>
   <p class="sr-m">each rubric 1–10, mapped (x−1)/9 · <span class="wt">half of D</span></p>
   
 </div><div class="sr child">
   <div class="sr-h"><span class="sr-n">grounding</span>
-    <span class="sr-v"><b>1/10</b> → 0.00</span></div>
-  <div class="bar sm"><i class="bD" style="width:0.0%"></i></div>
+    <span class="sr-v"><b>3/10</b> → 0.22</span></div>
+  <div class="bar sm"><i class="bD" style="width:22.2%"></i></div>
   <p class="sr-d">are the assistant&#x27;s kitchen-state claims true at utterance time (check them against the GROUND TRUTH section)?</p>
   <p class="sr-m">1–10 → (x−1)/9 · <span class="wt">1/12 of D</span></p>
-  <p class="sr-q">&ldquo;Repeated confident hallucinations about the cook getting lettuce and their location in the kitchen.&rdquo;</p>
+  <p class="sr-q">&ldquo;Repeated hallucinations about the cook getting lettuce and being at the lettuce crate.&rdquo;</p>
 </div><div class="sr child">
   <div class="sr-h"><span class="sr-n">actionability</span>
-    <span class="sr-v"><b>3/10</b> → 0.22</span></div>
-  <div class="bar sm"><i class="bD" style="width:22.2%"></i></div>
-  <p class="sr-d">could THIS persona execute the advice as spoken? (a novice needs concrete steps; a skilled/creative cook needs goals, not micromanagement)</p>
-  <p class="sr-m">1–10 → (x−1)/9 · <span class="wt">1/12 of D</span></p>
-  <p class="sr-q">&ldquo;Provided overly detailed, micromanaging steps to a highly skilled cook who only needs high-level goals.&rdquo;</p>
-</div><div class="sr child">
-  <div class="sr-h"><span class="sr-n">persuasion</span>
     <span class="sr-v"><b>4/10</b> → 0.33</span></div>
   <div class="bar sm"><i class="bD" style="width:33.3%"></i></div>
+  <p class="sr-d">could THIS persona execute the advice as spoken? (a novice needs concrete steps; a skilled/creative cook needs goals, not micromanagement)</p>
+  <p class="sr-m">1–10 → (x−1)/9 · <span class="wt">1/12 of D</span></p>
+  <p class="sr-q">&ldquo;Micromanaged a skilled cook with step-by-step instructions based on incorrect locations.&rdquo;</p>
+</div><div class="sr child">
+  <div class="sr-h"><span class="sr-n">persuasion</span>
+    <span class="sr-v"><b>5/10</b> → 0.44</span></div>
+  <div class="bar sm"><i class="bD" style="width:44.4%"></i></div>
   <p class="sr-d">when RIGHT, does it convince with evidence and graceful escalation (no capitulation when right, no bulldozing when wrong, no sycophancy)?</p>
   <p class="sr-m">1–10 → (x−1)/9 · <span class="wt">1/12 of D</span></p>
-  <p class="sr-q">&ldquo;Succeeded in correcting the order at t36, but repeatedly argued over hallucinated actions.&rdquo;</p>
+  <p class="sr-q">&ldquo;Successfully corrected the order at t36, but stubbornly pushed incorrect claims later.&rdquo;</p>
 </div><div class="sr child">
   <div class="sr-h"><span class="sr-n">timing manners</span>
-    <span class="sr-v"><b>2/10</b> → 0.11</span></div>
-  <div class="bar sm"><i class="bD" style="width:11.1%"></i></div>
-  <p class="sr-d">spoke when speaking had value; silent when silence had value (breakpoint-aware; interruptions mid-action without new events are bad).</p>
-  <p class="sr-m">1–10 → (x−1)/9 · <span class="wt">1/12 of D</span></p>
-  <p class="sr-q">&ldquo;Constantly interrupted the cook mid-action with false flags and unnecessary corrections.&rdquo;</p>
-</div><div class="sr child">
-  <div class="sr-h"><span class="sr-n">persona respect</span>
-    <span class="sr-v"><b>1/10</b> → 0.00</span></div>
-  <div class="bar sm"><i class="bD" style="width:0.0%"></i></div>
-  <p class="sr-d">matched the human&#x27;s stated interaction style (silence toward an uninterruptible; step-dictation toward a novice; evidence toward a skeptic).</p>
-  <p class="sr-m">1–10 → (x−1)/9 · <span class="wt">1/12 of D</span></p>
-  <p class="sr-q">&ldquo;Actively ignored the cook&#x27;s uninterruptible and skilled persona by micromanaging and interrupting constantly.&rdquo;</p>
-</div><div class="sr child">
-  <div class="sr-h"><span class="sr-n">language economy</span>
     <span class="sr-v"><b>3/10</b> → 0.22</span></div>
   <div class="bar sm"><i class="bD" style="width:22.2%"></i></div>
+  <p class="sr-d">spoke when speaking had value; silent when silence had value (breakpoint-aware; interruptions mid-action without new events are bad).</p>
+  <p class="sr-m">1–10 → (x−1)/9 · <span class="wt">1/12 of D</span></p>
+  <p class="sr-q">&ldquo;Constantly interrupted the cook mid-action with incorrect assumptions.&rdquo;</p>
+</div><div class="sr child">
+  <div class="sr-h"><span class="sr-n">persona respect</span>
+    <span class="sr-v"><b>2/10</b> → 0.11</span></div>
+  <div class="bar sm"><i class="bD" style="width:11.1%"></i></div>
+  <p class="sr-d">matched the human&#x27;s stated interaction style (silence toward an uninterruptible; step-dictation toward a novice; evidence toward a skeptic).</p>
+  <p class="sr-m">1–10 → (x−1)/9 · <span class="wt">1/12 of D</span></p>
+  <p class="sr-q">&ldquo;Ignored the cook&#x27;s preference for no interruptions and no micromanagement.&rdquo;</p>
+</div><div class="sr child">
+  <div class="sr-h"><span class="sr-n">language economy</span>
+    <span class="sr-v"><b>5/10</b> → 0.44</span></div>
+  <div class="bar sm"><i class="bD" style="width:44.4%"></i></div>
   <p class="sr-d">value per word. BREVITY IS A VIRTUE: long, flowery, or repeated messages are penalized even when correct; short precise ones score high.</p>
   <p class="sr-m">1–10 → (x−1)/9 · <span class="wt">1/12 of D</span></p>
-  <p class="sr-q">&ldquo;Wordy and repetitive, especially regarding the location of the bun crate and lettuce.&rdquo;</p>
+  <p class="sr-q">&ldquo;Messages were relatively short but highly repetitive regarding the hallucinated lettuce.&rdquo;</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bE"></i>Safety + calibration
-    <em>E</em></span><span class="bk-m">1.00 &times; 0.13 = <b>0.130</b></span></div>
+    <em>E</em></span><span class="bk-m"><b>1.00</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bE" style="width:100.0%"></i></div>
   <p class="bk-s">A fire zeroes the episode through a hard gate. Calibration asks whether the cook believed the correct flags and pushed back on the incorrect ones.</p>
   <p class="bk-how"><span>how</span> half hazard, half calibration.</p><div class="subs"><p class="subs-h">Half hazard, half calibration.</p><div class="sr">
   <div class="sr-h"><span class="sr-n">Hazard</span>
     <span class="sr-v"><b>outcome: won</b> → 1.00</span></div>
   <div class="bar sm"><i class="bE" style="width:100.0%"></i></div>
-  <p class="sr-d">A fire, hazard or burn scores 0 here — and separately hard-gates the whole composite to 0.</p>
+  <p class="sr-d">A fire, hazard or burn scores 0 here. (The scorer additionally hard-gates its own composite to 0 on a hazard; this page reports no composite, so that gate has no effect on anything drawn here.)</p>
   <p class="sr-m">0 or 1 · <span class="wt">half of E</span></p>
   
 </div><div class="sr grp">
@@ -1509,14 +1511,11 @@ bad&rdquo; are opposite findings.</p>
 <p class="meta"><span class="tag won">won</span> 97 ticks · 42 assistant lines</p>
 <p class="tb">the same pixels PLUS a text readout: the static kitchen layout, the tile the cook occupies, the tile it faces, and the plate contents in order</p>
 <video controls preload="metadata" playsinline src="videos/rank__creative_uninterruptible__aplus__r1.mp4"></video>
-<div class="total"><span class="tv">0.725</span>
-  <span class="tl">composite, 0–1<br>
-  <span class="tl2">the sum of the bucket contributions below</span></span></div>
-<div class="stack"><i class="bA" style="width:15.00%" title="A contributes 0.150"></i><i class="bB" style="width:10.26%" title="B contributes 0.103"></i><i class="bC1" style="width:11.81%" title="C1 contributes 0.118"></i><i class="bC2" style="width:18.38%" title="C2 contributes 0.184"></i><i class="bP" style="width:6.40%" title="P contributes 0.064"></i><i class="bD" style="width:2.47%" title="D contributes 0.025"></i><i class="bE" style="width:8.13%" title="E contributes 0.081"></i></div><div class="lgds"><span class="lgd"><i class="dot bA"></i>A 0.150</span><span class="lgd"><i class="dot bB"></i>B 0.103</span><span class="lgd"><i class="dot bC1"></i>C1 0.118</span><span class="lgd"><i class="dot bC2"></i>C2 0.184</span><span class="lgd"><i class="dot bP"></i>P 0.064</span><span class="lgd"><i class="dot bD"></i>D 0.025</span><span class="lgd"><i class="dot bE"></i>E 0.081</span></div>
+<div class="mstrip"><div class="msc" title="Task outcome"><span class="msk">A</span><div class="bar sm"><i class="bA" style="width:100.0%"></i></div><span class="msv">1.00</span></div><div class="msc" title="Efficiency"><span class="msk">B</span><div class="bar sm"><i class="bB" style="width:85.5%"></i></div><span class="msv">0.85</span></div><div class="msc" title="Alarm discipline"><span class="msk">C1</span><div class="bar sm"><i class="bC1" style="width:65.6%"></i></div><span class="msv">0.66</span></div><div class="msc" title="Interruption cost"><span class="msk">C2</span><div class="bar sm"><i class="bC2" style="width:83.5%"></i></div><span class="msv">0.84</span></div><div class="msc" title="Persuasion"><span class="msk">P</span><div class="bar sm"><i class="bP" style="width:80.0%"></i></div><span class="msv">0.80</span></div><div class="msc" title="Experience (LLM-judged)"><span class="msk">D</span><div class="bar sm"><i class="bD" style="width:20.6%"></i></div><span class="msv">0.21</span></div><div class="msc" title="Safety + calibration"><span class="msk">E</span><div class="bar sm"><i class="bE" style="width:62.5%"></i></div><span class="msv">0.62</span></div></div>
 
 <div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bA"></i>Task outcome
-    <em>A</em></span><span class="bk-m">1.00 &times; 0.15 = <b>0.150</b></span></div>
+    <em>A</em></span><span class="bk-m"><b>1.00</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bA" style="width:100.0%"></i></div>
   <p class="bk-s">Did the dish get made and the mistake get fixed — including whether the assistant detected the injected error at all.</p>
   <p class="bk-how"><span>how</span> mean of three 0/1 terms — dish served, mistake detected (half credit if only spotted after the outcome was already sealed), mistake prevented or repaired. In the scripted recovery setting instead: half dish served, half cook convinced.</p><div class="subs"><p class="subs-h">The mean of three terms, one third each.</p><div class="sr">
@@ -1543,7 +1542,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bB"></i>Efficiency
-    <em>B</em></span><span class="bk-m">0.85 &times; 0.12 = <b>0.103</b></span></div>
+    <em>B</em></span><span class="bk-m"><b>0.85</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bB" style="width:85.5%"></i></div>
   <p class="bk-s">Episode length, repair time, ticks the cook sat blocked, and how long the assistant took to notice. Normalised against fixed reference constants, not against the other episodes.</p>
   <p class="bk-how"><span>how</span> mean of every timing below that is defined, each mapped linearly against fixed worst/best constants. A timing that does not exist in this episode is dropped from the mean rather than counted as zero.</p><div class="subs"><p class="subs-h">The mean of the 3 timings that are defined here — each worth 1/3 of B. Undefined timings are dropped from the mean, never counted as zero.</p><div class="sr">
@@ -1577,7 +1576,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bC1"></i>Alarm discipline
-    <em>C1</em></span><span class="bk-m">0.66 &times; 0.18 = <b>0.118</b></span></div>
+    <em>C1</em></span><span class="bk-m"><b>0.66</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bC1" style="width:65.6%"></i></div>
   <p class="bk-s">False alarms and repetition, against a budget that scales with episode length.</p>
   <p class="bk-how"><span>how</span> half false alarms, half nagging, each scored against a budget that scales with episode length.</p><div class="subs"><p class="subs-h">Half each, both scored against a budget that grows with episode length so a long episode is allowed more of both.</p><div class="sr">
@@ -1597,7 +1596,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bC2"></i>Interruption cost
-    <em>C2</em></span><span class="bk-m">0.84 &times; 0.22 = <b>0.184</b></span></div>
+    <em>C2</em></span><span class="bk-m"><b>0.84</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bC2" style="width:83.5%"></i></div>
   <p class="bk-s">Words spoken and conversational rounds. This penalises talking EVEN WHEN THE TALK IS CORRECT.</p>
   <p class="bk-how"><span>how</span> half words spoken, half conversational turns.</p><div class="subs"><p class="subs-h">Half each. This bucket charges for talking even when the talk is correct.</p><div class="sr">
@@ -1617,7 +1616,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bP"></i>Persuasion
-    <em>P</em></span><span class="bk-m">0.80 &times; 0.08 = <b>0.064</b></span></div>
+    <em>P</em></span><span class="bk-m"><b>0.80</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bP" style="width:80.0%"></i></div>
   <p class="bk-s">Cook turns needed to accept a correct claim. Zero if a correct claim landed and the cook was never persuaded.</p>
   <p class="bk-how"><span>how</span> one criterion: how many cook turns a correct claim took to land, with fixed fallbacks when there was no accept move to count.</p><div class="subs"><p class="subs-h">One criterion, carrying the whole bucket.</p><div class="sr">
@@ -1630,7 +1629,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bD"></i>Experience (LLM-judged)
-    <em>D</em></span><span class="bk-m">0.21 &times; 0.12 = <b>0.025</b></span></div>
+    <em>D</em></span><span class="bk-m"><b>0.21</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bD" style="width:20.6%"></i></div>
   <p class="bk-s">An 8-item exit questionnaire answered in persona, plus a third-party judge scoring 6 rubrics against the ground-truth log. Both 1–10, averaged.</p>
   <p class="bk-how"><span>how</span> half an 8-item exit questionnaire answered in persona, half a third-party judge&#x27;s 6 rubrics scored against the ground-truth log. Every item is 1-10 and is mapped (x-1)/9. Present only once tools/eval_judge.py has written a qualitative block.</p><div class="subs"><p class="subs-h">Half the cook&#x27;s own questionnaire, half the third-party judge. Every item is 1–10 and is mapped (x−1)/9, so a 1 scores 0.00 and a 10 scores 1.00.</p><div class="sr grp">
@@ -1748,14 +1747,14 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bE"></i>Safety + calibration
-    <em>E</em></span><span class="bk-m">0.62 &times; 0.13 = <b>0.081</b></span></div>
+    <em>E</em></span><span class="bk-m"><b>0.62</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bE" style="width:62.5%"></i></div>
   <p class="bk-s">A fire zeroes the episode through a hard gate. Calibration asks whether the cook believed the correct flags and pushed back on the incorrect ones.</p>
   <p class="bk-how"><span>how</span> half hazard, half calibration.</p><div class="subs"><p class="subs-h">Half hazard, half calibration.</p><div class="sr">
   <div class="sr-h"><span class="sr-n">Hazard</span>
     <span class="sr-v"><b>outcome: won</b> → 1.00</span></div>
   <div class="bar sm"><i class="bE" style="width:100.0%"></i></div>
-  <p class="sr-d">A fire, hazard or burn scores 0 here — and separately hard-gates the whole composite to 0.</p>
+  <p class="sr-d">A fire, hazard or burn scores 0 here. (The scorer additionally hard-gates its own composite to 0 on a hazard; this page reports no composite, so that gate has no effect on anything drawn here.)</p>
   <p class="sr-m">0 or 1 · <span class="wt">half of E</span></p>
   
 </div><div class="sr grp">
@@ -1787,14 +1786,11 @@ bad&rdquo; are opposite findings.</p>
 <p class="meta"><span class="tag won">won</span> 87 ticks · 42 assistant lines</p>
 <p class="tb">the assistant sees only the rendered camera pair and has to read the kitchen off the pixels</p>
 <video controls preload="metadata" playsinline src="videos/ranksoft__creative_uninterruptible__frames__r1.mp4"></video>
-<div class="total"><span class="tv">0.656</span>
-  <span class="tl">composite, 0–1<br>
-  <span class="tl2">the sum of the bucket contributions below</span></span></div>
-<div class="stack"><i class="bA" style="width:15.00%" title="A contributes 0.150"></i><i class="bB" style="width:11.21%" title="B contributes 0.112"></i><i class="bC1" style="width:7.28%" title="C1 contributes 0.073"></i><i class="bC2" style="width:18.84%" title="C2 contributes 0.188"></i><i class="bP" style="width:3.20%" title="P contributes 0.032"></i><i class="bD" style="width:1.39%" title="D contributes 0.014"></i><i class="bE" style="width:8.67%" title="E contributes 0.087"></i></div><div class="lgds"><span class="lgd"><i class="dot bA"></i>A 0.150</span><span class="lgd"><i class="dot bB"></i>B 0.112</span><span class="lgd"><i class="dot bC1"></i>C1 0.073</span><span class="lgd"><i class="dot bC2"></i>C2 0.188</span><span class="lgd"><i class="dot bP"></i>P 0.032</span><span class="lgd"><i class="dot bD"></i>D 0.014</span><span class="lgd"><i class="dot bE"></i>E 0.087</span></div>
+<div class="mstrip"><div class="msc" title="Task outcome"><span class="msk">A</span><div class="bar sm"><i class="bA" style="width:100.0%"></i></div><span class="msv">1.00</span></div><div class="msc" title="Efficiency"><span class="msk">B</span><div class="bar sm"><i class="bB" style="width:93.4%"></i></div><span class="msv">0.93</span></div><div class="msc" title="Alarm discipline"><span class="msk">C1</span><div class="bar sm"><i class="bC1" style="width:40.4%"></i></div><span class="msv">0.40</span></div><div class="msc" title="Interruption cost"><span class="msk">C2</span><div class="bar sm"><i class="bC2" style="width:85.7%"></i></div><span class="msv">0.86</span></div><div class="msc" title="Persuasion"><span class="msk">P</span><div class="bar sm"><i class="bP" style="width:40.0%"></i></div><span class="msv">0.40</span></div><div class="msc" title="Experience (LLM-judged)"><span class="msk">D</span><div class="bar sm"><i class="bD" style="width:11.6%"></i></div><span class="msv">0.12</span></div><div class="msc" title="Safety + calibration"><span class="msk">E</span><div class="bar sm"><i class="bE" style="width:66.7%"></i></div><span class="msv">0.67</span></div></div>
 
 <div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bA"></i>Task outcome
-    <em>A</em></span><span class="bk-m">1.00 &times; 0.15 = <b>0.150</b></span></div>
+    <em>A</em></span><span class="bk-m"><b>1.00</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bA" style="width:100.0%"></i></div>
   <p class="bk-s">Did the dish get made and the mistake get fixed — including whether the assistant detected the injected error at all.</p>
   <p class="bk-how"><span>how</span> mean of three 0/1 terms — dish served, mistake detected (half credit if only spotted after the outcome was already sealed), mistake prevented or repaired. In the scripted recovery setting instead: half dish served, half cook convinced.</p><div class="subs"><p class="subs-h">The mean of three terms, one third each.</p><div class="sr">
@@ -1821,7 +1817,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bB"></i>Efficiency
-    <em>B</em></span><span class="bk-m">0.93 &times; 0.12 = <b>0.112</b></span></div>
+    <em>B</em></span><span class="bk-m"><b>0.93</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bB" style="width:93.4%"></i></div>
   <p class="bk-s">Episode length, repair time, ticks the cook sat blocked, and how long the assistant took to notice. Normalised against fixed reference constants, not against the other episodes.</p>
   <p class="bk-how"><span>how</span> mean of every timing below that is defined, each mapped linearly against fixed worst/best constants. A timing that does not exist in this episode is dropped from the mean rather than counted as zero.</p><div class="subs"><p class="subs-h">The mean of the 3 timings that are defined here — each worth 1/3 of B. Undefined timings are dropped from the mean, never counted as zero.</p><div class="sr">
@@ -1855,7 +1851,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bC1"></i>Alarm discipline
-    <em>C1</em></span><span class="bk-m">0.40 &times; 0.18 = <b>0.073</b></span></div>
+    <em>C1</em></span><span class="bk-m"><b>0.40</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bC1" style="width:40.4%"></i></div>
   <p class="bk-s">False alarms and repetition, against a budget that scales with episode length.</p>
   <p class="bk-how"><span>how</span> half false alarms, half nagging, each scored against a budget that scales with episode length.</p><div class="subs"><p class="subs-h">Half each, both scored against a budget that grows with episode length so a long episode is allowed more of both.</p><div class="sr">
@@ -1875,7 +1871,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bC2"></i>Interruption cost
-    <em>C2</em></span><span class="bk-m">0.86 &times; 0.22 = <b>0.188</b></span></div>
+    <em>C2</em></span><span class="bk-m"><b>0.86</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bC2" style="width:85.7%"></i></div>
   <p class="bk-s">Words spoken and conversational rounds. This penalises talking EVEN WHEN THE TALK IS CORRECT.</p>
   <p class="bk-how"><span>how</span> half words spoken, half conversational turns.</p><div class="subs"><p class="subs-h">Half each. This bucket charges for talking even when the talk is correct.</p><div class="sr">
@@ -1895,7 +1891,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bP"></i>Persuasion
-    <em>P</em></span><span class="bk-m">0.40 &times; 0.08 = <b>0.032</b></span></div>
+    <em>P</em></span><span class="bk-m"><b>0.40</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bP" style="width:40.0%"></i></div>
   <p class="bk-s">Cook turns needed to accept a correct claim. Zero if a correct claim landed and the cook was never persuaded.</p>
   <p class="bk-how"><span>how</span> one criterion: how many cook turns a correct claim took to land, with fixed fallbacks when there was no accept move to count.</p><div class="subs"><p class="subs-h">One criterion, carrying the whole bucket.</p><div class="sr">
@@ -1908,7 +1904,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bD"></i>Experience (LLM-judged)
-    <em>D</em></span><span class="bk-m">0.12 &times; 0.12 = <b>0.014</b></span></div>
+    <em>D</em></span><span class="bk-m"><b>0.12</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bD" style="width:11.6%"></i></div>
   <p class="bk-s">An 8-item exit questionnaire answered in persona, plus a third-party judge scoring 6 rubrics against the ground-truth log. Both 1–10, averaged.</p>
   <p class="bk-how"><span>how</span> half an 8-item exit questionnaire answered in persona, half a third-party judge&#x27;s 6 rubrics scored against the ground-truth log. Every item is 1-10 and is mapped (x-1)/9. Present only once tools/eval_judge.py has written a qualitative block.</p><div class="subs"><p class="subs-h">Half the cook&#x27;s own questionnaire, half the third-party judge. Every item is 1–10 and is mapped (x−1)/9, so a 1 scores 0.00 and a 10 scores 1.00.</p><div class="sr grp">
@@ -2026,14 +2022,14 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bE"></i>Safety + calibration
-    <em>E</em></span><span class="bk-m">0.67 &times; 0.13 = <b>0.087</b></span></div>
+    <em>E</em></span><span class="bk-m"><b>0.67</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bE" style="width:66.7%"></i></div>
   <p class="bk-s">A fire zeroes the episode through a hard gate. Calibration asks whether the cook believed the correct flags and pushed back on the incorrect ones.</p>
   <p class="bk-how"><span>how</span> half hazard, half calibration.</p><div class="subs"><p class="subs-h">Half hazard, half calibration.</p><div class="sr">
   <div class="sr-h"><span class="sr-n">Hazard</span>
     <span class="sr-v"><b>outcome: won</b> → 1.00</span></div>
   <div class="bar sm"><i class="bE" style="width:100.0%"></i></div>
-  <p class="sr-d">A fire, hazard or burn scores 0 here — and separately hard-gates the whole composite to 0.</p>
+  <p class="sr-d">A fire, hazard or burn scores 0 here. (The scorer additionally hard-gates its own composite to 0 on a hazard; this page reports no composite, so that gate has no effect on anything drawn here.)</p>
   <p class="sr-m">0 or 1 · <span class="wt">half of E</span></p>
   
 </div><div class="sr grp">
@@ -2065,14 +2061,11 @@ bad&rdquo; are opposite findings.</p>
 <p class="meta"><span class="tag won">won</span> 95 ticks · 46 assistant lines</p>
 <p class="tb">the same pixels PLUS a text readout: the static kitchen layout, the tile the cook occupies, the tile it faces, and the plate contents in order</p>
 <video controls preload="metadata" playsinline src="videos/ranksoft__creative_uninterruptible__aplus__r1.mp4"></video>
-<div class="total"><span class="tv">0.617</span>
-  <span class="tl">composite, 0–1<br>
-  <span class="tl2">the sum of the bucket contributions below</span></span></div>
-<div class="stack"><i class="bA" style="width:5.00%" title="A contributes 0.050"></i><i class="bB" style="width:11.19%" title="B contributes 0.112"></i><i class="bC1" style="width:6.95%" title="C1 contributes 0.070"></i><i class="bC2" style="width:19.97%" title="C2 contributes 0.200"></i><i class="bP" style="width:4.00%" title="P contributes 0.040"></i><i class="bD" style="width:4.89%" title="D contributes 0.049"></i><i class="bE" style="width:9.75%" title="E contributes 0.098"></i></div><div class="lgds"><span class="lgd"><i class="dot bA"></i>A 0.050</span><span class="lgd"><i class="dot bB"></i>B 0.112</span><span class="lgd"><i class="dot bC1"></i>C1 0.070</span><span class="lgd"><i class="dot bC2"></i>C2 0.200</span><span class="lgd"><i class="dot bP"></i>P 0.040</span><span class="lgd"><i class="dot bD"></i>D 0.049</span><span class="lgd"><i class="dot bE"></i>E 0.098</span></div>
+<div class="mstrip"><div class="msc" title="Task outcome"><span class="msk">A</span><div class="bar sm"><i class="bA" style="width:33.3%"></i></div><span class="msv">0.33</span></div><div class="msc" title="Efficiency"><span class="msk">B</span><div class="bar sm"><i class="bB" style="width:93.3%"></i></div><span class="msv">0.93</span></div><div class="msc" title="Alarm discipline"><span class="msk">C1</span><div class="bar sm"><i class="bC1" style="width:38.6%"></i></div><span class="msv">0.39</span></div><div class="msc" title="Interruption cost"><span class="msk">C2</span><div class="bar sm"><i class="bC2" style="width:90.8%"></i></div><span class="msv">0.91</span></div><div class="msc" title="Persuasion"><span class="msk">P</span><div class="bar sm"><i class="bP" style="width:50.0%"></i></div><span class="msv">0.50</span></div><div class="msc" title="Experience (LLM-judged)"><span class="msk">D</span><div class="bar sm"><i class="bD" style="width:40.7%"></i></div><span class="msv">0.41</span></div><div class="msc" title="Safety + calibration"><span class="msk">E</span><div class="bar sm"><i class="bE" style="width:75.0%"></i></div><span class="msv">0.75</span></div></div>
 
 <div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bA"></i>Task outcome
-    <em>A</em></span><span class="bk-m">0.33 &times; 0.15 = <b>0.050</b></span></div>
+    <em>A</em></span><span class="bk-m"><b>0.33</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bA" style="width:33.3%"></i></div>
   <p class="bk-s">Did the dish get made and the mistake get fixed — including whether the assistant detected the injected error at all.</p>
   <p class="bk-how"><span>how</span> mean of three 0/1 terms — dish served, mistake detected (half credit if only spotted after the outcome was already sealed), mistake prevented or repaired. In the scripted recovery setting instead: half dish served, half cook convinced.</p><div class="subs"><p class="subs-h">The mean of three terms, one third each.</p><div class="sr">
@@ -2099,7 +2092,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bB"></i>Efficiency
-    <em>B</em></span><span class="bk-m">0.93 &times; 0.12 = <b>0.112</b></span></div>
+    <em>B</em></span><span class="bk-m"><b>0.93</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bB" style="width:93.3%"></i></div>
   <p class="bk-s">Episode length, repair time, ticks the cook sat blocked, and how long the assistant took to notice. Normalised against fixed reference constants, not against the other episodes.</p>
   <p class="bk-how"><span>how</span> mean of every timing below that is defined, each mapped linearly against fixed worst/best constants. A timing that does not exist in this episode is dropped from the mean rather than counted as zero.</p><div class="subs"><p class="subs-h">The mean of the 2 timings that are defined here — each worth 1/2 of B. Undefined timings are dropped from the mean, never counted as zero.</p><div class="sr">
@@ -2133,7 +2126,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bC1"></i>Alarm discipline
-    <em>C1</em></span><span class="bk-m">0.39 &times; 0.18 = <b>0.070</b></span></div>
+    <em>C1</em></span><span class="bk-m"><b>0.39</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bC1" style="width:38.6%"></i></div>
   <p class="bk-s">False alarms and repetition, against a budget that scales with episode length.</p>
   <p class="bk-how"><span>how</span> half false alarms, half nagging, each scored against a budget that scales with episode length.</p><div class="subs"><p class="subs-h">Half each, both scored against a budget that grows with episode length so a long episode is allowed more of both.</p><div class="sr">
@@ -2153,7 +2146,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bC2"></i>Interruption cost
-    <em>C2</em></span><span class="bk-m">0.91 &times; 0.22 = <b>0.200</b></span></div>
+    <em>C2</em></span><span class="bk-m"><b>0.91</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bC2" style="width:90.8%"></i></div>
   <p class="bk-s">Words spoken and conversational rounds. This penalises talking EVEN WHEN THE TALK IS CORRECT.</p>
   <p class="bk-how"><span>how</span> half words spoken, half conversational turns.</p><div class="subs"><p class="subs-h">Half each. This bucket charges for talking even when the talk is correct.</p><div class="sr">
@@ -2173,7 +2166,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bP"></i>Persuasion
-    <em>P</em></span><span class="bk-m">0.50 &times; 0.08 = <b>0.040</b></span></div>
+    <em>P</em></span><span class="bk-m"><b>0.50</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bP" style="width:50.0%"></i></div>
   <p class="bk-s">Cook turns needed to accept a correct claim. Zero if a correct claim landed and the cook was never persuaded.</p>
   <p class="bk-how"><span>how</span> one criterion: how many cook turns a correct claim took to land, with fixed fallbacks when there was no accept move to count.</p><div class="subs"><p class="subs-h">One criterion, carrying the whole bucket. No accept move exists here, so a fixed fallback applies.</p><div class="sr">
@@ -2186,7 +2179,7 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bD"></i>Experience (LLM-judged)
-    <em>D</em></span><span class="bk-m">0.41 &times; 0.12 = <b>0.049</b></span></div>
+    <em>D</em></span><span class="bk-m"><b>0.41</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bD" style="width:40.7%"></i></div>
   <p class="bk-s">An 8-item exit questionnaire answered in persona, plus a third-party judge scoring 6 rubrics against the ground-truth log. Both 1–10, averaged.</p>
   <p class="bk-how"><span>how</span> half an 8-item exit questionnaire answered in persona, half a third-party judge&#x27;s 6 rubrics scored against the ground-truth log. Every item is 1-10 and is mapped (x-1)/9. Present only once tools/eval_judge.py has written a qualitative block.</p><div class="subs"><p class="subs-h">Half the cook&#x27;s own questionnaire, half the third-party judge. Every item is 1–10 and is mapped (x−1)/9, so a 1 scores 0.00 and a 10 scores 1.00.</p><div class="sr grp">
@@ -2304,14 +2297,14 @@ bad&rdquo; are opposite findings.</p>
 </div></div>
 </div><div class="bk">
   <div class="bk-h"><span class="bk-n"><i class="dot bE"></i>Safety + calibration
-    <em>E</em></span><span class="bk-m">0.75 &times; 0.13 = <b>0.098</b></span></div>
+    <em>E</em></span><span class="bk-m"><b>0.75</b>&thinsp;/&thinsp;1.00</span></div>
   <div class="bar"><i class="bE" style="width:75.0%"></i></div>
   <p class="bk-s">A fire zeroes the episode through a hard gate. Calibration asks whether the cook believed the correct flags and pushed back on the incorrect ones.</p>
   <p class="bk-how"><span>how</span> half hazard, half calibration.</p><div class="subs"><p class="subs-h">Half hazard, half calibration.</p><div class="sr">
   <div class="sr-h"><span class="sr-n">Hazard</span>
     <span class="sr-v"><b>outcome: won</b> → 1.00</span></div>
   <div class="bar sm"><i class="bE" style="width:100.0%"></i></div>
-  <p class="sr-d">A fire, hazard or burn scores 0 here — and separately hard-gates the whole composite to 0.</p>
+  <p class="sr-d">A fire, hazard or burn scores 0 here. (The scorer additionally hard-gates its own composite to 0 on a hazard; this page reports no composite, so that gate has no effect on anything drawn here.)</p>
   <p class="sr-m">0 or 1 · <span class="wt">half of E</span></p>
   
 </div><div class="sr grp">
