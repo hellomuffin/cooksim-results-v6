@@ -1,0 +1,640 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Composite benchmark — design review</title><style>
+body{font-family:Georgia,serif;max-width:1060px;margin:0 auto;padding:24px;background:#faf9f6;color:#1a1c1a;line-height:1.55}
+h1{font-size:30px;margin:.2em 0}h2{font-size:15px;letter-spacing:.13em;text-transform:uppercase;color:#1f5f4b;border-bottom:1px solid #d8dcd4;padding-bottom:6px;margin-top:44px}
+h3{font-size:17px;margin:22px 0 6px}
+p,li{max-width:76ch}
+table{border-collapse:collapse;font-size:13.5px;margin:10px 0;width:100%}
+th,td{border-bottom:1px solid #e0e3dc;padding:6px 10px;text-align:left;vertical-align:top}
+th{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:#5c635f;background:#f1f2ee}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.85em;background:#eef0ea;padding:.06em .3em;border-radius:2px}
+.tag{display:inline-block;font-family:ui-monospace,monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:1px 6px;border-radius:2px;font-weight:700}
+.err{background:#f7e8e0;color:#8a3b12}.qa{background:#e2e8f6;color:#2c4192}.ok{background:#e4efe9;color:#1f5f4b}.bad{background:#f6e2e2;color:#a02020}
+video{width:100%;max-width:1040px;border:1px solid #ccc;border-radius:4px;background:#000}
+details{margin:8px 0}summary{cursor:pointer;font-family:ui-monospace,monospace;font-size:13px;color:#5c635f}
+.convo{font-size:13.5px;background:#fff;border:1px solid #e0e3dc;border-radius:4px;padding:10px 14px;max-height:480px;overflow-y:auto}
+.convo .h{color:#8a3b12}.convo .v{color:#2c4192}
+.note{font-size:13.5px;color:#5c635f}
+blockquote{border-left:3px solid #1f5f4b;background:#fff;padding:10px 16px;margin:10px 0;font-size:14px}
+</style></head><body>
+<h1>The composite assistant benchmark, before it runs</h1>
+<p>This page exists for one purpose: to let you review the <b>episode setup</b> and the
+<b>human agent</b> before the model sweep resumes. Nothing here is a result; the three
+videos are inspection episodes run to prove the machinery.</p>
+<p class="note">Sweep status: PAUSED (episodes on disk are kept and the sweep resumes
+from them). Engine <code>687d31ea27</code>.</p>
+
+<h2>1 · What one episode is</h2>
+<p>An episode drops a simulated <b>cook</b> (the human agent) into a kitchen with a
+recipe and lets an <b>assistant</b> (the model under test) watch every tick and speak.
+Unlike every earlier episode, which carried ONE scenario, a benchmark episode carries a
+<b>schedule of four injections</b> — two errors and two questions — that fire strictly
+one at a time:</p>
+<blockquote>schedule S = (s₁, s₂, s₃, s₄) &nbsp;·&nbsp; each sub-case sᵢ has an anchor
+a(sᵢ) = (plate contents, plate held) read off the clean plan &nbsp;·&nbsp; sᵢ₊₁ arms only
+after sᵢ releases &nbsp;·&nbsp; sᵢ fires on the first tick the live kitchen's plate state
+equals a(sᵢ)</blockquote>
+<p>The anchor is <i>plate-keyed</i> because the plate is the only state that is invariant
+across every legal way of doing the task — a cook that recovered from error sᵢ re-enters
+the clean plate trajectory, which is exactly what makes anchor a(sᵢ₊₁) reachable again.</p>
+<p>A sub-case <b>releases</b> by the same rules as single episodes: an error releases when
+the cook is convinced (a correct-name flag — <code>valid</code>, <code>early_correct</code>
+or <code>alias_in_window</code> — followed by an accept), or by <b>max-hold</b> when the
+error has physically committed in the world; a question releases when the assistant
+answers it. If an error commits, the plate can never match a clean anchor again, and every
+later sub-case is recorded <code>not_reached</code> — a failed assistant loses
+measurements, it is never handed free ones.</p>
+
+<h2>2 · What every schedule was verified for</h2>
+<ul>
+<li><b>Engine-derived anchors</b> — each sub's anchor is computed by the same derivation
+the live harness uses (plan composition → deviation point → headless replay), never by hand.</li>
+<li><b>Monotone plate progression</b> — each anchor's plate is a prefix of the next, so
+every trigger is reachable after the previous recovery.</li>
+<li><b>No collapsed anchors</b> — a trigger whose reference state equals the empty t0
+kitchen does not test what it claims and is inadmissible anywhere in a schedule.</li>
+<li><b>Distinct error labels and distinct question kinds inside every episode</b>; at most
+one burn-capable error per episode.</li>
+</ul>
+<p><code>error labels: add_foreign x4, forget_next_step x17, leave_unattended x10, mis_prep x25, omit_subgoal x19, repeat_step x5, search x14, wrong_order x6</code></p><p><code>qa kinds: board_state x10, holding x20, past_subgoal x15, plate_contents x9, plate_count x2, remaining x5, station_state x8, visited x13, where x18</code></p>
+<blockquote>`serve_raw` is absent from every schedule because all four of its verified cases anchor BEFORE any plate work (m&gt;0 with the t0 plate key) — the live harness refuses such anchors (E1), so the label is unusable under the plate-keyed trigger on these recipes. Its behaviour is semantically covered by `omit_subgoal` of a cook-prep subgoal, which serves the component raw. `pan_state` QA is excluded for the same anchor-collapse reason; `station_state` covers the identical question family.</blockquote>
+
+<h2>3 · The human agent under review</h2>
+<p>The cook is <code>gemini-3.7-flash</code> — the model the human-agent study selected
+for this seat — playing the <b>baseline</b> persona, the exact centre of the persona
+roster. What the cook privately knows about itself:</p>
+<blockquote>You are a skilled cook. You can work out the concrete steps of any goal yourself, and you know this kitchen&#x27;s routines well.
+
+Ask WHY once when a claim contradicts what you believe you did; accept once any concrete reason is given.
+
+Work at a natural pace; overlap tasks when it is obviously safe.
+
+Take flags as they come; weigh each on its evidence.
+
+Listen while you work; respond when spoken to, at a natural pause.
+
+You are a person, not a voice recorder: acknowledge advice in your own casual words and never repeat the supervisor&#x27;s sentences or step lists back verbatim.</blockquote>
+<p>The assistant is shown only the questionnaire part (skill and trust must be inferred
+from behaviour):</p>
+<blockquote>== USER PREFERENCES (this user filled a pre-task questionnaire; these are their answers) ==
+1. &quot;How much do you care about solving the task fast?&quot;
+     safe first / soso / as soon as possible, with a lot of parallelism
+   -&gt; they chose: soso
+2. &quot;How do you want the assistant to alert potential mistakes?&quot;
+     flag only when confident / medium / spot all possible mistakes aggressively
+   -&gt; they chose: medium
+3. &quot;What interruption style do you want?&quot;
+     step by step / medium / don&#x27;t interrupt unless necessary
+   -&gt; they chose: medium
+You know nothing else about this user — their skill, and how far they will trust you, must be inferred from how they behave.</blockquote>
+<p>The cook reads the kitchen as a text state map (ids + coordinates) and acts through
+the mid-level action space; in conversation it must speak plain spatial language — ids
+and coordinates never appear in its messages to the assistant. Episode paradigm:
+<code>hardsoft</code> (the engine owns the hands, the prompt owns the voice).</p>
+
+<h2>4 · Three inspection episodes</h2>
+
+<h3>Inspection episode A — schedule machinery (pro assistant, pro cook)</h3>
+<p class="note">Cheeseburger, medium maze. Shows the sequential schedule AND the honest failure path: the missed add_foreign commits, the max-hold releases, and the last QA is recorded not-reached because the dirty plate can never match a clean anchor again. Outcome: <b>won</b> in 103 ticks.</p>
+<video controls preload="metadata" src="composite_review/smoke1.mp4"></video>
+<table><tr><th>#</th><th>sub-case</th><th>type</th><th>what</th><th>injected</th><th>result</th></tr><tr><td>0</td><td><code>cx_mis_prep_medM1</code></td><td><span class="tag err">error</span></td><td><code>mis_prep</code></td><td>t0</td><td><span class="tag ok">detected</span> latency 9</td></tr><tr><td>1</td><td><code>qa_past_prep</code></td><td><span class="tag qa">qa</span></td><td><code>past_subgoal:prep(meat)</code></td><td>t41</td><td><span class="tag bad">incorrect</span> <span class="note">“Hold on a second—did I actually get the meat into the pan and turn the stove on, or did I completely blank on ”</span></td></tr><tr><td>2</td><td><code>cx_add_foreign_medM2</code></td><td><span class="tag err">error</span></td><td><code>add_foreign</code></td><td>t46</td><td><span class="tag bad">missed</span> <span class="note">release: max_hold_plate_committed</span></td></tr><tr><td>3</td><td><code>qa_auto__past_subgoal__fetch_plate__cheeseburger__t13</code></td><td><span class="tag qa">qa</span></td><td><code>past_subgoal:fetch_plate</code></td><td>—</td><td><span class="tag bad">not reached</span> past_the_point(plate=[&#x27;bun&#x27;, &#x27;lettuce&#x27;])</td></tr></table>
+<details><summary>full conversation transcript</summary><div class="convo"><div class="v"><b>t4 assistant:</b> You don&#x27;t need lettuce for a cheeseburger. You can trash it and get the meat cooking.</div>
+<div class="h"><b>t4 cook:</b> Wait, no lettuce on this one? Are you sure? I was just about to chop it up.</div>
+<div class="v"><b>t6 assistant:</b> Yes, I&#x27;m sure. The recipe is just bun, meat, and cheese. Please trash the lettuce.</div>
+<div class="h"><b>t6 cook:</b> Ah, got it. Just bun, meat, and cheese. I&#x27;ll toss this lettuce and get the meat going then.</div>
+<div class="v"><b>t8 assistant:</b> Just a heads up, the trash is the black bin on the right side of the kitchen, next to the plates. You can leave the lettuce on the board for now and just grab the meat from the bottom right.</div>
+<div class="h"><b>t8 cook:</b> I&#x27;m already at the board, so I&#x27;m just going to go ahead and chop this lettuce real quick. Might as well finish prepping it since it&#x27;s right here in my hands, then I&#x27;ll get to the meat.</div>
+<div class="v"><b>t10 assistant:</b> Chopping the lettuce is a waste of time since it&#x27;s not in the recipe. Please leave it and get the meat from the bottom right.  <span class="tag err">flag: mis_prep → valid</span></div>
+<div class="h"><b>t10 cook:</b> Alright, fair enough. If it&#x27;s definitely not in the recipe, there&#x27;s no sense wasting time chopping it. I&#x27;ll leave it be and go grab the meat.</div>
+<div class="h"><b>t14 cook:</b> Just had a slight hiccup with the equipment there. I&#x27;m grabbing that meat from the bottom right now and getting it on the stove.</div>
+<div class="v"><b>t18 assistant:</b> You are currently at the cheese crate in the bottom left. The meat crate is in the bottom right corner.</div>
+<div class="h"><b>t18 cook:</b> Yeah, I was just passing by the cheese. I&#x27;m heading over to the meat crate in the bottom right corner right now.</div>
+<div class="v"><b>t36 assistant:</b> While the meat is cooking, you can grab a plate from the top right and put a bun on it.</div>
+<div class="h"><b>t36 cook:</b> Sounds good, I&#x27;ll get the bun ready on a plate while that sizzles.</div>
+<div class="h"><b>t41 cook:</b> Hold on a second—did I actually get the meat into the pan and turn the stove on, or did I completely blank on that?</div>
+<div class="v"><b>t42 assistant:</b> Yes, you did! The meat is cooking in the top pan right now. You can go ahead and grab a bun for that plate.</div>
+<div class="h"><b>t42 cook:</b> Awesome, thanks for checking. I&#x27;ll get the bun on this plate then.</div>
+<div class="v"><b>t46 assistant:</b> Great, you have the bun on the plate. The meat is almost done cooking in the top pan, so you can scoop it onto the plate next.</div>
+<div class="h"><b>t46 cook:</b> I&#x27;ve got the bun, but I&#x27;m actually going to swing by and grab some of that lettuce before I get the meat. I know we said no lettuce earlier, but I just feel like it needs a little crunch.</div>
+<div class="v"><b>t48 assistant:</b> Alright, you can add the lettuce. Just remember the meat is done cooking in the top pan, so grab that right after so it doesn&#x27;t burn.</div>
+<div class="h"><b>t48 cook:</b> Will do! I&#x27;m grabbing this lettuce right now, and then I&#x27;ll head straight over to the meat so it doesn&#x27;t overcook.</div>
+<div class="v"><b>t52 assistant:</b> The meat is now smoking in the top pan, but you have some time before it burns. Remember you&#x27;ll need to set your plate down on an empty counter to free your hands to chop the lettuce.</div>
+<div class="h"><b>t52 cook:</b> Nah, I&#x27;m just scooping it straight onto the plate, no chopping needed. I&#x27;ll head to the meat right after so it doesn&#x27;t burn.</div>
+<div class="v"><b>t54 assistant:</b> You cannot scoop lettuce directly onto the plate. It must be chopped on a cutting board first. Please put your plate down on an empty counter, grab the lettuce, and chop it.  <span class="tag err">flag: serve_raw → wrong_name</span></div>
+<div class="h"><b>t54 cook:</b> Oh, you&#x27;re right, it does need to be chopped first. I&#x27;ll set this plate down on the counter and get it chopped up.</div>
+<div class="v"><b>t56 assistant:</b> Since you are still holding the plate, you might want to head to the top pan and scoop the meat right now to save it from burning. You can put the plate down and chop the lettuce after.</div>
+<div class="h"><b>t56 cook:</b> I&#x27;m already right here at the lettuce, so I&#x27;m just going to scoop it onto the plate real quick. I&#x27;ll grab the meat right after so it doesn&#x27;t burn, don&#x27;t worry.</div>
+<div class="v"><b>t58 assistant:</b> You just scooped unchopped lettuce onto the plate. The game requires lettuce to be chopped on a cutting board first, so this plate is ruined. You will need to trash the contents of this plate at the trash can (bottom right), then get a new bun, chop the lettuce, and scoop the meat before it burns!  <span class="tag err">flag: omit_subgoal → false_alarm</span></div>
+<div class="h"><b>t58 cook:</b> Ah, my mistake, I didn&#x27;t realize it wouldn&#x27;t let me do that. I&#x27;ll dump this ruined plate, grab a fresh bun, and just scoop the meat right away so we don&#x27;t lose it!</div>
+<div class="v"><b>t60 assistant:</b> Sounds like a plan. Head to the trash can in the middle right area to dump it, then grab a fresh plate and bun. Hurry, the meat is smoking!</div>
+<div class="h"><b>t60 cook:</b> On my way to the bin now. I&#x27;ll just reuse this plate once it&#x27;s empty and grab the bun and meat right away!</div>
+<div class="v"><b>t62 assistant:</b> You are heading the wrong way. The trash can is on the right side of the kitchen, next to the bun crate. Head over there to dump the ruined plate.</div>
+<div class="h"><b>t62 cook:</b> Wait, why do you say I&#x27;m going the wrong way? I&#x27;m already heading straight for the bin to dump this.</div>
+<div class="v"><b>t64 assistant:</b> My apologies, you are correct! I confused the locations. You are heading exactly the right way to the trash can in the top right. Dump the plate, then grab a fresh one and hurry to save that meat before it burns!</div>
+<div class="h"><b>t64 cook:</b> No worries, happens to the best of us! I&#x27;ll dump this and get right back to assembling with the bun and meat before it burns.</div>
+<div class="v"><b>t66 assistant:</b> You walked right past the trash can! You are still holding the ruined plate with the unchopped lettuce. Go back up to the trash can in the top right corner and dump it before you try to grab a bun.  <span class="tag err">flag: omit_subgoal → None</span></div>
+<div class="h"><b>t66 cook:</b> Wait, why do you say I walked past it? I&#x27;m literally walking over to the trash bin right now to dump this.</div>
+<div class="v"><b>t68 assistant:</b> You are completely right, my mistake again! You are right at the trash can now. Go ahead and dump the plate, then please hurry to grab a fresh plate and scoop that smoking meat before it catches fire!</div>
+<div class="h"><b>t68 cook:</b> All good! I&#x27;m dumping it now. I&#x27;ll just reuse this plate, grab the bun real quick, and then rescue that meat before it&#x27;s toast.</div>
+<div class="v"><b>t76 assistant:</b> You got the bun, but remember the recipe order requires lettuce BEFORE the meat! If you scoop the meat onto this plate now, it will be ruined again. To save the meat, put your current plate down on an empty counter, grab a fresh plate, and scoop the meat onto that to get it off the heat.</div>
+<div class="h"><b>t76 cook:</b> Wait, why are you saying I need lettuce now? Earlier you specifically told me it wasn&#x27;t in the recipe and to trash it. The order is just bun, meat, and cheese, right?</div>
+<div class="v"><b>t78 assistant:</b> You are completely right, my mistake! The recipe is just bun, meat, and cheese. Go ahead and scoop that smoking meat onto your plate right now before it catches fire!</div>
+<div class="h"><b>t78 cook:</b> Glad we got that sorted! I&#x27;m scooping up that meat right now before it turns into a hockey puck.</div></div></details>
+
+<h3>Inspection episode B — flash assistant seat (pro cook)</h3>
+<p class="note">Caprese, medium maze. The 3.7-flash assistant catches mis_prep early (prevention window), prevents omit_subgoal outright, and answers both questions correctly. Outcome: <b>won</b> in 60 ticks.</p>
+<video controls preload="metadata" src="composite_review/smoke2_flashassist.mp4"></video>
+<table><tr><th>#</th><th>sub-case</th><th>type</th><th>what</th><th>injected</th><th>result</th></tr><tr><td>0</td><td><code>cx_mis_prep_easyM1</code></td><td><span class="tag err">error</span></td><td><code>mis_prep</code></td><td>t0</td><td><span class="tag ok">detected</span> latency 5 <span class="note">release: convinced_early_missed</span></td></tr><tr><td>1</td><td><code>cx_omit_subgoal_easyM1</code></td><td><span class="tag err">error</span></td><td><code>omit_subgoal</code></td><td>t39</td><td><span class="tag ok">detected</span> latency None <span class="tag ok">prevented</span></td></tr><tr><td>2</td><td><code>qa_probe__caprese__holding__t7</code></td><td><span class="tag qa">qa</span></td><td><code>holding</code></td><td>t42</td><td><span class="tag ok">correct</span> <span class="note">“Hey, quick question for you — what exactly am I holding in my hands right now?”</span></td></tr><tr><td>3</td><td><code>qa_probe__caprese__plate_contents__t9</code></td><td><span class="tag qa">qa</span></td><td><code>plate_contents</code></td><td>t47</td><td><span class="tag ok">correct</span> <span class="note">“Hey, just to double-check, what have I got on my plate so far, in order?”</span></td></tr></table>
+<details><summary>full conversation transcript</summary><div class="convo"><div class="v"><b>t6 assistant:</b> Cheese doesn&#x27;t need to be chopped for Caprese, it goes on the plate raw.  <span class="tag err">flag: mis_prep → early_correct</span></div>
+<div class="h"><b>t6 cook:</b> Wait, why? I&#x27;m heading to the board to chop it right now. Doesn&#x27;t it need to be sliced up for the salad?</div>
+<div class="v"><b>t8 assistant:</b> No, the recipe specifically calls for cheese raw and only tomato chopped. Pick up the cheese and prep the tomato instead.</div>
+<div class="h"><b>t8 cook:</b> Ah, got it, raw cheese it is. I&#x27;ll grab it back off the board and start on the tomatoes instead.</div>
+<div class="v"><b>t24 assistant:</b> Put the tomato on the cutting board to your right to chop it.</div>
+<div class="h"><b>t24 cook:</b> Will do, heading over to that board now to get it diced up.</div>
+<div class="h"><b>t39 cook:</b> Tomatoes are all diced up. I&#x27;m grabbing a plate now and heading straight to the pass to get this served.</div>
+<div class="v"><b>t40 assistant:</b> Don&#x27;t serve yet! You need to scoop the chopped tomato and the raw cheese onto the plate first.  <span class="tag err">flag: omit_subgoal → early_correct</span></div>
+<div class="h"><b>t40 cook:</b> Oh man, you&#x27;re completely right, I almost walked up to the pass with an empty plate! Let me get those diced tomatoes and the raw cheese scooped up first.</div>
+<div class="h"><b>t42 cook:</b> Hey, quick question for you — what exactly am I holding in my hands right now?</div>
+<div class="v"><b>t42 assistant:</b> You are holding an empty plate. Scoop the chopped tomato from the cutting board and the raw cheese from the crate.</div>
+<div class="h"><b>t42 cook:</b> Yep, spot on, just an empty plate. Alright, I&#x27;m on my way to get the tomatoes scooped up, then I&#x27;ll grab the cheese.</div>
+<div class="h"><b>t47 cook:</b> Hey, just to double-check, what have I got on my plate so far, in order?</div>
+<div class="v"><b>t48 assistant:</b> You currently have chopped tomato on your plate. Next, scoop raw cheese from the crate.</div>
+<div class="h"><b>t48 cook:</b> Just to be absolutely sure before I move on, what exactly is on this plate right now, in order?</div>
+<div class="v"><b>t50 assistant:</b> You only have chopped tomato on your plate right now. Scoop raw cheese from the crate next.</div>
+<div class="h"><b>t50 cook:</b> Got it, just the tomatoes so far. I&#x27;m right at the crate now, so I&#x27;ll get this cheese scooped on and then we&#x27;re ready to serve.</div>
+<div class="v"><b>t52 assistant:</b> The plate is ready. Go ahead and serve it at the serving pass.</div>
+<div class="h"><b>t52 cook:</b> Sounds good, taking it to the pass right now.</div></div></details>
+
+<h3>Inspection episode C — flash cook + flash assistant, hard maze</h3>
+<p class="note">Cheeseburger, 9x9 braided maze. The benchmark configuration exactly: gemini-3.7-flash in BOTH seats. All four anchors reached; delivered. Outcome: <b>won</b> in 296 ticks.</p>
+<video controls preload="metadata" src="composite_review/smoke3_flashcook.mp4"></video>
+<table><tr><th>#</th><th>sub-case</th><th>type</th><th>what</th><th>injected</th><th>result</th></tr><tr><td>0</td><td><code>cx_mis_prep_medH1</code></td><td><span class="tag err">error</span></td><td><code>mis_prep</code></td><td>t0</td><td><span class="tag ok">detected</span> latency 11</td></tr><tr><td>1</td><td><code>qa_hard__station_state__station_state__cheeseburger_hard__t7</code></td><td><span class="tag qa">qa</span></td><td><code>station_state</code></td><td>t120</td><td><span class="tag ok">correct</span> <span class="note">“Quick question, is anything cooking on the stove right now, and is it ready yet?”</span></td></tr><tr><td>2</td><td><code>qa_hard__board_state__board_state__cheeseburger_hard__t7</code></td><td><span class="tag qa">qa</span></td><td><code>board_state</code></td><td>t122</td><td><span class="tag qa">ungradable</span> <span class="note">“Quick check, are all the cutting boards clear right now, or is there something sitting on one of them?”</span></td></tr><tr><td>3</td><td><code>cx_repeat_step_medH1</code></td><td><span class="tag err">error</span></td><td><code>repeat_step</code></td><td>t144</td><td><span class="tag ok">detected</span> latency 5</td></tr></table>
+<details><summary>full conversation transcript</summary><div class="convo"><div class="v"><b>t12 assistant:</b> The cheese doesn&#x27;t need to be chopped. Put meat in the pan to cook it.  <span class="tag err">flag: mis_prep → valid</span></div>
+<div class="h"><b>t12 cook:</b> Why shouldn&#x27;t I chop the cheese before getting the burger ready?</div>
+<div class="v"><b>t14 assistant:</b> The cheeseburger recipe calls for whole raw cheese, not chopped cheese.</div>
+<div class="h"><b>t14 cook:</b> Ah, got it, whole cheese it is. I&#x27;ll get the meat cooking right away.</div>
+<div class="v"><b>t16 assistant:</b> Stop chopping the cheese. The cheese must stay whole and unchopped. Go grab meat and put it in a pan.  <span class="tag err">flag: mis_prep → false_alarm</span></div>
+<div class="h"><b>t16 cook:</b> On it, heading over to start the meat now.</div>
+<div class="v"><b>t20 assistant:</b> You chopped the cheese, but cheeseburger requires whole cheese. Throw the chopped cheese in the trash, then put raw meat into a pan to cook.  <span class="tag err">flag: mis_prep → None</span></div>
+<div class="h"><b>t20 cook:</b> Got it, I&#x27;ll toss the chopped cheese and get the meat frying.</div>
+<div class="v"><b>t26 assistant:</b> The trash can is in the bottom-right corner.</div>
+<div class="h"><b>t26 cook:</b> Thanks, heading right over to it now.</div>
+<div class="v"><b>t42 assistant:</b> Dump the chopped cheese into the trash can first to empty your hands, then grab raw meat.</div>
+<div class="h"><b>t42 cook:</b> Right, tossing this cheese in the bin first, then getting the meat started.</div>
+<div class="v"><b>t44 assistant:</b> You are still holding the chopped cheese. Go to the trash can in the bottom-right corner and trash it to empty your hands.</div>
+<div class="h"><b>t44 cook:</b> My bad, throwing it in the bin right now.</div>
+<div class="v"><b>t46 assistant:</b> You brought chopped cheese to the pan. Go to the trash can in the bottom-right corner to throw away the cheese, then grab raw meat from the top counter.  <span class="tag err">flag: mis_prep → None</span></div>
+<div class="h"><b>t46 cook:</b> Yep, heading over to the trash to get rid of this cheese first.</div>
+<div class="v"><b>t48 assistant:</b> The trash can is in the bottom-right corner. Go trash the chopped cheese there so your hands are free for the meat.</div>
+<div class="h"><b>t48 cook:</b> Got it, heading straight over to the bin to toss this out now.</div>
+<div class="v"><b>t50 assistant:</b> You are at the top wall. Walk down to the bottom-right corner of the kitchen to dump the chopped cheese into the black trash can.</div>
+<div class="h"><b>t50 cook:</b> Understood, walking down to the bin right now to dump this cheese.</div>
+<div class="v"><b>t54 assistant:</b> Your hands are full with the chopped cheese, so you cannot pick up meat. Walk to the black trash can in the bottom-right corner to trash it first.</div>
+<div class="h"><b>t54 cook:</b> Right, throwing this chopped cheese straight in the trash now.</div>
+<div class="v"><b>t76 assistant:</b> Walk up to the top counter to pick up raw meat, then put it into the pan.</div>
+<div class="h"><b>t76 cook:</b> Already heading up to the top counter to grab the meat and get it frying.</div>
+<div class="h"><b>t120 cook:</b> Quick question, is anything cooking on the stove right now, and is it ready yet?</div>
+<div class="v"><b>t120 assistant:</b> The meat is cooking in the pan and is done now. Assemble the bun first, then scoop the meat.</div>
+<div class="h"><b>t120 cook:</b> Sounds good, I&#x27;ll grab the bun first and then get the meat.</div>
+<div class="h"><b>t122 cook:</b> Quick check, are all the cutting boards clear right now, or is there something sitting on one of them?</div>
+<div class="v"><b>t122 assistant:</b> All cutting boards are clear right now.</div>
+<div class="h"><b>t122 cook:</b> Awesome, thanks for confirming! Carrying on with assembling the burger then.</div>
+<div class="v"><b>t148 assistant:</b> Next is raw cheese from the crate on the right wall, not buns.</div>
+<div class="h"><b>t148 cook:</b> Why head over for cheese right now instead of grabbing another bun first?</div>
+<div class="v"><b>t150 assistant:</b> The cheeseburger only takes bun, meat, and cheese in that exact order—not a top bun. You just added a second bun. Empty the plate at the trash can to start over.  <span class="tag err">flag: repeat_step → valid</span></div>
+<div class="h"><b>t150 cook:</b> Ah, got it, no top bun for this order. My mistake, I see what you mean now.</div>
+<div class="v"><b>t154 assistant:</b> The black trash can is right behind you in the bottom-right corner. Go trash the ruined burger so you can start over.</div>
+<div class="h"><b>t154 cook:</b> Got it, heading over to dump this in the bin now.</div>
+<div class="v"><b>t156 assistant:</b> The trash can is in the bottom-right corner behind you, not to the left. Walk back to the right to dump the plate into the black bin.</div>
+<div class="h"><b>t156 cook:</b> Turning back towards the trash can in the bottom-right corner to empty the plate now.</div>
+<div class="v"><b>t158 assistant:</b> You are walking up the left wall. Turn around and go all the way to the bottom-right corner where the black bin is.</div>
+<div class="h"><b>t158 cook:</b> Got it, heading straight to the trash can in the bottom right corner now.</div>
+<div class="v"><b>t160 assistant:</b> You are at the top-left corner now. Walk all the way down and to the bottom-right corner to reach the trash can.</div>
+<div class="h"><b>t160 cook:</b> Making my way down to the bin in the corner now.</div>
+<div class="v"><b>t166 assistant:</b> Do not add cheese. Walk down along the right counter to the black trash can in the bottom-right corner to dump that plate.</div>
+<div class="h"><b>t166 cook:</b> Understood, going right to the bin to throw it out.</div>
+<div class="v"><b>t172 assistant:</b> Walk all the way down to the bottom, turn right, and empty the plate at the black trash can in the bottom-right corner.</div>
+<div class="h"><b>t172 cook:</b> Yep, already on my way down to empty it out now.</div>
+<div class="h"><b>t184 cook:</b> Plate is cleared, starting over fresh with the meat and bun.</div>
+<div class="v"><b>t184 assistant:</b> Grab a bun from the crate right in front of you first, then scoop the cooked meat from the pan, then raw cheese.</div>
+<div class="h"><b>t184 cook:</b> Right, starting off with the bun.</div>
+<div class="v"><b>t194 assistant:</b> Pick the plate back up to scoop the cooked meat directly from the pan.</div>
+<div class="h"><b>t194 cook:</b> Why pick up the plate when the pans are all empty and I haven&#x27;t cooked any meat yet?</div>
+<div class="v"><b>t196 assistant:</b> The pans on the island counter right behind you already have cooked meat in them. Pick up the plate and scoop the meat from one of them.</div>
+<div class="h"><b>t196 cook:</b> Got it, grabbing the plate to scoop the meat from the stove now.</div>
+<div class="v"><b>t216 assistant:</b> Set the plate down on an empty counter, grab raw meat from the crate on the top wall, and put it in the pan to cook.</div>
+<div class="h"><b>t216 cook:</b> Got it, parking the plate and getting some meat frying now.</div>
+<div class="v"><b>t276 assistant:</b> The cheese crate is on the right wall. Go to the right counter to scoop raw cheese onto the burger.  <span class="tag err">flag: search → wrong_name</span></div>
+<div class="h"><b>t276 cook:</b> Already heading over to grab the cheese right now.</div>
+<div class="v"><b>t278 assistant:</b> The cheese crate is on the right wall, not to the left. Turn around and walk over to the right counter.  <span class="tag err">flag: search → None</span></div>
+<div class="h"><b>t278 cook:</b> Yep, already on my way over to the right wall for it.</div></div></details>
+
+
+<h2>5 · The full 50-episode ledger</h2>
+<p>Ten cells (5 recipes × medium/hard maze) × five episodes. Every entry lists the
+schedule in firing order with its anchor (m = clean-plan command index; plate = anchor
+plate state) and the semantic rationale for the pairing.</p>
+<details><summary>bm_easy_nops_medium_map_1  (EEQQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>easyM1)
+<br>- m=  7 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>easyM1)
+<br>- m=  7 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_caprese</i><i>holding</i><i>t7)
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | qa</i>probe: <b>plate<i>contents — “What have I got on my plate so far, in order?”</b> (qa</i>probe<i>_caprese</i><i>plate</i>contents<i>_t9)
+
+</i>qa<i>probe</i><i>caprese</i><i>holding</i><i>t7 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>probe<i>_caprese</i><i>plate</i>contents<i>_t9 (plate</i>contents): a plate question is plausible after a omit<i>subgoal — the plate is what it hit</i>
+
+</div></details><details><summary>bm_easy_nops_medium_map_2  (EEQQ)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | error: <b>search</b> (cx<i>search</i>easyM1)
+<br>- m=  7 plate=[] held=True | error: <b>forget<i>next</i>step</b> (cx<i>forget</i>next<i>step</i>easyM1)
+<br>- m=  7 plate=[] held=True | qa<i>probe: <b>where:lettuce — “Quick one — where do we keep the lettuce in this kitchen?”</b> (qa</i>auto<i>_where</i><i>lettuce</i><i>caprese</i><i>t7)
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | qa</i>probe: <b>past<i>subgoal:assemble(cheese) — “Did I already finish putting the cheese on the plate, or did I forget?”</b> (qa</i>auto<i>_past</i>subgoal<i>_assemble</i>cheese<i>_caprese</i><i>t9)
+
+</i>qa<i>auto</i><i>where</i><i>lettuce</i><i>caprese</i><i>t7 (where:lettuce): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_past</i>subgoal<i>_assemble</i>cheese<i>_caprese</i><i>t9 (past</i>subgoal:assemble(cheese)): an episodic what-did-I-do question is plausible right after a forget<i>next</i>step recovery — the cook&#x27;s own history just became uncertain_
+
+</div></details><details><summary>bm_easy_nops_medium_map_3  (EEQQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>easyM1)
+<br>- m=  7 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>easyM2)
+<br>- m=  7 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_caprese</i><i>holding</i><i>t7)
+<br>- m= 11 plate=[&#x27;tomato&#x27;, &#x27;cheese&#x27;] held=True | qa</i>probe: <b>visited:cheese — “Did I stop by the cheese source at any point so far?”</b> (qa<i>auto</i><i>visited</i><i>cheese</i><i>caprese</i><i>t11)
+
+</i>qa<i>probe</i><i>caprese</i><i>holding</i><i>t7 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_visited</i><i>cheese</i><i>caprese</i><i>t11 (visited:cheese): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+
+</div></details><details><summary>bm_easy_nops_medium_map_4  (QEEQ)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | qa<i>probe: <b>where:pan — “Quick one — where do we keep the pan in this kitchen?”</b> (qa</i>auto<i>_where</i><i>pan</i><i>caprese</i><i>t7)
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | error: <b>search</b> (cx</i>search<i>easyM2)
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>easyM2)
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | qa</i>probe: <b>plate<i>contents — “What have I got on my plate so far, in order?”</b> (qa</i>probe<i>_caprese</i><i>plate</i>contents<i>_t9)
+
+</i>qa<i>auto</i><i>where</i><i>pan</i><i>caprese</i><i>t7 (where:pan): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>probe<i>_caprese</i><i>plate</i>contents<i>_t9 (plate</i>contents): an unrelated spot-check — plausible anywhere the truth is well-defined_
+
+</div></details><details><summary>bm_easy_nops_medium_map_5  (EEQQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>easyM1)
+<br>- m=  7 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>easyM1)
+<br>- m=  7 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_caprese</i><i>holding</i><i>t7)
+<br>- m= 11 plate=[&#x27;tomato&#x27;, &#x27;cheese&#x27;] held=True | qa</i>probe: <b>past<i>subgoal:fetch</i>plate — “Did I already finish grabbing the plate, or did I forget?”</b> (qa<i>auto</i><i>past</i>subgoal<i>_fetch</i>plate<i>_caprese</i><i>t11)
+
+</i>qa<i>probe</i><i>caprese</i><i>holding</i><i>t7 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_past</i>subgoal<i>_fetch</i>plate<i>_caprese</i><i>t11 (past</i>subgoal:fetch<i>plate): an episodic what-did-I-do question is plausible right after a omit</i>subgoal recovery — the cook&#x27;s own history just became uncertain_
+
+</div></details><details><summary>bm_easy_nops_hard_map_1  (EEQQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>easyH1)
+<br>- m=  7 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>easyH1)
+<br>- m=  7 plate=[] held=True | qa<i>probe: <b>plate</i>count — “How many plates are out in the kitchen at the moment?”</b> (qa<i>hard</i><i>plate</i>count<i>_plate</i>count<i>_caprese</i>hard<i>_t7)
+<br>- m=  7 plate=[] held=True | qa</i>probe: <b>board<i>state — “Are the cutting boards all clear, or is something still sitting on one?”</b> (qa</i>hard<i>_board</i>state<i>_board</i>state<i>_caprese</i>hard<i>_t7)
+
+</i>qa<i>hard</i><i>plate</i>count<i>_plate</i>count<i>_caprese</i>hard<i>_t7 (plate</i>count): an unrelated spot-check — plausible anywhere the truth is well-defined; qa<i>hard</i><i>board</i>state<i>_board</i>state<i>_caprese</i>hard<i>_t7 (board</i>state): an unrelated spot-check — plausible anywhere the truth is well-defined_
+
+</div></details><details><summary>bm_easy_nops_hard_map_2  (EEQQ)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | error: <b>search</b> (cx<i>search</i>easyH1)
+<br>- m=  7 plate=[] held=True | error: <b>forget<i>next</i>step</b> (cx<i>forget</i>next<i>step</i>easyH1)
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | qa<i>probe: <b>plate</i>contents — “What has made it onto the plate so far?”</b> (qa<i>hard</i><i>plate</i>contents<i>_plate</i>contents<i>_caprese</i>hard<i>_t9)
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | qa</i>probe: <b>remaining — “What&#x27;s still missing from the plate for this order?”</b> (qa<i>hard</i><i>remaining</i><i>remaining</i><i>caprese</i>hard<i>_t9)
+
+</i>qa<i>hard</i><i>plate</i>contents<i>_plate</i>contents<i>_caprese</i>hard<i>_t9 (plate</i>contents): an unrelated spot-check — plausible anywhere the truth is well-defined; qa<i>hard</i><i>remaining</i><i>remaining</i><i>caprese</i>hard<i>_t9 (remaining): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+
+</div></details><details><summary>bm_easy_nops_hard_map_3  (EQEQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>easyH1)
+<br>- m=  0 plate=[] held=False | qa<i>probe: <b>where:plates — “Quick one — where do we keep the plates in this kitchen?”</b> (qa</i>hard<i>_where</i><i>plates</i><i>caprese</i>hard<i>_t0)
+<br>- m=  7 plate=[] held=True | error: <b>omit</i>subgoal</b> (cx<i>omit</i>subgoal<i>easyH3)
+<br>- m=  7 plate=[] held=True | qa</i>probe: <b>past<i>subgoal:assemble(cheese) — “Did I already finish putting the cheese on the plate, or did I forget?”</b> (qa</i>hard<i>_past</i>subgoal<i>_assemble</i>cheese<i>_caprese</i>hard<i>_t7)
+
+</i>qa<i>hard</i><i>where</i><i>plates</i><i>caprese</i>hard<i>_t0 (where:plates): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>hard<i>_past</i>subgoal<i>_assemble</i>cheese<i>_caprese</i>hard<i>_t7 (past</i>subgoal:assemble(cheese)): an episodic what-did-I-do question is plausible right after a omit<i>subgoal recovery — the cook&#x27;s own history just became uncertain</i>
+
+</div></details><details><summary>bm_easy_nops_hard_map_4  (EQEQ)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | error: <b>search</b> (cx<i>search</i>easyH2)
+<br>- m=  7 plate=[] held=True | qa<i>probe: <b>holding — “Remind me — what have I got in my hands right now?”</b> (qa</i>hard<i>_holding</i><i>holding</i><i>caprese</i>hard<i>_t7)
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>easyH2)
+<br>- m= 11 plate=[&#x27;tomato&#x27;, &#x27;cheese&#x27;] held=True | qa</i>probe: <b>visited:cheese — “Did I stop by the cheese source at any point so far?”</b> (qa<i>hard</i><i>visited</i><i>cheese</i><i>caprese</i>hard<i>_t11)
+
+</i>qa<i>hard</i><i>holding</i><i>holding</i><i>caprese</i>hard<i>_t7 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>hard<i>_visited</i><i>cheese</i><i>caprese</i>hard<i>_t11 (visited:cheese): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+
+</div></details><details><summary>bm_easy_nops_hard_map_5  (EEQQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>easyH1)
+<br>- m=  7 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>easyH1)
+<br>- m=  7 plate=[] held=True | qa<i>probe: <b>plate</i>count — “How many plates are out in the kitchen at the moment?”</b> (qa<i>hard</i><i>plate</i>count<i>_plate</i>count<i>_caprese</i>hard<i>_t7)
+<br>- m=  7 plate=[] held=True | qa</i>probe: <b>board<i>state — “Are the cutting boards all clear, or is something still sitting on one?”</b> (qa</i>hard<i>_board</i>state<i>_board</i>state<i>_caprese</i>hard<i>_t7)
+
+</i>qa<i>hard</i><i>plate</i>count<i>_plate</i>count<i>_caprese</i>hard<i>_t7 (plate</i>count): an unrelated spot-check — plausible anywhere the truth is well-defined; qa<i>hard</i><i>board</i>state<i>_board</i>state<i>_caprese</i>hard<i>_t7 (board</i>state): an unrelated spot-check — plausible anywhere the truth is well-defined_
+
+</div></details><details><summary>bm_medium_nops_medium_map_1  (EQEQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>medM1)
+<br>- m=  7 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_cheeseburger</i><i>holding</i><i>t7)
+<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | error: <b>leave</i>unattended</b> (cx<i>leave</i>unattended<i>medM1)
+<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | qa</i>probe: <b>plate<i>contents — “What have I got on my plate so far, in order?”</b> (qa</i>plate<i>contents)
+
+</i>qa<i>probe</i><i>cheeseburger</i><i>holding</i><i>t7 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>plate<i>contents (plate</i>contents): an unrelated spot-check — plausible anywhere the truth is well-defined_
+
+</div></details><details><summary>bm_medium_nops_medium_map_2  (QQEE)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | qa<i>probe: <b>where:bun — “Quick one — where do we keep the bun in this kitchen?”</b> (qa</i>auto<i>_where</i><i>bun</i><i>cheeseburger</i><i>t7)
+<br>- m=  7 plate=[] held=True | qa</i>probe: <b>past<i>subgoal:prep(meat) — “Wait — did I already get the meat in the pan and switch it on, or did I forget?”</b> (qa</i>past<i>prep)
+<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | error: <b>repeat</i>step</b> (cx<i>repeat</i>step<i>medM1)
+<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>medM1)
+
+</i>qa<i>auto</i><i>where</i><i>bun</i><i>cheeseburger</i><i>t7 (where:bun): the question interrogates the very state the repeat</i>step touched (assemble(bun)) — the natural thing to ask after that confusion; qa<i>past</i>prep (past<i>subgoal:prep(meat)): an episodic what-did-I-do question is plausible right after a repeat</i>step recovery — the cook&#x27;s own history just became uncertain_
+
+</div></details><details><summary>bm_medium_nops_medium_map_3  (EEQQ)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | error: <b>wrong<i>order</b> (cx</i>wrong<i>order</i>medM1)
+<br>- m=  7 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>medM1)
+<br>- m=  7 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_cheeseburger</i><i>holding</i><i>t7)
+<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | qa</i>probe: <b>visited:trash — “Did I stop by the trash bin at any point so far?”</b> (qa<i>past</i>visited<i>trash)
+
+</i>qa<i>probe</i><i>cheeseburger</i><i>holding</i><i>t7 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>past<i>visited</i>trash (visited:trash): an unrelated spot-check — plausible anywhere the truth is well-defined_
+
+</div></details><details><summary>bm_medium_nops_medium_map_4  (EEQQ)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | error: <b>add<i>foreign</b> (cx</i>add<i>foreign</i>medM1)
+<br>- m=  7 plate=[] held=True | error: <b>search</b> (cx<i>search</i>medM1)
+<br>- m=  7 plate=[] held=True | qa<i>probe: <b>where:cheese — “Quick one — where do we keep the cheese in this kitchen?”</b> (qa</i>auto<i>_where</i><i>cheese</i><i>cheeseburger</i><i>t7)
+<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | qa</i>probe: <b>plate<i>contents — “What have I got on my plate so far, in order?”</b> (qa</i>probe<i>_cheeseburger</i><i>plate</i>contents<i>_t11)
+
+</i>qa<i>auto</i><i>where</i><i>cheese</i><i>cheeseburger</i><i>t7 (where:cheese): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>probe<i>_cheeseburger</i><i>plate</i>contents<i>_t11 (plate</i>contents): an unrelated spot-check — plausible anywhere the truth is well-defined_
+
+</div></details><details><summary>bm_medium_nops_medium_map_5  (EQEQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>medM1)
+<br>- m=  7 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_cheeseburger</i><i>holding</i><i>t7)
+<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | error: <b>leave</i>unattended</b> (cx<i>leave</i>unattended<i>medM1)
+<br>- m= 13 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;, &#x27;cheese&#x27;] held=True | qa</i>probe: <b>past<i>subgoal:prep(meat) — “Did I already finish prepping the meat, or did I forget?”</b> (qa</i>auto<i>_past</i>subgoal<i>_prep</i>meat<i>_cheeseburger</i><i>t13)
+
+</i>qa<i>probe</i><i>cheeseburger</i><i>holding</i><i>t7 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_past</i>subgoal<i>_prep</i>meat<i>_cheeseburger</i><i>t13 (past</i>subgoal:prep(meat)): the question interrogates the very state the leave<i>unattended touched (meat) — the natural thing to ask after that confusion</i>
+
+</div></details><details><summary>bm_medium_nops_hard_map_1  (EQQE)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>medH1)
+<br>- m=  7 plate=[] held=True | qa<i>probe: <b>station</i>state — “Is anything cooking on the heat right now — and is it done yet?”</b> (qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_cheeseburger</i>hard<i>_t7)
+<br>- m=  7 plate=[] held=True | qa</i>probe: <b>board<i>state — “Are the cutting boards all clear, or is something still sitting on one?”</b> (qa</i>hard<i>_board</i>state<i>_board</i>state<i>_cheeseburger</i>hard<i>_t7)
+<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | error: <b>repeat</i>step</b> (cx<i>repeat</i>step<i>medH1)
+
+</i>qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_cheeseburger</i>hard<i>_t7 (station</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt; qa</i>hard<i>_board</i>state<i>_board</i>state<i>_cheeseburger</i>hard<i>_t7 (board</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt</i>
+
+</div></details><details><summary>bm_medium_nops_hard_map_2  (EQEQ)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | error: <b>wrong<i>order</b> (cx</i>wrong<i>order</i>medH1)
+<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | qa<i>probe: <b>plate</i>contents — “What has made it onto the plate so far?”</b> (qa<i>hard</i><i>plate</i>contents<i>_plate</i>contents<i>_cheeseburger</i>hard<i>_t9)
+<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>medH1)
+<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | qa</i>probe: <b>remaining — “What&#x27;s still missing from the plate for this order?”</b> (qa<i>hard</i><i>remaining</i><i>remaining</i><i>cheeseburger</i>hard<i>_t11)
+
+</i>qa<i>hard</i><i>plate</i>contents<i>_plate</i>contents<i>_cheeseburger</i>hard<i>_t9 (plate</i>contents): a plate question is plausible after a wrong<i>order — the plate is what it hit; qa</i>hard<i>_remaining</i><i>remaining</i><i>cheeseburger</i>hard<i>_t11 (remaining): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+
+</div></details><details><summary>bm_medium_nops_hard_map_3  (QEEQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | qa<i>probe: <b>where:bun — “Quick one — where do we keep the bun in this kitchen?”</b> (qa</i>hard<i>_where</i><i>bun</i><i>cheeseburger</i>hard<i>_t0)
+<br>- m=  7 plate=[] held=True | error: <b>omit</i>subgoal</b> (cx<i>omit</i>subgoal<i>medH1)
+<br>- m=  7 plate=[] held=True | error: <b>search</b> (cx</i>search<i>medH1)
+<br>- m=  7 plate=[] held=True | qa</i>probe: <b>past<i>subgoal:assemble(bun) — “Did I already finish putting the bun on the plate, or did I forget?”</b> (qa</i>hard<i>_past</i>subgoal<i>_assemble</i>bun<i>_cheeseburger</i>hard<i>_t7)
+
+</i>qa<i>hard</i><i>where</i><i>bun</i><i>cheeseburger</i>hard<i>_t0 (where:bun): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>hard<i>_past</i>subgoal<i>_assemble</i>bun<i>_cheeseburger</i>hard<i>_t7 (past</i>subgoal:assemble(bun)): an unrelated spot-check — plausible anywhere the truth is well-defined_
+
+</div></details><details><summary>bm_medium_nops_hard_map_4  (EQEQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>medH1)
+<br>- m=  7 plate=[] held=True | qa<i>probe: <b>holding — “Remind me — what have I got in my hands right now?”</b> (qa</i>hard<i>_holding</i><i>holding</i><i>cheeseburger</i>hard<i>_t7)
+<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | error: <b>leave</i>unattended</b> (cx<i>leave</i>unattended<i>medH1)
+<br>- m= 13 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;, &#x27;cheese&#x27;] held=True | qa</i>probe: <b>visited:bun — “Did I stop by the bun source at any point so far?”</b> (qa<i>hard</i><i>visited</i><i>bun</i><i>cheeseburger</i>hard<i>_t13)
+
+</i>qa<i>hard</i><i>holding</i><i>holding</i><i>cheeseburger</i>hard<i>_t7 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>hard<i>_visited</i><i>bun</i><i>cheeseburger</i>hard<i>_t13 (visited:bun): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+
+</div></details><details><summary>bm_medium_nops_hard_map_5  (EQQE)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>medH1)
+<br>- m=  7 plate=[] held=True | qa<i>probe: <b>station</i>state — “Is anything cooking on the heat right now — and is it done yet?”</b> (qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_cheeseburger</i>hard<i>_t7)
+<br>- m=  7 plate=[] held=True | qa</i>probe: <b>board<i>state — “Are the cutting boards all clear, or is something still sitting on one?”</b> (qa</i>hard<i>_board</i>state<i>_board</i>state<i>_cheeseburger</i>hard<i>_t7)
+<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | error: <b>repeat</i>step</b> (cx<i>repeat</i>step<i>medH1)
+
+</i>qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_cheeseburger</i>hard<i>_t7 (station</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt; qa</i>hard<i>_board</i>state<i>_board</i>state<i>_cheeseburger</i>hard<i>_t7 (board</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt</i>
+
+</div></details><details><summary>bm_hard_nops_medium_map_1  (EQQE)</summary><div class='note'>
+<br>- m= 26 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>hardM1)
+<br>- m= 26 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_fishchips</i><i>holding</i><i>t26)
+<br>- m= 26 plate=[] held=True | qa</i>probe: <b>where:cutting<i>board — “Quick one — where do we keep the cutting board in this kitchen?”</b> (qa</i>auto<i>_where</i><i>cutting</i>board<i>_fishchips</i><i>t26)
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>hardM1)
+
+</i>qa<i>probe</i><i>fishchips</i><i>holding</i><i>t26 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_where</i><i>cutting</i>board<i>_fishchips</i><i>t26 (where:cutting</i>board): an unrelated spot-check — plausible anywhere the truth is well-defined_
+
+</div></details><details><summary>bm_hard_nops_medium_map_2  (EEQQ)</summary><div class='note'>
+<br>- m= 26 plate=[] held=True | error: <b>search</b> (cx<i>search</i>hardM1)
+<br>- m= 26 plate=[] held=True | error: <b>leave<i>unattended</b> (cx</i>leave<i>unattended</i>hardM1)
+<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | qa<i>probe: <b>past</i>subgoal:assemble(potato) — “Did I already finish putting the potato on the plate, or did I forget?”</b> (qa<i>auto</i><i>past</i>subgoal<i>_assemble</i>potato<i>_fishchips</i><i>t28)
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | qa</i>probe: <b>visited:fryer — “Did I stop by the fryer at any point so far?”</b> (qa<i>auto</i><i>visited</i><i>fryer</i><i>fishchips</i><i>t30)
+
+</i>qa<i>auto</i><i>past</i>subgoal<i>_assemble</i>potato<i>_fishchips</i><i>t28 (past</i>subgoal:assemble(potato)): an unrelated spot-check — plausible anywhere the truth is well-defined; qa<i>auto</i><i>visited</i><i>fryer</i><i>fishchips</i><i>t30 (visited:fryer): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+
+</div></details><details><summary>bm_hard_nops_medium_map_3  (EQQE)</summary><div class='note'>
+<br>- m= 26 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>hardM3)
+<br>- m= 26 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_fishchips</i><i>holding</i><i>t26)
+<br>- m= 26 plate=[] held=True | qa</i>probe: <b>where:fish<i>source — “Quick one — where do we keep the fish source in this kitchen?”</b> (qa</i>auto<i>_where</i><i>fish</i>source<i>_fishchips</i><i>t26)
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>hardM1)
+
+</i>qa<i>probe</i><i>fishchips</i><i>holding</i><i>t26 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_where</i><i>fish</i>source<i>_fishchips</i><i>t26 (where:fish</i>source): the question interrogates the very state the omit<i>subgoal touched (assemble(fish)) — the natural thing to ask after that confusion</i>
+
+</div></details><details><summary>bm_hard_nops_medium_map_4  (EEQQ)</summary><div class='note'>
+<br>- m= 26 plate=[] held=True | error: <b>leave<i>unattended</b> (cx</i>leave<i>unattended</i>hardM2)
+<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | error: <b>search</b> (cx<i>search</i>hardM2)
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | qa<i>probe: <b>past</i>subgoal:prep(fish) — “Did I already finish prepping the fish, or did I forget?”</b> (qa<i>auto</i><i>past</i>subgoal<i>_prep</i>fish<i>_fishchips</i><i>t30)
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | qa</i>probe: <b>visited:plates — “Did I stop by the plates at any point so far?”</b> (qa<i>auto</i><i>visited</i><i>plates</i><i>fishchips</i><i>t30)
+
+</i>qa<i>auto</i><i>past</i>subgoal<i>_prep</i>fish<i>_fishchips</i><i>t30 (past</i>subgoal:prep(fish)): an unrelated spot-check — plausible anywhere the truth is well-defined; qa<i>auto</i><i>visited</i><i>plates</i><i>fishchips</i><i>t30 (visited:plates): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+
+</div></details><details><summary>bm_hard_nops_medium_map_5  (EQQE)</summary><div class='note'>
+<br>- m= 26 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>hardM1)
+<br>- m= 26 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_fishchips</i><i>holding</i><i>t26)
+<br>- m= 26 plate=[] held=True | qa</i>probe: <b>where:pan — “Quick one — where do we keep the pan in this kitchen?”</b> (qa<i>auto</i><i>where</i><i>pan</i><i>fishchips</i><i>t26)
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>hardM1)
+
+</i>qa<i>probe</i><i>fishchips</i><i>holding</i><i>t26 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_where</i><i>pan</i><i>fishchips</i><i>t26 (where:pan): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+
+</div></details><details><summary>bm_hard_nops_hard_map_1  (EQQE)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>hardH1)
+<br>- m= 26 plate=[] held=True | qa<i>probe: <b>station</i>state — “Is anything cooking on the heat right now — and is it done yet?”</b> (qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_fishchips</i>hard<i>_t26)
+<br>- m= 26 plate=[] held=True | qa</i>probe: <b>board<i>state — “Are the cutting boards all clear, or is something still sitting on one?”</b> (qa</i>hard<i>_board</i>state<i>_board</i>state<i>_fishchips</i>hard<i>_t26)
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>hardH1)
+
+</i>qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_fishchips</i>hard<i>_t26 (station</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt; qa</i>hard<i>_board</i>state<i>_board</i>state<i>_fishchips</i>hard<i>_t26 (board</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt</i>
+
+</div></details><details><summary>bm_hard_nops_hard_map_2  (EEQQ)</summary><div class='note'>
+<br>- m= 26 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>hardH1)
+<br>- m= 26 plate=[] held=True | error: <b>add<i>foreign</b> (cx</i>add<i>foreign</i>hardH1)
+<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | qa<i>probe: <b>plate</i>contents — “What has made it onto the plate so far?”</b> (qa<i>hard</i><i>plate</i>contents<i>_plate</i>contents<i>_fishchips</i>hard<i>_t28)
+<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | qa</i>probe: <b>remaining — “What&#x27;s still missing from the plate for this order?”</b> (qa<i>hard</i><i>remaining</i><i>remaining</i><i>fishchips</i>hard<i>_t28)
+
+</i>qa<i>hard</i><i>plate</i>contents<i>_plate</i>contents<i>_fishchips</i>hard<i>_t28 (plate</i>contents): a plate question is plausible after a add<i>foreign — the plate is what it hit; qa</i>hard<i>_remaining</i><i>remaining</i><i>fishchips</i>hard<i>_t28 (remaining): a plate question is plausible after a add</i>foreign — the plate is what it hit_
+
+</div></details><details><summary>bm_hard_nops_hard_map_3  (QEEQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | qa<i>probe: <b>where:bun — “Quick one — where do we keep the bun in this kitchen?”</b> (qa</i>hard<i>_where</i><i>bun</i><i>fishchips</i>hard<i>_t0)
+<br>- m= 26 plate=[] held=True | error: <b>search</b> (cx</i>search<i>hardH1)
+<br>- m= 26 plate=[] held=True | error: <b>leave</i>unattended</b> (cx<i>leave</i>unattended<i>hardH1)
+<br>- m= 26 plate=[] held=True | qa</i>probe: <b>past<i>subgoal:assemble(fish) — “Did I already finish putting the fish on the plate, or did I forget?”</b> (qa</i>hard<i>_past</i>subgoal<i>_assemble</i>fish<i>_fishchips</i>hard<i>_t26)
+
+</i>qa<i>hard</i><i>where</i><i>bun</i><i>fishchips</i>hard<i>_t0 (where:bun): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>hard<i>_past</i>subgoal<i>_assemble</i>fish<i>_fishchips</i>hard<i>_t26 (past</i>subgoal:assemble(fish)): the question interrogates the very state the leave<i>unattended touched (fish) — the natural thing to ask after that confusion</i>
+
+</div></details><details><summary>bm_hard_nops_hard_map_4  (EQEQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>hardH1)
+<br>- m= 26 plate=[] held=True | qa<i>probe: <b>holding — “Remind me — what have I got in my hands right now?”</b> (qa</i>hard<i>_holding</i><i>holding</i><i>fishchips</i>hard<i>_t26)
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>hardH1)
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | qa</i>probe: <b>visited:fish — “Did I stop by the fish source at any point so far?”</b> (qa<i>hard</i><i>visited</i><i>fish</i><i>fishchips</i>hard<i>_t30)
+
+</i>qa<i>hard</i><i>holding</i><i>holding</i><i>fishchips</i>hard<i>_t26 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>hard<i>_visited</i><i>fish</i><i>fishchips</i>hard<i>_t30 (visited:fish): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+
+</div></details><details><summary>bm_hard_nops_hard_map_5  (EQQE)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>hardH1)
+<br>- m= 26 plate=[] held=True | qa<i>probe: <b>station</i>state — “Is anything cooking on the heat right now — and is it done yet?”</b> (qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_fishchips</i>hard<i>_t26)
+<br>- m= 26 plate=[] held=True | qa</i>probe: <b>board<i>state — “Are the cutting boards all clear, or is something still sitting on one?”</b> (qa</i>hard<i>_board</i>state<i>_board</i>state<i>_fishchips</i>hard<i>_t26)
+<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | error: <b>omit</i>subgoal</b> (cx<i>omit</i>subgoal<i>hardH3)
+
+</i>qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_fishchips</i>hard<i>_t26 (station</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt; qa</i>hard<i>_board</i>state<i>_board</i>state<i>_fishchips</i>hard<i>_t26 (board</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt</i>
+
+</div></details><details><summary>bm_expert_nops_medium_map_1  (EQQE)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>expM1)
+<br>- m= 30 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_steak</i><i>holding</i><i>t30)
+<br>- m= 30 plate=[] held=True | qa</i>probe: <b>where:fryer — “Quick one — where do we keep the fryer in this kitchen?”</b> (qa<i>auto</i><i>where</i><i>fryer</i><i>steak</i><i>t30)
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>expM1)
+
+</i>qa<i>probe</i><i>steak</i><i>holding</i><i>t30 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_where</i><i>fryer</i><i>steak</i><i>t30 (where:fryer): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+
+</div></details><details><summary>bm_expert_nops_medium_map_2  (EEQQ)</summary><div class='note'>
+<br>- m= 30 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>expM1)
+<br>- m= 30 plate=[] held=True | error: <b>search</b> (cx<i>search</i>expM1)
+<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | qa<i>probe: <b>past</i>subgoal:assemble(potato) — “Did I already finish putting the potato on the plate, or did I forget?”</b> (qa<i>auto</i><i>past</i>subgoal<i>_assemble</i>potato<i>_steak</i><i>t32)
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | qa</i>probe: <b>visited:fryer — “Did I stop by the fryer at any point so far?”</b> (qa<i>auto</i><i>visited</i><i>fryer</i><i>steak</i><i>t34)
+
+</i>qa<i>auto</i><i>past</i>subgoal<i>_assemble</i>potato<i>_steak</i><i>t32 (past</i>subgoal:assemble(potato)): an unrelated spot-check — plausible anywhere the truth is well-defined; qa<i>auto</i><i>visited</i><i>fryer</i><i>steak</i><i>t34 (visited:fryer): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+
+</div></details><details><summary>bm_expert_nops_medium_map_3  (EEQQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>expM1)
+<br>- m= 30 plate=[] held=True | error: <b>leave<i>unattended</b> (cx</i>leave<i>unattended</i>expM1)
+<br>- m= 30 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_steak</i><i>holding</i><i>t30)
+<br>- m= 30 plate=[] held=True | qa</i>probe: <b>where:lettuce — “Quick one — where do we keep the lettuce in this kitchen?”</b> (qa<i>auto</i><i>where</i><i>lettuce</i><i>steak</i><i>t30)
+
+</i>qa<i>probe</i><i>steak</i><i>holding</i><i>t30 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_where</i><i>lettuce</i><i>steak</i><i>t30 (where:lettuce): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+
+</div></details><details><summary>bm_expert_nops_medium_map_4  (EEQQ)</summary><div class='note'>
+<br>- m= 30 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>expM3)
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget<i>next</i>step</b> (cx<i>forget</i>next<i>step</i>expM1)
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | qa<i>probe: <b>past</i>subgoal:prep(steak) — “Did I already finish prepping the steak, or did I forget?”</b> (qa<i>auto</i><i>past</i>subgoal<i>_prep</i>steak<i>_steak</i><i>t34)
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | qa</i>probe: <b>visited:pan — “Did I stop by the pan at any point so far?”</b> (qa<i>auto</i><i>visited</i><i>pan</i><i>steak</i><i>t34)
+
+</i>qa<i>auto</i><i>past</i>subgoal<i>_prep</i>steak<i>_steak</i><i>t34 (past</i>subgoal:prep(steak)): an episodic what-did-I-do question is plausible right after a forget<i>next</i>step recovery — the cook&#x27;s own history just became uncertain; qa<i>auto</i><i>visited</i><i>pan</i><i>steak</i><i>t34 (visited:pan): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+
+</div></details><details><summary>bm_expert_nops_medium_map_5  (EQQE)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>expM1)
+<br>- m= 30 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_steak</i><i>holding</i><i>t30)
+<br>- m= 30 plate=[] held=True | qa</i>probe: <b>where:pot — “Quick one — where do we keep the pot in this kitchen?”</b> (qa<i>auto</i><i>where</i><i>pot</i><i>steak</i><i>t30)
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>search</b> (cx</i>search<i>expM3)
+
+</i>qa<i>probe</i><i>steak</i><i>holding</i><i>t30 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_where</i><i>pot</i><i>steak</i><i>t30 (where:pot): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+
+</div></details><details><summary>bm_expert_nops_hard_map_1  (EQQE)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>expH1)
+<br>- m= 30 plate=[] held=True | qa<i>probe: <b>station</i>state — “Is anything cooking on the heat right now — and is it done yet?”</b> (qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_steak</i>hard<i>_t30)
+<br>- m= 30 plate=[] held=True | qa</i>probe: <b>board<i>state — “Are the cutting boards all clear, or is something still sitting on one?”</b> (qa</i>hard<i>_board</i>state<i>_board</i>state<i>_steak</i>hard<i>_t30)
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>expH1)
+
+</i>qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_steak</i>hard<i>_t30 (station</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt; qa</i>hard<i>_board</i>state<i>_board</i>state<i>_steak</i>hard<i>_t30 (board</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt</i>
+
+</div></details><details><summary>bm_expert_nops_hard_map_2  (EEQQ)</summary><div class='note'>
+<br>- m= 30 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>expH1)
+<br>- m= 30 plate=[] held=True | error: <b>add<i>foreign</b> (cx</i>add<i>foreign</i>expH1)
+<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | qa<i>probe: <b>plate</i>contents — “What has made it onto the plate so far?”</b> (qa<i>hard</i><i>plate</i>contents<i>_plate</i>contents<i>_steak</i>hard<i>_t32)
+<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | qa</i>probe: <b>remaining — “What&#x27;s still missing from the plate for this order?”</b> (qa<i>hard</i><i>remaining</i><i>remaining</i><i>steak</i>hard<i>_t32)
+
+</i>qa<i>hard</i><i>plate</i>contents<i>_plate</i>contents<i>_steak</i>hard<i>_t32 (plate</i>contents): a plate question is plausible after a add<i>foreign — the plate is what it hit; qa</i>hard<i>_remaining</i><i>remaining</i><i>steak</i>hard<i>_t32 (remaining): a plate question is plausible after a add</i>foreign — the plate is what it hit_
+
+</div></details><details><summary>bm_expert_nops_hard_map_3  (QEEQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | qa<i>probe: <b>where:butter</i>source — “Quick one — where do we keep the butter in this kitchen?”</b> (qa<i>hard</i><i>where</i><i>butter</i>source<i>_steak</i>hard<i>_t0)
+<br>- m= 30 plate=[] held=True | error: <b>search</b> (cx</i>search<i>expH1)
+<br>- m= 30 plate=[] held=True | error: <b>leave</i>unattended</b> (cx<i>leave</i>unattended<i>expH1)
+<br>- m= 30 plate=[] held=True | qa</i>probe: <b>past<i>subgoal:assemble(potato) — “Did I already finish putting the potato on the plate, or did I forget?”</b> (qa</i>hard<i>_past</i>subgoal<i>_assemble</i>potato<i>_steak</i>hard<i>_t30)
+
+</i>qa<i>hard</i><i>where</i><i>butter</i>source<i>_steak</i>hard<i>_t0 (where:butter</i>source): an unrelated spot-check — plausible anywhere the truth is well-defined; qa<i>hard</i><i>past</i>subgoal<i>_assemble</i>potato<i>_steak</i>hard<i>_t30 (past</i>subgoal:assemble(potato)): an unrelated spot-check — plausible anywhere the truth is well-defined_
+
+</div></details><details><summary>bm_expert_nops_hard_map_4  (EQEQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>expH1)
+<br>- m= 30 plate=[] held=True | qa<i>probe: <b>holding — “Remind me — what have I got in my hands right now?”</b> (qa</i>hard<i>_holding</i><i>holding</i><i>steak</i>hard<i>_t30)
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>expH1)
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | qa</i>probe: <b>visited:fryer — “Did I stop by the fryer at any point so far?”</b> (qa<i>hard</i><i>visited</i><i>fryer</i><i>steak</i>hard<i>_t34)
+
+</i>qa<i>hard</i><i>holding</i><i>holding</i><i>steak</i>hard<i>_t30 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>hard<i>_visited</i><i>fryer</i><i>steak</i>hard<i>_t34 (visited:fryer): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+
+</div></details><details><summary>bm_expert_nops_hard_map_5  (EQQE)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>expH1)
+<br>- m= 30 plate=[] held=True | qa<i>probe: <b>station</i>state — “Is anything cooking on the heat right now — and is it done yet?”</b> (qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_steak</i>hard<i>_t30)
+<br>- m= 30 plate=[] held=True | qa</i>probe: <b>board<i>state — “Are the cutting boards all clear, or is something still sitting on one?”</b> (qa</i>hard<i>_board</i>state<i>_board</i>state<i>_steak</i>hard<i>_t30)
+<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | error: <b>omit</i>subgoal</b> (cx<i>omit</i>subgoal<i>expH2)
+
+</i>qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_steak</i>hard<i>_t30 (station</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt; qa</i>hard<i>_board</i>state<i>_board</i>state<i>_steak</i>hard<i>_t30 (board</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt</i>
+
+</div></details><details><summary>bm_master_nops_medium_map_1  (EEQQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>masM1)
+<br>- m= 28 plate=[] held=True | error: <b>wrong<i>order</b> (cx</i>wrong<i>order</i>masM1)
+<br>- m= 28 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_burrito</i><i>holding</i><i>t28)
+<br>- m= 28 plate=[] held=True | qa</i>probe: <b>where:lettuce — “Quick one — where do we keep the lettuce in this kitchen?”</b> (qa<i>auto</i><i>where</i><i>lettuce</i><i>burrito</i><i>t28)
+
+</i>qa<i>probe</i><i>burrito</i><i>holding</i><i>t28 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_where</i><i>lettuce</i><i>burrito</i><i>t28 (where:lettuce): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+
+</div></details><details><summary>bm_master_nops_medium_map_2  (EEQQ)</summary><div class='note'>
+<br>- m= 28 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>masM1)
+<br>- m= 28 plate=[] held=True | error: <b>search</b> (cx<i>search</i>masM1)
+<br>- m= 36 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;] held=True | qa<i>probe: <b>past</i>subgoal:assemble(lettuce) — “Did I already finish putting the lettuce on the plate, or did I forget?”</b> (qa<i>auto</i><i>past</i>subgoal<i>_assemble</i>lettuce<i>_burrito</i><i>t36)
+<br>- m= 38 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;, &#x27;lettuce&#x27;] held=True | qa</i>probe: <b>visited:lettuce — “Did I stop by the lettuce source at any point so far?”</b> (qa<i>auto</i><i>visited</i><i>lettuce</i><i>burrito</i><i>t38)
+
+</i>qa<i>auto</i><i>past</i>subgoal<i>_assemble</i>lettuce<i>_burrito</i><i>t36 (past</i>subgoal:assemble(lettuce)): an unrelated spot-check — plausible anywhere the truth is well-defined; qa<i>auto</i><i>visited</i><i>lettuce</i><i>burrito</i><i>t38 (visited:lettuce): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+
+</div></details><details><summary>bm_master_nops_medium_map_3  (QQEE)</summary><div class='note'>
+<br>- m= 28 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_burrito</i><i>holding</i><i>t28)
+<br>- m= 28 plate=[] held=True | qa</i>probe: <b>where:plates — “Quick one — where do we keep the plates in this kitchen?”</b> (qa<i>auto</i><i>where</i><i>plates</i><i>burrito</i><i>t28)
+<br>- m= 30 plate=[&#x27;tortilla&#x27;] held=True | error: <b>leave</i>unattended</b> (cx<i>leave</i>unattended<i>masM1)
+<br>- m= 32 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;] held=True | error: <b>repeat</i>step</b> (cx<i>repeat</i>step<i>masM1)
+
+</i>qa<i>probe</i><i>burrito</i><i>holding</i><i>t28 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_where</i><i>plates</i><i>burrito</i><i>t28 (where:plates): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+
+</div></details><details><summary>bm_master_nops_medium_map_4  (EEQQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>masM2)
+<br>- m= 34 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;] held=True | error: <b>forget<i>next</i>step</b> (cx<i>forget</i>next<i>step</i>masM1)
+<br>- m= 38 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;, &#x27;lettuce&#x27;] held=True | qa<i>probe: <b>past</i>subgoal:prep(rice) — “Did I already finish prepping the rice, or did I forget?”</b> (qa<i>auto</i><i>past</i>subgoal<i>_prep</i>rice<i>_burrito</i><i>t38)
+<br>- m= 38 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;, &#x27;lettuce&#x27;] held=True | qa</i>probe: <b>visited:pan — “Did I stop by the pan at any point so far?”</b> (qa<i>auto</i><i>visited</i><i>pan</i><i>burrito</i><i>t38)
+
+</i>qa<i>auto</i><i>past</i>subgoal<i>_prep</i>rice<i>_burrito</i><i>t38 (past</i>subgoal:prep(rice)): an episodic what-did-I-do question is plausible right after a forget<i>next</i>step recovery — the cook&#x27;s own history just became uncertain; qa<i>auto</i><i>visited</i><i>pan</i><i>burrito</i><i>t38 (visited:pan): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+
+</div></details><details><summary>bm_master_nops_medium_map_5  (EQQE)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>masM1)
+<br>- m= 28 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_burrito</i><i>holding</i><i>t28)
+<br>- m= 28 plate=[] held=True | qa</i>probe: <b>where:rice<i>source — “Quick one — where do we keep the rice source in this kitchen?”</b> (qa</i>auto<i>_where</i><i>rice</i>source<i>_burrito</i><i>t28)
+<br>- m= 30 plate=[&#x27;tortilla&#x27;] held=True | error: <b>wrong</i>order</b> (cx<i>wrong</i>order<i>masM3)
+
+</i>qa<i>probe</i><i>burrito</i><i>holding</i><i>t28 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_where</i><i>rice</i>source<i>_burrito</i><i>t28 (where:rice</i>source): the question interrogates the very state the mis<i>prep touched (rice) — the natural thing to ask after that confusion</i>
+
+</div></details><details><summary>bm_master_nops_hard_map_1  (EEQQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>masH1)
+<br>- m= 28 plate=[] held=True | error: <b>wrong<i>order</b> (cx</i>wrong<i>order</i>masH1)
+<br>- m= 28 plate=[] held=True | qa<i>probe: <b>station</i>state — “Is anything cooking on the heat right now — and is it done yet?”</b> (qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_burrito</i>hard<i>_t28)
+<br>- m= 28 plate=[] held=True | qa</i>probe: <b>board<i>state — “Are the cutting boards all clear, or is something still sitting on one?”</b> (qa</i>hard<i>_board</i>state<i>_board</i>state<i>_burrito</i>hard<i>_t28)
+
+</i>qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_burrito</i>hard<i>_t28 (station</i>state): an unrelated spot-check — plausible anywhere the truth is well-defined; qa<i>hard</i><i>board</i>state<i>_board</i>state<i>_burrito</i>hard<i>_t28 (board</i>state): an unrelated spot-check — plausible anywhere the truth is well-defined_
+
+</div></details><details><summary>bm_master_nops_hard_map_2  (EEQQ)</summary><div class='note'>
+<br>- m= 28 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>masH1)
+<br>- m= 28 plate=[] held=True | error: <b>add<i>foreign</b> (cx</i>add<i>foreign</i>masH1)
+<br>- m= 32 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;] held=True | qa<i>probe: <b>plate</i>contents — “What has made it onto the plate so far?”</b> (qa<i>hard</i><i>plate</i>contents<i>_plate</i>contents<i>_burrito</i>hard<i>_t32)
+<br>- m= 36 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;] held=True | qa</i>probe: <b>remaining — “What&#x27;s still missing from the plate for this order?”</b> (qa<i>hard</i><i>remaining</i><i>remaining</i><i>burrito</i>hard<i>_t36)
+
+</i>qa<i>hard</i><i>plate</i>contents<i>_plate</i>contents<i>_burrito</i>hard<i>_t32 (plate</i>contents): a plate question is plausible after a add<i>foreign — the plate is what it hit; qa</i>hard<i>_remaining</i><i>remaining</i><i>burrito</i>hard<i>_t36 (remaining): a plate question is plausible after a add</i>foreign — the plate is what it hit_
+
+</div></details><details><summary>bm_master_nops_hard_map_3  (QEQE)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | qa<i>probe: <b>where:avocado</i>source — “Quick one — where do we keep the avocado in this kitchen?”</b> (qa<i>hard</i><i>where</i><i>avocado</i>source<i>_burrito</i>hard<i>_t0)
+<br>- m= 28 plate=[] held=True | error: <b>search</b> (cx</i>search<i>masH1)
+<br>- m= 28 plate=[] held=True | qa</i>probe: <b>past<i>subgoal:assemble(lettuce) — “Did I already finish putting the lettuce on the plate, or did I forget?”</b> (qa</i>hard<i>_past</i>subgoal<i>_assemble</i>lettuce<i>_burrito</i>hard<i>_t28)
+<br>- m= 30 plate=[&#x27;tortilla&#x27;] held=True | error: <b>leave</i>unattended</b> (cx<i>leave</i>unattended<i>masH1)
+
+</i>qa<i>hard</i><i>where</i><i>avocado</i>source<i>_burrito</i>hard<i>_t0 (where:avocado</i>source): an unrelated spot-check — plausible anywhere the truth is well-defined; qa<i>hard</i><i>past</i>subgoal<i>_assemble</i>lettuce<i>_burrito</i>hard<i>_t28 (past</i>subgoal:assemble(lettuce)): an unrelated spot-check — plausible anywhere the truth is well-defined_
+
+</div></details><details><summary>bm_master_nops_hard_map_4  (QEEQ)</summary><div class='note'>
+<br>- m= 28 plate=[] held=True | qa<i>probe: <b>holding — “Remind me — what have I got in my hands right now?”</b> (qa</i>hard<i>_holding</i><i>holding</i><i>burrito</i>hard<i>_t28)
+<br>- m= 32 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;] held=True | error: <b>repeat</i>step</b> (cx<i>repeat</i>step<i>masH1)
+<br>- m= 34 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>masH1)
+<br>- m= 38 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;, &#x27;lettuce&#x27;] held=True | qa</i>probe: <b>visited:lettuce — “Did I stop by the lettuce source at any point so far?”</b> (qa<i>hard</i><i>visited</i><i>lettuce</i><i>burrito</i>hard<i>_t38)
+
+</i>qa<i>hard</i><i>holding</i><i>holding</i><i>burrito</i>hard<i>_t28 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>hard<i>_visited</i><i>lettuce</i><i>burrito</i>hard<i>_t38 (visited:lettuce): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+
+</div></details><details><summary>bm_master_nops_hard_map_5  (EQQE)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>masH3)
+<br>- m= 28 plate=[] held=True | qa<i>probe: <b>station</i>state — “Is anything cooking on the heat right now — and is it done yet?”</b> (qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_burrito</i>hard<i>_t28)
+<br>- m= 28 plate=[] held=True | qa</i>probe: <b>board<i>state — “Are the cutting boards all clear, or is something still sitting on one?”</b> (qa</i>hard<i>_board</i>state<i>_board</i>state<i>_burrito</i>hard<i>_t28)
+<br>- m= 32 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;] held=True | error: <b>wrong</i>order</b> (cx<i>wrong</i>order<i>masH3)
+
+</i>qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_burrito</i>hard<i>_t28 (station</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt; qa</i>hard<i>_board</i>state<i>_board</i>state<i>_burrito</i>hard<i>_t28 (board</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt</i>
+
+</div></details>
+<p class="note">Generated by tools/build_composite_review_page.py · engine 687d31ea27</p>
+</body></html>
