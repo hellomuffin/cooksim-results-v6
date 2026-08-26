@@ -23,7 +23,7 @@ blockquote{border-left:3px solid #1f5f4b;background:#fff;padding:10px 16px;margi
 <b>human agent</b> before the model sweep resumes. Nothing here is a result; the three
 videos are inspection episodes run to prove the machinery.</p>
 <p class="note">Sweep status: PAUSED (episodes on disk are kept and the sweep resumes
-from them). Engine <code>07cbea0e39</code>.</p>
+from them). Engine <code>8696b8236c</code>.</p>
 
 <h2>1 · What one episode is</h2>
 <p>An episode drops a simulated <b>cook</b> (the human agent) into a kitchen with a
@@ -250,80 +250,80 @@ plate state) and the semantic rationale for the pairing.</p>
 <details><summary>bm_easy_nops_medium_map_1  (EQQE)</summary><div class='note'>
 <br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> {&quot;component&quot;: &quot;tomato&quot;, &quot;wrong&quot;: &quot;cheese&quot;} (window [7, 39], outcome wrong</i>serve)
 <br>- m=  7 plate=[] held=True | question: <b>board<i>state</b> — “Is there still anything sitting on a cutting board, and which one?” → {&quot;boards&quot;: [{&quot;at&quot;: [0, 1], &quot;contents&quot;: []}, {&quot;at&quot;: [5, 1], &quot;contents&quot;: [{&quot;name&quot;: &quot;tomato&quot;, &quot;state&quot;: &quot;chopped&quot;}]}], &quot;boar
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | question: <b>remaining</b> — “Tell me exactly what still has to go on this plate, in order.” → {&quot;on</i>plate<i>in</i>order&quot;: [&quot;tomato&quot;], &quot;still<i>to</i>plate<i>in</i>order&quot;: [&quot;cheese&quot;]}
-<br>- m= 11 plate=[&#x27;cheese&#x27;, &#x27;tomato&#x27;] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;assemble(cheese)&quot;} (window [43, 75], outcome timeout)
+<br>- m=  9 plate=[&#x27;*&#x27;] held=True | question: <b>remaining</b> — “Tell me exactly what still has to go on this plate.” → {&quot;on</i>plate<i>in</i>order&quot;: [&quot;tomato&quot;], &quot;still<i>to</i>plate<i>in</i>order&quot;: [&quot;cheese&quot;]}
+<br>- m= 11 plate=[&#x27;*&#x27;, &#x27;*&#x27;] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;assemble(cheese)&quot;} (window [43, 75], outcome timeout)
 
 <i>Opens with the only prep-time mistake this dish allows (cheese goes to the board instead of the tomato); after the recovery the chopped tomato is still on the far board, which is what the first question probes (a loaded board, not an empty one). The second error is the opposite kind — nothing wrong is done, the cook simply stalls with a finished plate in hand — so the assistant must notice an absence of action at the very end.</i>
 
 </div></details><details><summary>bm_easy_nops_medium_map_2  (EQQE)</summary><div class='note'>
 <br>- m=  7 plate=[] held=True | error: <b>omit<i>subgoal</b> {&quot;after&quot;: &quot;fetch</i>plate&quot;} (window [26, 58], outcome wrong<i>serve)
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | question: <b>station</i>state</b> — “Is anything cooking anywhere right now, or is this dish all cold?” → {&quot;cooking<i>stations</i>with<i>food&quot;: [], &quot;any</i>food<i>cooking&quot;: false, &quot;all</i>done&quot;: null}
-<br>- m= 11 plate=[&#x27;cheese&#x27;, &#x27;tomato&#x27;] held=True | question: <b>where:serving</b> — “Which way is the serving window from here?” → {&quot;target&quot;: &quot;serving&quot;, &quot;found&quot;: [{&quot;at&quot;: [1, 3], &quot;region&quot;: &quot;middle-left&quot;}], &quot;answer&quot;: &quot;middle-left&quot;}
-<br>- m= 11 plate=[&#x27;cheese&#x27;, &#x27;tomato&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;serve&quot;, &quot;looks&quot;: 3} (window [41, 73], outcome won)
+<br>- m=  9 plate=[&#x27;*&#x27;] held=True | question: <b>station</i>state</b> — “Is anything cooking anywhere right now, or is this dish all cold?” → {&quot;cooking<i>stations</i>with<i>food&quot;: [], &quot;any</i>food<i>cooking&quot;: false, &quot;all</i>done&quot;: null}
+<br>- m= 11 plate=[&#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>where:serving</b> — “Which way is the serving window from here?” → {&quot;target&quot;: &quot;serving&quot;, &quot;found&quot;: [{&quot;at&quot;: [1, 3], &quot;region&quot;: &quot;middle-left&quot;}], &quot;answer&quot;: &quot;middle-left&quot;}
+<br>- m= 11 plate=[&#x27;*&#x27;, &#x27;*&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;serve&quot;, &quot;looks&quot;: 3} (window [41, 73], outcome won)
 
 <i>An impatient cook: grabs the plate and heads straight for the pass with nothing on it, then, once the plate is complete, wanders three wrong counters looking for the pass. The station question sits between the two errors and is a trap for an assistant that assumes every recipe has heat; the last question is asked just before the hunt (question first at a shared anchor) and is the one the lost cook should actually ask.</i>
 
 </div></details><details><summary>bm_easy_nops_medium_map_3  (QEEQ)</summary><div class='note'>
 <br>- m=  7 plate=[] held=True | question: <b>visited:tomato</b> — “Have I already been over to the tomato?” → {&quot;target&quot;: &quot;tomato&quot;, &quot;visited&quot;: true, &quot;first<i>visit</i>t&quot;: 4}
 <br>- m=  7 plate=[] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(tomato)&quot;, &quot;looks&quot;: 3} (window [33, 65], outcome won)
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;assemble(tomato)&quot;} (window [39, 71], outcome timeout)
-<br>- m= 11 plate=[&#x27;cheese&#x27;, &#x27;tomato&#x27;] held=True | question: <b>plate<i>contents</b> — “Read me back what is on the plate right now, in order.” → {&quot;held</i>plate<i>contents</i>in<i>order&quot;: [&quot;tomato&quot;, &quot;cheese&quot;], &quot;all</i>plates&quot;: [[&quot;held&quot;, [&quot;tomato&quot;, &quot;cheese&quot;]]]}
+<br>- m=  9 plate=[&#x27;*&#x27;] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;assemble(tomato)&quot;} (window [39, 71], outcome timeout)
+<br>- m= 11 plate=[&#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>plate<i>contents</b> — “Read me back what is on the plate right now, in order.” → {&quot;held</i>plate<i>contents</i>in<i>order&quot;: [&quot;tomato&quot;, &quot;cheese&quot;], &quot;all</i>plates&quot;: [[&quot;held&quot;, [&quot;tomato&quot;, &quot;cheese&quot;]]]}
 
 <i>Three wrong counters looking for the chopped tomato with the plate in hand, then, tomato on, a stall with the cheese still to go. The visited question is asked before the hunt and its honest answer is YES — the cook chopped the tomato at the very start — so an assistant that only reads the current scene gets it wrong.</i>
 
 </div></details><details><summary>bm_easy_nops_medium_map_4  (EQEQ)</summary><div class='note'>
 <br>- m=  7 plate=[] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(tomato)&quot;, &quot;looks&quot;: 2} (window [33, 65], outcome won)
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | question: <b>remaining</b> — “What is left to put on, after the tomato?” → {&quot;on<i>plate</i>in<i>order&quot;: [&quot;tomato&quot;], &quot;still</i>to<i>plate</i>in<i>order&quot;: [&quot;cheese&quot;]}
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | error: <b>omit</i>subgoal</b> {&quot;after&quot;: &quot;assemble(tomato)&quot;} (window [36, 68], outcome wrong<i>serve)
-<br>- m= 11 plate=[&#x27;cheese&#x27;, &#x27;tomato&#x27;] held=True | question: <b>past</i>subgoal:prep(tomato)</b> — “Did I actually chop the tomato, or did I skip that?” → {&quot;subgoal&quot;: &quot;prep(tomato)&quot;, &quot;finished&quot;: true, &quot;last<i>step</i>done<i>at&quot;: 17}
+<br>- m=  9 plate=[&#x27;*&#x27;] held=True | question: <b>remaining</b> — “What is still left to put on this plate?” → {&quot;on<i>plate</i>in<i>order&quot;: [&quot;tomato&quot;], &quot;still</i>to<i>plate</i>in<i>order&quot;: [&quot;cheese&quot;]}
+<br>- m=  9 plate=[&#x27;*&#x27;] held=True | error: <b>omit</i>subgoal</b> {&quot;after&quot;: &quot;assemble(tomato)&quot;} (window [36, 68], outcome wrong<i>serve)
+<br>- m= 11 plate=[&#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>past</i>subgoal:prep(tomato)</b> — “Did I actually chop the tomato, or did I skip that?” → {&quot;subgoal&quot;: &quot;prep(tomato)&quot;, &quot;finished&quot;: true, &quot;last<i>step</i>done<i>at&quot;: 17}
 
 </i>The cook cannot find the chopped tomato after picking up the plate (two wrong counters), and then, having found it, walks to the pass with tomato but no cheese. The first question is asked just before that premature run; the second is a memory question asked at the very end about a step done at the very start._
 
 </div></details><details><summary>bm_easy_nops_medium_map_5  (QEQE)</summary><div class='note'>
 <br>- m=  7 plate=[] held=True | question: <b>holding</b> — “What am I holding right now and is there anything on it?” → {&quot;holding&quot;: &quot;plate&quot;, &quot;plate<i>contents</i>in<i>order&quot;: []}
 <br>- m=  7 plate=[] held=True | error: <b>forget</i>next<i>step</b> {&quot;after&quot;: &quot;fetch</i>plate&quot;} (window [32, 64], outcome timeout)
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | question: <b>where:trash</b> — “Where is the trash can, in case I need it?” → {&quot;target&quot;: &quot;trash&quot;, &quot;found&quot;: [{&quot;at&quot;: [4, 0], &quot;region&quot;: &quot;top-right&quot;}], &quot;answer&quot;: &quot;top-right&quot;}
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(cheese)&quot;, &quot;looks&quot;: 3} (window [38, 70], outcome won)
+<br>- m=  9 plate=[&#x27;*&#x27;] held=True | question: <b>where:trash</b> — “Where is the trash can, in case I need it?” → {&quot;target&quot;: &quot;trash&quot;, &quot;found&quot;: [{&quot;at&quot;: [4, 0], &quot;region&quot;: &quot;top-right&quot;}], &quot;answer&quot;: &quot;top-right&quot;}
+<br>- m=  9 plate=[&#x27;*&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(cheese)&quot;, &quot;looks&quot;: 3} (window [38, 70], outcome won)
 
 <i>Freeze-then-wander: the cook takes the plate and goes idle, is talked back into motion, then hunts for the cheese in three wrong places. The holding question is asked the moment the plate is picked up (an answer with two parts: a plate, nothing on it); the trash question is a map question no recipe step ever requires.</i>
 
 </div></details><details><summary>bm_easy_nops_hard_map_1  (EQQE)</summary><div class='note'>
 <br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> {&quot;component&quot;: &quot;tomato&quot;, &quot;wrong&quot;: &quot;cheese&quot;} (window [10, 42], outcome wrong</i>serve)
 <br>- m=  7 plate=[] held=True | question: <b>board<i>state</b> — “Which board has the tomato on it — is it still there?” → {&quot;boards&quot;: [{&quot;at&quot;: [3, 2], &quot;contents&quot;: [{&quot;name&quot;: &quot;tomato&quot;, &quot;state&quot;: &quot;chopped&quot;}]}, {&quot;at&quot;: [5, 3], &quot;contents&quot;: []}, {&quot;at&quot;:
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | question: <b>remaining</b> — “What is still missing from this plate?” → {&quot;on</i>plate<i>in</i>order&quot;: [&quot;tomato&quot;], &quot;still<i>to</i>plate<i>in</i>order&quot;: [&quot;cheese&quot;]}
-<br>- m= 11 plate=[&#x27;cheese&#x27;, &#x27;tomato&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;serve&quot;, &quot;looks&quot;: 2} (window [63, 95], outcome won)
+<br>- m=  9 plate=[&#x27;*&#x27;] held=True | question: <b>remaining</b> — “What is still missing from this plate?” → {&quot;on</i>plate<i>in</i>order&quot;: [&quot;tomato&quot;], &quot;still<i>to</i>plate<i>in</i>order&quot;: [&quot;cheese&quot;]}
+<br>- m= 11 plate=[&#x27;*&#x27;, &#x27;*&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;serve&quot;, &quot;looks&quot;: 2} (window [63, 95], outcome won)
 
 <i>Same prep-time slip as the medium map but on a layout where the wrong ingredient is a long walk away, so the recovery costs more. Ends with a pass-hunt on a map whose serving window is tucked in the top-right corner.</i>
 
 </div></details><details><summary>bm_easy_nops_hard_map_2  (QEQE)</summary><div class='note'>
 <br>- m=  7 plate=[] held=True | question: <b>where:cheese</b> — “Where is the cheese kept in this kitchen?” → {&quot;target&quot;: &quot;cheese&quot;, &quot;found&quot;: [{&quot;at&quot;: [1, 5], &quot;region&quot;: &quot;bottom-left&quot;}, {&quot;at&quot;: [5, 5], &quot;region&quot;: &quot;bottom&quot;}], &quot;answer&quot;: &quot;
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(cheese)&quot;, &quot;looks&quot;: 3} (window [63, 95], outcome won)
-<br>- m= 11 plate=[&#x27;cheese&#x27;, &#x27;tomato&#x27;] held=True | question: <b>plate<i>contents</b> — “What exactly is on the plate now, bottom to top?” → {&quot;held</i>plate<i>contents</i>in<i>order&quot;: [&quot;tomato&quot;, &quot;cheese&quot;], &quot;all</i>plates&quot;: [[&quot;held&quot;, [&quot;tomato&quot;, &quot;cheese&quot;]]]}
-<br>- m= 11 plate=[&#x27;cheese&#x27;, &#x27;tomato&#x27;] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;assemble(cheese)&quot;} (window [61, 93], outcome timeout)
+<br>- m=  9 plate=[&#x27;*&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(cheese)&quot;, &quot;looks&quot;: 3} (window [63, 95], outcome won)
+<br>- m= 11 plate=[&#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>plate<i>contents</b> — “What exactly is on the plate now, bottom to top?” → {&quot;held</i>plate<i>contents</i>in<i>order&quot;: [&quot;tomato&quot;, &quot;cheese&quot;], &quot;all</i>plates&quot;: [[&quot;held&quot;, [&quot;tomato&quot;, &quot;cheese&quot;]]]}
+<br>- m= 11 plate=[&#x27;*&#x27;, &#x27;*&#x27;] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;assemble(cheese)&quot;} (window [61, 93], outcome timeout)
 
 <i>The cook asks where the cheese is, is told (bottom-left, far away), and then still hunts three wrong counters for it once the tomato is on; then a stall with the completed plate. The read-back is asked just before the stall.</i>
 
 </div></details><details><summary>bm_easy_nops_hard_map_3  (EQEQ)</summary><div class='note'>
 <br>- m=  7 plate=[] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(tomato)&quot;, &quot;looks&quot;: 3} (window [44, 76], outcome won)
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | question: <b>visited:cheese</b> — “Have I already visited the cheese?” → {&quot;target&quot;: &quot;cheese&quot;, &quot;visited&quot;: false, &quot;first<i>visit</i>t&quot;: null}
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | error: <b>omit<i>subgoal</b> {&quot;after&quot;: &quot;assemble(tomato)&quot;} (window [44, 76], outcome wrong</i>serve)
-<br>- m= 11 plate=[&#x27;cheese&#x27;, &#x27;tomato&#x27;] held=True | question: <b>station<i>state</b> — “Is there anything on the stove I should be watching?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [], &quot;any<i>food</i>cooking&quot;: false, &quot;all<i>done&quot;: null}
+<br>- m=  9 plate=[&#x27;*&#x27;] held=True | question: <b>visited:cheese</b> — “Have I already visited the cheese?” → {&quot;target&quot;: &quot;cheese&quot;, &quot;visited&quot;: false, &quot;first<i>visit</i>t&quot;: null}
+<br>- m=  9 plate=[&#x27;*&#x27;] held=True | error: <b>omit<i>subgoal</b> {&quot;after&quot;: &quot;assemble(tomato)&quot;} (window [44, 76], outcome wrong</i>serve)
+<br>- m= 11 plate=[&#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>station<i>state</b> — “Is there anything on the stove I should be watching?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [], &quot;any<i>food</i>cooking&quot;: false, &quot;all<i>done&quot;: null}
 
 </i>Three-counter hunt for the tomato, then an early run to the pass with a half plate. The visited question is asked with tomato on and cheese still untouched (no); the stove question at the end is a no-heat trap._
 
 </div></details><details><summary>bm_easy_nops_hard_map_4  (QEEQ)</summary><div class='note'>
 <br>- m=  7 plate=[] held=True | question: <b>holding</b> — “What have I got in my hands?” → {&quot;holding&quot;: &quot;plate&quot;, &quot;plate<i>contents</i>in<i>order&quot;: []}
 <br>- m=  7 plate=[] held=True | error: <b>forget</i>next<i>step</b> {&quot;after&quot;: &quot;fetch</i>plate&quot;} (window [46, 78], outcome timeout)
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(cheese)&quot;, &quot;looks&quot;: 2} (window [63, 95], outcome won)
-<br>- m= 11 plate=[&#x27;cheese&#x27;, &#x27;tomato&#x27;] held=True | question: <b>where:serving</b> — “Which corner is the serving window in?” → {&quot;target&quot;: &quot;serving&quot;, &quot;found&quot;: [{&quot;at&quot;: [7, 2], &quot;region&quot;: &quot;top-right&quot;}], &quot;answer&quot;: &quot;top-right&quot;}
+<br>- m=  9 plate=[&#x27;*&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(cheese)&quot;, &quot;looks&quot;: 2} (window [63, 95], outcome won)
+<br>- m= 11 plate=[&#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>where:serving</b> — “Which corner is the serving window in?” → {&quot;target&quot;: &quot;serving&quot;, &quot;found&quot;: [{&quot;at&quot;: [7, 2], &quot;region&quot;: &quot;top-right&quot;}], &quot;answer&quot;: &quot;top-right&quot;}
 
 <i>Idle with an empty plate, then lost on the way to the cheese. Both questions are the ones a disoriented cook asks: what am I holding, and where do I take it.</i>
 
 </div></details><details><summary>bm_easy_nops_hard_map_5  (EQQE)</summary><div class='note'>
 <br>- m=  7 plate=[] held=True | error: <b>omit<i>subgoal</b> {&quot;after&quot;: &quot;fetch</i>plate&quot;} (window [40, 72], outcome wrong<i>serve)
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | question: <b>past</i>subgoal:assemble(cheese)</b> — “Did the cheese go on already?” → {&quot;subgoal&quot;: &quot;assemble(cheese)&quot;, &quot;finished&quot;: false, &quot;last<i>step</i>done<i>at&quot;: null}
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | question: <b>remaining</b> — “After the tomato, what else goes on?” → {&quot;on</i>plate<i>in</i>order&quot;: [&quot;tomato&quot;], &quot;still<i>to</i>plate<i>in</i>order&quot;: [&quot;cheese&quot;]}
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;assemble(tomato)&quot;} (window [50, 82], outcome timeout)
+<br>- m=  9 plate=[&#x27;*&#x27;] held=True | question: <b>past</i>subgoal:assemble(cheese)</b> — “Did the cheese go on already?” → {&quot;subgoal&quot;: &quot;assemble(cheese)&quot;, &quot;finished&quot;: false, &quot;last<i>step</i>done<i>at&quot;: null}
+<br>- m=  9 plate=[&#x27;*&#x27;] held=True | question: <b>remaining</b> — “What else still goes on?” → {&quot;on</i>plate<i>in</i>order&quot;: [&quot;tomato&quot;], &quot;still<i>to</i>plate<i>in</i>order&quot;: [&quot;cheese&quot;]}
+<br>- m=  9 plate=[&#x27;*&#x27;] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;assemble(tomato)&quot;} (window [50, 82], outcome timeout)
 
 <i>Two forms of getting-ahead-of-oneself: walking to the pass with an empty plate, then freezing halfway through plating. Both questions are asked with the tomato on, just before the freeze: the cheese question is a memory question whose answer is NOT YET, and the remaining question names it.</i>
 
@@ -410,144 +410,144 @@ plate state) and the semantic rationale for the pairing.</p>
 </div></details><details><summary>bm_hard_nops_medium_map_1  (QEQE)</summary><div class='note'>
 <br>- m= 26 plate=[] held=True | question: <b>station<i>state</b> — “What&#x27;s in the fryers right now and is any of it done?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [{&quot;station&quot;: &quot;fryer&quot;, &quot;at&quot;: [3, 4], &quot;contents&quot;: [&quot;fish&quot;], &quot;status&quot;: &quot;cooking&quot;, &quot;progress&quot;
 <br>- m= 26 plate=[] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;fish&quot;, &quot;loops&quot;: 2} (window [161, 195], outcome burned)
-<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | question: <b>remaining</b> — “After the fish, how many potatoes go on?” → {&quot;on</i>plate<i>in</i>order&quot;: [&quot;fish&quot;], &quot;still<i>to</i>plate<i>in</i>order&quot;: [&quot;potato&quot;, &quot;potato&quot;]}
-<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | error: <b>omit<i>subgoal</b> {&quot;after&quot;: &quot;assemble(fish)&quot;} (window [140, 172], outcome wrong</i>serve)
+<br>- m= 28 plate=[&#x27;*&#x27;] held=True | question: <b>remaining</b> — “How many more things go on this plate, and what are they?” → {&quot;on</i>plate<i>in</i>order&quot;: [&quot;fish&quot;], &quot;still<i>to</i>plate<i>in</i>order&quot;: [&quot;potato&quot;, &quot;potato&quot;]}
+<br>- m= 28 plate=[&#x27;*&#x27;] held=True | error: <b>omit<i>subgoal</b> {&quot;after&quot;: &quot;assemble(fish)&quot;} (window [140, 172], outcome wrong</i>serve)
 
 <i>Two fryers at once: the cook walks away from the fish while it fries, then heads for the pass with fish alone. The station question (two fryers, fish nearly done, chips further behind) is the hardest state read-out in this cell; the remaining question, asked just before the premature run, has a count in its answer (two).</i>
 
 </div></details><details><summary>bm_hard_nops_medium_map_2  (QEEQ)</summary><div class='note'>
 <br>- m= 26 plate=[] held=True | question: <b>past<i>subgoal:prep(potato)#2</b> — “Did I cut the second potato, or just one?” → {&quot;subgoal&quot;: &quot;prep(potato)#2&quot;, &quot;finished&quot;: true, &quot;last</i>step<i>done</i>at&quot;: 105}
 <br>- m= 26 plate=[] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(fish)&quot;, &quot;looks&quot;: 3} (window [125, 157], outcome won)
-<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;potato&quot;, &quot;loops&quot;: 3} (window [167, 201], outcome burned)
-<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>where:trash</b> — “Where is the trash?” → {&quot;target&quot;: &quot;trash&quot;, &quot;found&quot;: [{&quot;at&quot;: [5, 5], &quot;region&quot;: &quot;bottom-right&quot;}], &quot;answer&quot;: &quot;bottom-right&quot;}
+<br>- m= 28 plate=[&#x27;*&#x27;] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;potato&quot;, &quot;loops&quot;: 3} (window [167, 201], outcome burned)
+<br>- m= 30 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>where:trash</b> — “Where is the trash?” → {&quot;target&quot;: &quot;trash&quot;, &quot;found&quot;: [{&quot;at&quot;: [5, 5], &quot;region&quot;: &quot;bottom-right&quot;}], &quot;answer&quot;: &quot;bottom-right&quot;}
 
 </i>Lost looking for the fish fryer with an empty plate, then, with fish on, wandering three loops while the chips fry. The memory question is about the duplicated prep step._
 
 </div></details><details><summary>bm_hard_nops_medium_map_3  (QEQE)</summary><div class='note'>
 <br>- m= 26 plate=[] held=True | question: <b>visited:lettuce</b> — “Have I gone over to the lettuce at any point?” → {&quot;target&quot;: &quot;lettuce&quot;, &quot;visited&quot;: false, &quot;first<i>visit</i>t&quot;: null}
 <br>- m= 26 plate=[] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(fish)&quot;, &quot;looks&quot;: 2} (window [125, 157], outcome won)
-<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>plate<i>contents</b> — “What&#x27;s on the plate, in order?” → {&quot;held</i>plate<i>contents</i>in<i>order&quot;: [&quot;fish&quot;, &quot;potato&quot;, &quot;potato&quot;], &quot;all</i>plates&quot;: [[&quot;held&quot;, [&quot;fish&quot;, &quot;potato&quot;, &quot;potato&quot;]]]}
-<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;assemble(potato)&quot;} (window [147, 179], outcome timeout)
+<br>- m= 30 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>plate<i>contents</b> — “What&#x27;s on the plate, in order?” → {&quot;held</i>plate<i>contents</i>in<i>order&quot;: [&quot;fish&quot;, &quot;potato&quot;, &quot;potato&quot;], &quot;all</i>plates&quot;: [[&quot;held&quot;, [&quot;fish&quot;, &quot;potato&quot;, &quot;potato&quot;]]]}
+<br>- m= 30 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;assemble(potato)&quot;} (window [147, 179], outcome timeout)
 
 <i>A shorter hunt for the fish fryer with the plate in hand, then a freeze with the full plate. The visited question is about a distractor ingredient never used (no); the read-back is asked just before the freeze.</i>
 
 </div></details><details><summary>bm_hard_nops_medium_map_4  (EQEQ)</summary><div class='note'>
 <br>- m= 26 plate=[] held=True | error: <b>omit<i>subgoal</b> {&quot;after&quot;: &quot;fetch</i>plate&quot;} (window [135, 167], outcome wrong<i>serve)
-<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | question: <b>station</i>state</b> — “Are the chips done yet?” → {&quot;cooking<i>stations</i>with<i>food&quot;: [{&quot;station&quot;: &quot;fryer&quot;, &quot;at&quot;: [0, 5], &quot;contents&quot;: [&quot;potato&quot;, &quot;potato&quot;], &quot;status&quot;: &quot;cooked&quot;,
-<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | error: <b>leave</i>unattended</b> {&quot;component&quot;: &quot;potato&quot;, &quot;loops&quot;: 2} (window [167, 201], outcome burned)
-<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>where:serving</b> — “Which way is the pass from the fryers?” → {&quot;target&quot;: &quot;serving&quot;, &quot;found&quot;: [{&quot;at&quot;: [3, 2], &quot;region&quot;: &quot;top&quot;}], &quot;answer&quot;: &quot;top&quot;}
+<br>- m= 28 plate=[&#x27;*&#x27;] held=True | question: <b>station</i>state</b> — “Are the chips done yet?” → {&quot;cooking<i>stations</i>with<i>food&quot;: [{&quot;station&quot;: &quot;fryer&quot;, &quot;at&quot;: [0, 5], &quot;contents&quot;: [&quot;potato&quot;, &quot;potato&quot;], &quot;status&quot;: &quot;cooked&quot;,
+<br>- m= 28 plate=[&#x27;*&#x27;] held=True | error: <b>leave</i>unattended</b> {&quot;component&quot;: &quot;potato&quot;, &quot;loops&quot;: 2} (window [167, 201], outcome burned)
+<br>- m= 30 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>where:serving</b> — “Which way is the pass from the fryers?” → {&quot;target&quot;: &quot;serving&quot;, &quot;found&quot;: [{&quot;at&quot;: [3, 2], &quot;region&quot;: &quot;top&quot;}], &quot;answer&quot;: &quot;top&quot;}
 
 <i>Empty-plate run to the pass, then, with the fish plated, two loops away from the frying chips. The chips question is asked at exactly the moment the potato fryer is the only station with food; the pass on this map is at the top, far from the fryers.</i>
 
 </div></details><details><summary>bm_hard_nops_medium_map_5  (QEQE)</summary><div class='note'>
 <br>- m= 26 plate=[] held=True | question: <b>past<i>subgoal:ignite(potato)</b> — “Is the chip fryer actually switched on already?” → {&quot;subgoal&quot;: &quot;ignite(potato)&quot;, &quot;finished&quot;: true, &quot;last</i>step<i>done</i>at&quot;: 118}
 <br>- m= 26 plate=[] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;fish&quot;, &quot;loops&quot;: 3} (window [161, 195], outcome burned)
-<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | question: <b>holding</b> — “What am I holding and what&#x27;s on it?” → {&quot;holding&quot;: &quot;plate&quot;, &quot;plate</i>contents<i>in</i>order&quot;: [&quot;fish&quot;]}
-<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;serve&quot;, &quot;looks&quot;: 2} (window [139, 171], outcome won)
+<br>- m= 28 plate=[&#x27;*&#x27;] held=True | question: <b>holding</b> — “What am I holding and what&#x27;s on it?” → {&quot;holding&quot;: &quot;plate&quot;, &quot;plate</i>contents<i>in</i>order&quot;: [&quot;fish&quot;]}
+<br>- m= 30 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;serve&quot;, &quot;looks&quot;: 2} (window [139, 171], outcome won)
 
 <i>Three loops away from the frying fish with an empty plate in hand, then a hunt for the serving counter with the finished plate. The ignite question is a memory check about the second fryer while the first is the thing at risk; the holding question comes with the fish on the plate.</i>
 
 </div></details><details><summary>bm_hard_nops_hard_map_1  (EQQE)</summary><div class='note'>
 <br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> {&quot;component&quot;: &quot;fish&quot;, &quot;wrong&quot;: &quot;shrimp&quot;} (window [21, 53], outcome wrong</i>serve)
 <br>- m= 26 plate=[] held=True | question: <b>station<i>state</b> — “Which fryer has what in it, and what&#x27;s done?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [{&quot;station&quot;: &quot;fryer&quot;, &quot;at&quot;: [6, 4], &quot;contents&quot;: [&quot;potato&quot;, &quot;potato&quot;], &quot;status&quot;: &quot;cooked&quot;,
-<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>plate<i>contents</b> — “Read the plate back before I go to the pass.” → {&quot;held</i>plate<i>contents</i>in<i>order&quot;: [&quot;fish&quot;, &quot;potato&quot;, &quot;potato&quot;], &quot;all</i>plates&quot;: [[&quot;held&quot;, [&quot;fish&quot;, &quot;potato&quot;, &quot;potato&quot;]]]}
-<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;wrong&quot;: &quot;lemon&quot;, &quot;before&quot;: &quot;serve&quot;} (window [132, 164], outcome wrong</i>serve)
+<br>- m= 30 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>plate<i>contents</b> — “Read the plate back before I go to the pass.” → {&quot;held</i>plate<i>contents</i>in<i>order&quot;: [&quot;fish&quot;, &quot;potato&quot;, &quot;potato&quot;], &quot;all</i>plates&quot;: [[&quot;held&quot;, [&quot;fish&quot;, &quot;potato&quot;, &quot;potato&quot;]]]}
+<br>- m= 30 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;wrong&quot;: &quot;lemon&quot;, &quot;before&quot;: &quot;serve&quot;} (window [132, 164], outcome wrong</i>serve)
 
 <i>Shrimp goes into the fryer instead of fish — a look-alike substitution at prep time — and a lemon is added at the very end. Both are &#x27;plausible garnish&#x27; mistakes the assistant must reject on recipe grounds; the read-back is asked before the lemon detour.</i>
 
 </div></details><details><summary>bm_hard_nops_hard_map_2  (QEQE)</summary><div class='note'>
 <br>- m= 26 plate=[] held=True | question: <b>where:meat</b> — “Where is the meat kept — is that the fish?” → {&quot;target&quot;: &quot;meat&quot;, &quot;found&quot;: [{&quot;at&quot;: [1, 0], &quot;region&quot;: &quot;top-left&quot;}], &quot;answer&quot;: &quot;top-left&quot;}
 <br>- m= 26 plate=[] held=True | error: <b>add<i>foreign</b> {&quot;component&quot;: &quot;fish&quot;, &quot;wrong&quot;: &quot;meat&quot;} (window [129, 161], outcome wrong</i>serve)
-<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | question: <b>remaining</b> — “What&#x27;s still to go on?” → {&quot;on<i>plate</i>in<i>order&quot;: [&quot;fish&quot;], &quot;still</i>to<i>plate</i>in<i>order&quot;: [&quot;potato&quot;, &quot;potato&quot;]}
-<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | error: <b>leave</i>unattended</b> {&quot;component&quot;: &quot;potato&quot;, &quot;loops&quot;: 3} (window [138, 172], outcome burned)
+<br>- m= 28 plate=[&#x27;*&#x27;] held=True | question: <b>remaining</b> — “What&#x27;s still to go on?” → {&quot;on<i>plate</i>in<i>order&quot;: [&quot;fish&quot;], &quot;still</i>to<i>plate</i>in<i>order&quot;: [&quot;potato&quot;, &quot;potato&quot;]}
+<br>- m= 28 plate=[&#x27;*&#x27;] held=True | error: <b>leave</i>unattended</b> {&quot;component&quot;: &quot;potato&quot;, &quot;loops&quot;: 3} (window [138, 172], outcome burned)
 
 <i>A burger patty is plated in place of the fish (a cheap recovery: raw meat to the trash, the fish still in its fryer — which is smoking by then, a second cue); then the cook abandons the frying chips for three loops. The where question is a leading question asked just before the detour: the meat is top-left and is not the fish.</i>
 
 </div></details><details><summary>bm_hard_nops_hard_map_3  (EQEQ)</summary><div class='note'>
 <br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> {&quot;component&quot;: &quot;fish&quot;, &quot;wrong&quot;: &quot;potato&quot;} (window [7, 39], outcome wrong</i>serve)
 <br>- m= 26 plate=[] held=True | question: <b>visited:pan</b> — “Have I used the pan at all so far?” → {&quot;target&quot;: &quot;pan&quot;, &quot;visited&quot;: false, &quot;first<i>visit</i>t&quot;: null}
-<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;wrong&quot;: &quot;peas&quot;, &quot;before&quot;: &quot;assemble(potato)&quot;} (window [120, 152], outcome wrong</i>serve)
-<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>past<i>subgoal:prep(potato)#2</b> — “Both potatoes are cut, right — not just one?” → {&quot;subgoal&quot;: &quot;prep(potato)#2&quot;, &quot;finished&quot;: true, &quot;last</i>step<i>done</i>at&quot;: 71}
+<br>- m= 28 plate=[&#x27;*&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;wrong&quot;: &quot;peas&quot;, &quot;before&quot;: &quot;assemble(potato)&quot;} (window [120, 152], outcome wrong</i>serve)
+<br>- m= 30 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>past<i>subgoal:prep(potato)#2</b> — “Both potatoes are cut, right — not just one?” → {&quot;subgoal&quot;: &quot;prep(potato)#2&quot;, &quot;finished&quot;: true, &quot;last</i>step<i>done</i>at&quot;: 71}
 
 <i>A third potato is cut where the fish should be, and later peas go on before the chips. The pan question probes memory of a station this dish never uses (everything is fried: no); the last question is about the duplicated prep step.</i>
 
 </div></details><details><summary>bm_hard_nops_hard_map_4  (QEEQ)</summary><div class='note'>
 <br>- m= 26 plate=[] held=True | question: <b>station<i>state</b> — “Is the fish still in the fryer, and the chips?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [{&quot;station&quot;: &quot;fryer&quot;, &quot;at&quot;: [6, 4], &quot;contents&quot;: [&quot;potato&quot;, &quot;potato&quot;], &quot;status&quot;: &quot;cooked&quot;,
 <br>- m= 26 plate=[] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(fish)&quot;, &quot;looks&quot;: 2} (window [114, 146], outcome won)
-<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;wrong&quot;: &quot;noodles&quot;, &quot;before&quot;: &quot;assemble(potato)&quot;} (window [122, 154], outcome wrong</i>serve)
-<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>past<i>subgoal:ignite(fish)</b> — “Did I actually turn the fryer on under the fish?” → {&quot;subgoal&quot;: &quot;ignite(fish)&quot;, &quot;finished&quot;: true, &quot;last</i>step<i>done</i>at&quot;: 82}
+<br>- m= 28 plate=[&#x27;*&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;wrong&quot;: &quot;noodles&quot;, &quot;before&quot;: &quot;assemble(potato)&quot;} (window [122, 154], outcome wrong</i>serve)
+<br>- m= 30 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>past<i>subgoal:ignite(fish)</b> — “Did I actually turn the fryer on under the fish?” → {&quot;subgoal&quot;: &quot;ignite(fish)&quot;, &quot;finished&quot;: true, &quot;last</i>step<i>done</i>at&quot;: 82}
 
 <i>A hunt for the fish fryer with the empty plate, then noodles go on before the chips — a plate that ends up looking full but wrong. The station question is asked before the hunt (both fryers loaded); the memory question at the end is answered yes.</i>
 
 </div></details><details><summary>bm_hard_nops_hard_map_5  (QEQE)</summary><div class='note'>
 <br>- m= 26 plate=[] held=True | question: <b>holding</b> — “What have I got in hand?” → {&quot;holding&quot;: &quot;plate&quot;, &quot;plate<i>contents</i>in<i>order&quot;: []}
 <br>- m= 26 plate=[] held=True | error: <b>leave</i>unattended</b> {&quot;component&quot;: &quot;fish&quot;, &quot;loops&quot;: 3} (window [131, 165], outcome burned)
-<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>where:serving</b> — “Where do I serve this?” → {&quot;target&quot;: &quot;serving&quot;, &quot;found&quot;: [{&quot;at&quot;: [2, 3], &quot;region&quot;: &quot;middle-left&quot;}], &quot;answer&quot;: &quot;middle-left&quot;}
-<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;assemble(potato)&quot;} (window [127, 159], outcome timeout)
+<br>- m= 30 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>where:serving</b> — “Where do I serve this?” → {&quot;target&quot;: &quot;serving&quot;, &quot;found&quot;: [{&quot;at&quot;: [2, 3], &quot;region&quot;: &quot;middle-left&quot;}], &quot;answer&quot;: &quot;middle-left&quot;}
+<br>- m= 30 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;assemble(potato)&quot;} (window [127, 159], outcome timeout)
 
 <i>Walks away from the fish for three loops, then freezes with the finished plate. The pass on this map is middle-left, opposite the fryers; the question is asked just before the freeze.</i>
 
 </div></details><details><summary>bm_expert_nops_medium_map_1  (EQQE)</summary><div class='note'>
 <br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> {&quot;component&quot;: &quot;steak&quot;, &quot;wrong&quot;: &quot;potato&quot;} (window [17, 49], outcome wrong</i>serve)
 <br>- m= 30 plate=[] held=True | question: <b>station<i>state</b> — “Is the steak done or does it need longer?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [{&quot;station&quot;: &quot;pan&quot;, &quot;at&quot;: [3, 2], &quot;contents&quot;: [&quot;steak&quot;], &quot;status&quot;: &quot;cooked&quot;, &quot;progress&quot;: 
-<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | question: <b>remaining</b> — “What&#x27;s left after the steak?” → {&quot;on<i>plate</i>in<i>order&quot;: [&quot;steak&quot;], &quot;still</i>to<i>plate</i>in<i>order&quot;: [&quot;potato&quot;, &quot;potato&quot;]}
-<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | error: <b>leave</i>unattended</b> {&quot;component&quot;: &quot;potato&quot;, &quot;loops&quot;: 2} (window [179, 213], outcome burned)
+<br>- m= 32 plate=[&#x27;*&#x27;] held=True | question: <b>remaining</b> — “What&#x27;s still to go on the plate?” → {&quot;on<i>plate</i>in<i>order&quot;: [&quot;steak&quot;], &quot;still</i>to<i>plate</i>in<i>order&quot;: [&quot;potato&quot;, &quot;potato&quot;]}
+<br>- m= 32 plate=[&#x27;*&#x27;] held=True | error: <b>leave</i>unattended</b> {&quot;component&quot;: &quot;potato&quot;, &quot;loops&quot;: 2} (window [179, 213], outcome burned)
 
 <i>A third potato is cut where the steak should be, and later the chips are left in the fryer for two loops. The steak question is asked when the pan reads COOKED (take it off); the remaining question is asked just before the chips are abandoned.</i>
 
 </div></details><details><summary>bm_expert_nops_medium_map_2  (QEEQ)</summary><div class='note'>
 <br>- m= 30 plate=[] held=True | question: <b>past<i>subgoal:ignite(potato)</b> — “Did I switch the fryer on for the chips?” → {&quot;subgoal&quot;: &quot;ignite(potato)&quot;, &quot;finished&quot;: true, &quot;last</i>step<i>done</i>at&quot;: 130}
 <br>- m= 30 plate=[] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;steak&quot;, &quot;loops&quot;: 3} (window [171, 213], outcome burned)
-<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | error: <b>omit</i>subgoal</b> {&quot;after&quot;: &quot;assemble(steak)&quot;} (window [152, 184], outcome wrong<i>serve)
-<br>- m= 34 plate=[&#x27;potato&#x27;, &#x27;potato&#x27;, &#x27;steak&#x27;] held=True | question: <b>plate</i>contents</b> — “What&#x27;s on the plate right now?” → {&quot;held<i>plate</i>contents<i>in</i>order&quot;: [&quot;steak&quot;, &quot;potato&quot;, &quot;potato&quot;], &quot;all<i>plates&quot;: [[&quot;held&quot;, [&quot;steak&quot;, &quot;potato&quot;, &quot;potato&quot;]]]}
+<br>- m= 32 plate=[&#x27;*&#x27;] held=True | error: <b>omit</i>subgoal</b> {&quot;after&quot;: &quot;assemble(steak)&quot;} (window [152, 184], outcome wrong<i>serve)
+<br>- m= 34 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>plate</i>contents</b> — “What&#x27;s on the plate right now?” → {&quot;held<i>plate</i>contents<i>in</i>order&quot;: [&quot;steak&quot;, &quot;potato&quot;, &quot;potato&quot;], &quot;all<i>plates&quot;: [[&quot;held&quot;, [&quot;steak&quot;, &quot;potato&quot;, &quot;potato&quot;]]]}
 
 </i>Abandons the steak on the pan for three loops, then heads for the pass with the steak alone. The memory question is about the chip fryer, asked while the steak is the thing at risk._
 
 </div></details><details><summary>bm_expert_nops_medium_map_3  (QEQE)</summary><div class='note'>
 <br>- m= 30 plate=[] held=True | question: <b>where:pan</b> — “Where&#x27;s the pan?” → {&quot;target&quot;: &quot;pan&quot;, &quot;found&quot;: [{&quot;at&quot;: [3, 2], &quot;region&quot;: &quot;center&quot;}, {&quot;at&quot;: [3, 3], &quot;region&quot;: &quot;center&quot;}, {&quot;at&quot;: [5, 5], &quot;regi
 <br>- m= 30 plate=[] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(steak)&quot;, &quot;looks&quot;: 2} (window [145, 177], outcome won)
-<br>- m= 34 plate=[&#x27;potato&#x27;, &#x27;potato&#x27;, &#x27;steak&#x27;] held=True | question: <b>station<i>state</b> — “Is anything still cooking now, or is it all off?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [], &quot;any<i>food</i>cooking&quot;: false, &quot;all<i>done&quot;: null}
-<br>- m= 34 plate=[&#x27;potato&#x27;, &#x27;potato&#x27;, &#x27;steak&#x27;] held=True | error: <b>forget</i>next<i>step</b> {&quot;after&quot;: &quot;assemble(potato)&quot;} (window [166, 198], outcome timeout)
+<br>- m= 34 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>station<i>state</b> — “Is anything still cooking now, or is it all off?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [], &quot;any<i>food</i>cooking&quot;: false, &quot;all<i>done&quot;: null}
+<br>- m= 34 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | error: <b>forget</i>next<i>step</b> {&quot;after&quot;: &quot;assemble(potato)&quot;} (window [166, 198], outcome timeout)
 
 </i>Cannot find the pan with the plate in hand (this map has three pans; the steak is on the centre one), then freezes with the finished plate. The last question is the end-of-service check (every station empty), asked just before the freeze._
 
 </div></details><details><summary>bm_expert_nops_medium_map_4  (EQEQ)</summary><div class='note'>
 <br>- m= 30 plate=[] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(steak)&quot;, &quot;looks&quot;: 3} (window [145, 177], outcome won)
-<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | question: <b>holding</b> — “What&#x27;s in my hands right now?” → {&quot;holding&quot;: &quot;plate&quot;, &quot;plate<i>contents</i>in<i>order&quot;: [&quot;steak&quot;]}
-<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | error: <b>leave</i>unattended</b> {&quot;component&quot;: &quot;potato&quot;, &quot;loops&quot;: 3} (window [179, 213], outcome burned)
-<br>- m= 34 plate=[&#x27;potato&#x27;, &#x27;potato&#x27;, &#x27;steak&#x27;] held=True | question: <b>visited:lettuce</b> — “Did I ever go over to the lettuce?” → {&quot;target&quot;: &quot;lettuce&quot;, &quot;visited&quot;: false, &quot;first<i>visit</i>t&quot;: null}
+<br>- m= 32 plate=[&#x27;*&#x27;] held=True | question: <b>holding</b> — “What&#x27;s in my hands right now?” → {&quot;holding&quot;: &quot;plate&quot;, &quot;plate<i>contents</i>in<i>order&quot;: [&quot;steak&quot;]}
+<br>- m= 32 plate=[&#x27;*&#x27;] held=True | error: <b>leave</i>unattended</b> {&quot;component&quot;: &quot;potato&quot;, &quot;loops&quot;: 3} (window [179, 213], outcome burned)
+<br>- m= 34 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>visited:lettuce</b> — “Did I ever go over to the lettuce?” → {&quot;target&quot;: &quot;lettuce&quot;, &quot;visited&quot;: false, &quot;first<i>visit</i>t&quot;: null}
 
 <i>A longer pan hunt with the empty plate, then, with the steak on, three loops away from the chips. The holding question comes with the steak on the plate, just before the cook wanders off; the lettuce is a distractor never used (no).</i>
 
 </div></details><details><summary>bm_expert_nops_medium_map_5  (QEQE)</summary><div class='note'>
 <br>- m= 30 plate=[] held=True | question: <b>past<i>subgoal:prep(potato)#2</b> — “Did I cut both potatoes or only one?” → {&quot;subgoal&quot;: &quot;prep(potato)#2&quot;, &quot;finished&quot;: true, &quot;last</i>step<i>done</i>at&quot;: 112}
 <br>- m= 30 plate=[] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;steak&quot;, &quot;loops&quot;: 2} (window [171, 213], outcome burned)
-<br>- m= 34 plate=[&#x27;potato&#x27;, &#x27;potato&#x27;, &#x27;steak&#x27;] held=True | question: <b>where:serving</b> — “Which way to the serving counter?” → {&quot;target&quot;: &quot;serving&quot;, &quot;found&quot;: [{&quot;at&quot;: [6, 3], &quot;region&quot;: &quot;middle-right&quot;}], &quot;answer&quot;: &quot;middle-right&quot;}
-<br>- m= 34 plate=[&#x27;potato&#x27;, &#x27;potato&#x27;, &#x27;steak&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;serve&quot;, &quot;looks&quot;: 3} (window [167, 199], outcome won)
+<br>- m= 34 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>where:serving</b> — “Which way to the serving counter?” → {&quot;target&quot;: &quot;serving&quot;, &quot;found&quot;: [{&quot;at&quot;: [6, 3], &quot;region&quot;: &quot;middle-right&quot;}], &quot;answer&quot;: &quot;middle-right&quot;}
+<br>- m= 34 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;serve&quot;, &quot;looks&quot;: 3} (window [167, 199], outcome won)
 
 </i>Two loops away from the steak on the pan with an empty plate, then a hunt for the pass with the finished plate — right after asking where it is._
 
 </div></details><details><summary>bm_expert_nops_hard_map_1  (EQQE)</summary><div class='note'>
 <br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> {&quot;component&quot;: &quot;steak&quot;, &quot;wrong&quot;: &quot;mushroom&quot;} (window [24, 56], outcome wrong</i>serve)
 <br>- m= 30 plate=[] held=True | question: <b>station<i>state</b> — “Is the steak done, or still cooking? And the chips?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [{&quot;station&quot;: &quot;pan&quot;, &quot;at&quot;: [2, 4], &quot;contents&quot;: [&quot;steak&quot;], &quot;status&quot;: &quot;cooked&quot;, &quot;progress&quot;: 
-<br>- m= 34 plate=[&#x27;potato&#x27;, &#x27;potato&#x27;, &#x27;steak&#x27;] held=True | question: <b>plate<i>contents</b> — “Read me the plate before I serve.” → {&quot;held</i>plate<i>contents</i>in<i>order&quot;: [&quot;steak&quot;, &quot;potato&quot;, &quot;potato&quot;], &quot;all</i>plates&quot;: [[&quot;held&quot;, [&quot;steak&quot;, &quot;potato&quot;, &quot;potato&quot;]]]}
-<br>- m= 34 plate=[&#x27;potato&#x27;, &#x27;potato&#x27;, &#x27;steak&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;wrong&quot;: &quot;butter&quot;, &quot;before&quot;: &quot;serve&quot;} (window [147, 179], outcome wrong</i>serve)
+<br>- m= 34 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>plate<i>contents</b> — “Read me the plate before I serve.” → {&quot;held</i>plate<i>contents</i>in<i>order&quot;: [&quot;steak&quot;, &quot;potato&quot;, &quot;potato&quot;], &quot;all</i>plates&quot;: [[&quot;held&quot;, [&quot;steak&quot;, &quot;potato&quot;, &quot;potato&quot;]]]}
+<br>- m= 34 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;wrong&quot;: &quot;butter&quot;, &quot;before&quot;: &quot;serve&quot;} (window [147, 179], outcome wrong</i>serve)
 
 <i>Mushroom goes to the board instead of the steak; a knob of butter goes on at the end. Both are the kind of thing a real cook might defend (&#x27;it&#x27;s a steak, butter belongs&#x27;) — the assistant has to hold the recipe line. The read-back is asked before the butter detour.</i>
 
 </div></details><details><summary>bm_expert_nops_hard_map_2  (QQEE)</summary><div class='note'>
 <br>- m= 30 plate=[] held=True | question: <b>where:meat</b> — “Is the meat over there the steak?” → {&quot;target&quot;: &quot;meat&quot;, &quot;found&quot;: [{&quot;at&quot;: [3, 0], &quot;region&quot;: &quot;top&quot;}], &quot;answer&quot;: &quot;top&quot;}
-<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | question: <b>remaining</b> — “What else goes on?” → {&quot;on<i>plate</i>in<i>order&quot;: [&quot;steak&quot;], &quot;still</i>to<i>plate</i>in<i>order&quot;: [&quot;potato&quot;, &quot;potato&quot;]}
-<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | error: <b>leave</i>unattended</b> {&quot;component&quot;: &quot;potato&quot;, &quot;loops&quot;: 2} (window [150, 184], outcome burned)
-<br>- m= 34 plate=[&#x27;potato&#x27;, &#x27;potato&#x27;, &#x27;steak&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;wrong&quot;: &quot;pepper&quot;, &quot;before&quot;: &quot;serve&quot;} (window [158, 190], outcome wrong</i>serve)
+<br>- m= 32 plate=[&#x27;*&#x27;] held=True | question: <b>remaining</b> — “What else goes on?” → {&quot;on<i>plate</i>in<i>order&quot;: [&quot;steak&quot;], &quot;still</i>to<i>plate</i>in<i>order&quot;: [&quot;potato&quot;, &quot;potato&quot;]}
+<br>- m= 32 plate=[&#x27;*&#x27;] held=True | error: <b>leave</i>unattended</b> {&quot;component&quot;: &quot;potato&quot;, &quot;loops&quot;: 2} (window [150, 184], outcome burned)
+<br>- m= 34 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;wrong&quot;: &quot;pepper&quot;, &quot;before&quot;: &quot;serve&quot;} (window [158, 190], outcome wrong</i>serve)
 
 <i>The chips are abandoned for two loops with the steak plated, and pepper is added on top at the end. The where question is a leading confusion asked at the plate pickup — the meat source (top) is not the steak, which is on the pan.</i>
 
 </div></details><details><summary>bm_expert_nops_hard_map_3  (EQEQ)</summary><div class='note'>
 <br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> {&quot;component&quot;: &quot;steak&quot;, &quot;wrong&quot;: &quot;onion&quot;} (window [20, 52], outcome wrong</i>serve)
 <br>- m= 30 plate=[] held=True | question: <b>past<i>subgoal:prep(potato)#2</b> — “Did I cut both potatoes?” → {&quot;subgoal&quot;: &quot;prep(potato)#2&quot;, &quot;finished&quot;: true, &quot;last</i>step<i>done</i>at&quot;: 90}
-<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;wrong&quot;: &quot;egg&quot;, &quot;before&quot;: &quot;assemble(potato)&quot;} (window [135, 167], outcome wrong</i>serve)
-<br>- m= 34 plate=[&#x27;potato&#x27;, &#x27;potato&#x27;, &#x27;steak&#x27;] held=True | question: <b>visited:oven</b> — “Have I been near the oven?” → {&quot;target&quot;: &quot;oven&quot;, &quot;visited&quot;: false, &quot;first<i>visit</i>t&quot;: null}
+<br>- m= 32 plate=[&#x27;*&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;wrong&quot;: &quot;egg&quot;, &quot;before&quot;: &quot;assemble(potato)&quot;} (window [135, 167], outcome wrong</i>serve)
+<br>- m= 34 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>visited:oven</b> — “Have I been near the oven?” → {&quot;target&quot;: &quot;oven&quot;, &quot;visited&quot;: false, &quot;first<i>visit</i>t&quot;: null}
 
 <i>Onion is prepped in place of the steak, and later a fried egg is slipped in before the chips. The oven is a distractor station on this map that the plan never uses (visited=no).</i>
 
@@ -555,15 +555,15 @@ plate state) and the semantic rationale for the pairing.</p>
 <br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> {&quot;component&quot;: &quot;steak&quot;, &quot;wrong&quot;: &quot;potato&quot;} (window [28, 60], outcome wrong</i>serve)
 <br>- m= 30 plate=[] held=True | question: <b>station<i>state</b> — “Is the steak done, and how far along are the chips?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [{&quot;station&quot;: &quot;pan&quot;, &quot;at&quot;: [2, 4], &quot;contents&quot;: [&quot;steak&quot;], &quot;status&quot;: &quot;cooked&quot;, &quot;progress&quot;: 
 <br>- m= 30 plate=[] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;steak&quot;, &quot;loops&quot;: 2} (window [146, 184], outcome burned)
-<br>- m= 34 plate=[&#x27;potato&#x27;, &#x27;potato&#x27;, &#x27;steak&#x27;] held=True | question: <b>where:serving</b> — “Where&#x27;s the pass on this map?” → {&quot;target&quot;: &quot;serving&quot;, &quot;found&quot;: [{&quot;at&quot;: [0, 1], &quot;region&quot;: &quot;top-left&quot;}], &quot;answer&quot;: &quot;top-left&quot;}
+<br>- m= 34 plate=[&#x27;*&#x27;, &#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>where:serving</b> — “Where&#x27;s the pass on this map?” → {&quot;target&quot;: &quot;serving&quot;, &quot;found&quot;: [{&quot;at&quot;: [0, 1], &quot;region&quot;: &quot;top-left&quot;}], &quot;answer&quot;: &quot;top-left&quot;}
 
 </i>A third potato is cut where the steak should be; much later, with the plate in hand, the cook walks away from the steak on the pan for two loops. The station question is asked just before that: pan COOKED, fryer still COOKING — two different answers._
 
 </div></details><details><summary>bm_expert_nops_hard_map_5  (EQQE)</summary><div class='note'>
 <br>- m= 30 plate=[] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;steak&quot;, &quot;loops&quot;: 3} (window [146, 184], outcome burned)
-<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | question: <b>holding</b> — “What&#x27;s in my hands?” → {&quot;holding&quot;: &quot;plate&quot;, &quot;plate</i>contents<i>in</i>order&quot;: [&quot;steak&quot;]}
-<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | question: <b>past<i>subgoal:assemble(potato)</b> — “Have the chips gone on yet?” → {&quot;subgoal&quot;: &quot;assemble(potato)&quot;, &quot;finished&quot;: false, &quot;last</i>step<i>done</i>at&quot;: null}
-<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;component&quot;: &quot;potato&quot;, &quot;wrong&quot;: &quot;onion&quot;} (window [148, 180], outcome wrong</i>serve)
+<br>- m= 32 plate=[&#x27;*&#x27;] held=True | question: <b>holding</b> — “What&#x27;s in my hands?” → {&quot;holding&quot;: &quot;plate&quot;, &quot;plate</i>contents<i>in</i>order&quot;: [&quot;steak&quot;]}
+<br>- m= 32 plate=[&#x27;*&#x27;] held=True | question: <b>past<i>subgoal:assemble(potato)</b> — “Have the chips gone on yet?” → {&quot;subgoal&quot;: &quot;assemble(potato)&quot;, &quot;finished&quot;: false, &quot;last</i>step<i>done</i>at&quot;: null}
+<br>- m= 32 plate=[&#x27;*&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;component&quot;: &quot;potato&quot;, &quot;wrong&quot;: &quot;onion&quot;} (window [148, 180], outcome wrong</i>serve)
 
 <i>Three loops away from the steak with the empty plate, then onion plated in place of the chips. Both questions are asked with the steak on the plate, just before the onion detour: the holding answer is a loaded plate and the chips question&#x27;s answer is NOT YET.</i>
 
@@ -648,5 +648,5 @@ plate state) and the semantic rationale for the pairing.</p>
 <i>Tomato reached for right after the tortilla, skipping two layers; at the very end the complete burrito just sits. The holding question comes with tortilla and rice on the plate; the last question is leading and true: yes, only lettuce.</i>
 
 </div></details>
-<p class="note">Generated by tools/build_composite_review_page.py · engine 07cbea0e39</p>
+<p class="note">Generated by tools/build_composite_review_page.py · engine 8696b8236c</p>
 </body></html>
