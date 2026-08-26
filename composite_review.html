@@ -23,7 +23,7 @@ blockquote{border-left:3px solid #1f5f4b;background:#fff;padding:10px 16px;margi
 <b>human agent</b> before the model sweep resumes. Nothing here is a result; the three
 videos are inspection episodes run to prove the machinery.</p>
 <p class="note">Sweep status: PAUSED (episodes on disk are kept and the sweep resumes
-from them). Engine <code>687d31ea27</code>.</p>
+from them). Engine <code>961f995629</code>.</p>
 
 <h2>1 · What one episode is</h2>
 <p>An episode drops a simulated <b>cook</b> (the human agent) into a kitchen with a
@@ -56,9 +56,18 @@ every trigger is reachable after the previous recovery.</li>
 kitchen does not test what it claims and is inadmissible anywhere in a schedule.</li>
 <li><b>Distinct error labels and distinct question kinds inside every episode</b>; at most
 one burn-capable error per episode.</li>
+<li><b>Suite-wide diversity (v2, 2026-08-26)</b> — the 50 episodes are hand-designed from a
+replay-verified inventory of every realizable error instance (378 usable across the ten
+cells) and of every question kind's ground truth at every plate anchor. No (cell, error,
+parameters) instance appears twice in the suite (100 distinct for 100 slots) and no
+question is asked twice (100 distinct). The two errors of an episode sit at different
+moments of the plan (prep-time vs plating-time, on-heat vs at-plate); each question is
+anchored where its answer discriminates (a station still cooking vs done, a board still
+loaded, a step done long ago, a place the plan never visits, a long ordered list). Every
+episode carries the designer's rationale.</li>
 </ul>
-<p><code>error labels: add_foreign x4, forget_next_step x17, leave_unattended x10, mis_prep x25, omit_subgoal x19, repeat_step x5, search x14, wrong_order x6</code></p><p><code>qa kinds: board_state x10, holding x20, past_subgoal x15, plate_contents x9, plate_count x2, remaining x5, station_state x8, visited x13, where x18</code></p>
-<blockquote>`serve_raw` is absent from every schedule because all four of its verified cases anchor BEFORE any plate work (m&gt;0 with the t0 plate key) — the live harness refuses such anchors (E1), so the label is unusable under the plate-keyed trigger on these recipes. Its behaviour is semantically covered by `omit_subgoal` of a cook-prep subgoal, which serves the component raw. `pan_state` QA is excluded for the same anchor-collapse reason; `station_state` covers the identical question family.</blockquote>
+
+
 
 <h2>3 · The human agent under review</h2>
 <p>The cook is <code>gemini-3.7-flash</code> — the model the human-agent study selected
@@ -238,406 +247,406 @@ milestones, deviated blocks and each question's engine ground truth at its ancho
 <p>Ten cells (5 recipes × medium/hard maze) × five episodes. Every entry lists the
 schedule in firing order with its anchor (m = clean-plan command index; plate = anchor
 plate state) and the semantic rationale for the pairing.</p>
-<details><summary>bm_easy_nops_medium_map_1  (EEQQ)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>easyM1)
-<br>- m=  7 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>easyM1)
-<br>- m=  7 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_caprese</i><i>holding</i><i>t7)
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | qa</i>probe: <b>plate<i>contents — “What have I got on my plate so far, in order?”</b> (qa</i>probe<i>_caprese</i><i>plate</i>contents<i>_t9)
+<details><summary>bm_easy_nops_medium_map_1  (EQQE)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> {&quot;component&quot;: &quot;tomato&quot;, &quot;wrong&quot;: &quot;cheese&quot;} (window [7, 39], outcome wrong</i>serve)
+<br>- m=  7 plate=[] held=True | question: <b>board<i>state</b> — “Is there still anything sitting on a cutting board, and which one?” → {&quot;boards&quot;: [{&quot;at&quot;: [0, 1], &quot;contents&quot;: []}, {&quot;at&quot;: [5, 1], &quot;contents&quot;: [{&quot;name&quot;: &quot;tomato&quot;, &quot;state&quot;: &quot;chopped&quot;}]}], &quot;boar
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | question: <b>remaining</b> — “Tell me exactly what still has to go on this plate, in order.” → {&quot;on</i>plate<i>in</i>order&quot;: [&quot;tomato&quot;], &quot;still<i>to</i>plate<i>in</i>order&quot;: [&quot;cheese&quot;]}
+<br>- m= 11 plate=[&#x27;tomato&#x27;, &#x27;cheese&#x27;] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;assemble(cheese)&quot;} (window [43, 75], outcome timeout)
 
-</i>qa<i>probe</i><i>caprese</i><i>holding</i><i>t7 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>probe<i>_caprese</i><i>plate</i>contents<i>_t9 (plate</i>contents): a plate question is plausible after a omit<i>subgoal — the plate is what it hit</i>
+<i>Opens with the only prep-time mistake this dish allows (cheese goes to the board instead of the tomato); after the recovery the chopped tomato is left on the far board, which is what the first question probes. The second error is the opposite kind — nothing wrong is done, the cook simply stalls with a finished plate in hand — so the assistant must notice an absence of action at the very end.</i>
 
-</div></details><details><summary>bm_easy_nops_medium_map_2  (EEQQ)</summary><div class='note'>
-<br>- m=  7 plate=[] held=True | error: <b>search</b> (cx<i>search</i>easyM1)
-<br>- m=  7 plate=[] held=True | error: <b>forget<i>next</i>step</b> (cx<i>forget</i>next<i>step</i>easyM1)
-<br>- m=  7 plate=[] held=True | qa<i>probe: <b>where:lettuce — “Quick one — where do we keep the lettuce in this kitchen?”</b> (qa</i>auto<i>_where</i><i>lettuce</i><i>caprese</i><i>t7)
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | qa</i>probe: <b>past<i>subgoal:assemble(cheese) — “Did I already finish putting the cheese on the plate, or did I forget?”</b> (qa</i>auto<i>_past</i>subgoal<i>_assemble</i>cheese<i>_caprese</i><i>t9)
+</div></details><details><summary>bm_easy_nops_medium_map_2  (EQEQ)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | error: <b>omit<i>subgoal</b> {&quot;after&quot;: &quot;fetch</i>plate&quot;} (window [26, 58], outcome wrong<i>serve)
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | question: <b>station</i>state</b> — “Is anything cooking anywhere right now, or is this dish all cold?” → {&quot;cooking<i>stations</i>with<i>food&quot;: [], &quot;any</i>food<i>cooking&quot;: false, &quot;all</i>done&quot;: null}
+<br>- m= 11 plate=[&#x27;tomato&#x27;, &#x27;cheese&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;serve&quot;, &quot;looks&quot;: 3} (window [41, 73], outcome won)
+<br>- m= 11 plate=[&#x27;tomato&#x27;, &#x27;cheese&#x27;] held=True | question: <b>where:serving</b> — “Which way is the serving window from here?” → {&quot;target&quot;: &quot;serving&quot;, &quot;found&quot;: [{&quot;at&quot;: [1, 3], &quot;region&quot;: &quot;middle-left&quot;}], &quot;answer&quot;: &quot;middle-left&quot;}
 
-</i>qa<i>auto</i><i>where</i><i>lettuce</i><i>caprese</i><i>t7 (where:lettuce): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_past</i>subgoal<i>_assemble</i>cheese<i>_caprese</i><i>t9 (past</i>subgoal:assemble(cheese)): an episodic what-did-I-do question is plausible right after a forget<i>next</i>step recovery — the cook&#x27;s own history just became uncertain_
+<i>An impatient cook: grabs the plate and heads straight for the pass with nothing on it, then, once the plate is complete, wanders three wrong counters looking for the pass. The station question sits between the two errors and is a trap for an assistant that assumes every recipe has heat; the last question is the one the lost cook should actually ask.</i>
 
-</div></details><details><summary>bm_easy_nops_medium_map_3  (EEQQ)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>easyM1)
-<br>- m=  7 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>easyM2)
-<br>- m=  7 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_caprese</i><i>holding</i><i>t7)
-<br>- m= 11 plate=[&#x27;tomato&#x27;, &#x27;cheese&#x27;] held=True | qa</i>probe: <b>visited:cheese — “Did I stop by the cheese source at any point so far?”</b> (qa<i>auto</i><i>visited</i><i>cheese</i><i>caprese</i><i>t11)
+</div></details><details><summary>bm_easy_nops_medium_map_3  (EQEQ)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | error: <b>omit<i>subgoal</b> {&quot;sid&quot;: &quot;assemble(tomato)&quot;} (window [31, 63], outcome wrong</i>serve)
+<br>- m=  7 plate=[] held=True | question: <b>visited:cheese</b> — “Have I been over to the cheese yet?” → {&quot;target&quot;: &quot;cheese&quot;, &quot;visited&quot;: false, &quot;first<i>visit</i>t&quot;: null}
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;assemble(tomato)&quot;} (window [39, 71], outcome timeout)
+<br>- m= 11 plate=[&#x27;tomato&#x27;, &#x27;cheese&#x27;] held=True | question: <b>plate<i>contents</b> — “Read me back what is on the plate right now, in order.” → {&quot;held</i>plate<i>contents</i>in<i>order&quot;: [&quot;tomato&quot;, &quot;cheese&quot;], &quot;all</i>plates&quot;: [[&quot;held&quot;, [&quot;tomato&quot;, &quot;cheese&quot;]]]}
 
-</i>qa<i>probe</i><i>caprese</i><i>holding</i><i>t7 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_visited</i><i>cheese</i><i>caprese</i><i>t11 (visited:cheese): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+<i>Skipping the tomato means the plate arrives at the cheese step wrong-ordered; the assistant has to catch a missing layer, not a wrong one. Then, with the tomato finally on, the cook stalls with the cheese still to go. The visited question is asked before the cheese is touched (truth: no); the read-back is asked once both layers are on.</i>
 
-</div></details><details><summary>bm_easy_nops_medium_map_4  (QEEQ)</summary><div class='note'>
-<br>- m=  7 plate=[] held=True | qa<i>probe: <b>where:pan — “Quick one — where do we keep the pan in this kitchen?”</b> (qa</i>auto<i>_where</i><i>pan</i><i>caprese</i><i>t7)
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | error: <b>search</b> (cx</i>search<i>easyM2)
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>easyM2)
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | qa</i>probe: <b>plate<i>contents — “What have I got on my plate so far, in order?”</b> (qa</i>probe<i>_caprese</i><i>plate</i>contents<i>_t9)
+</div></details><details><summary>bm_easy_nops_medium_map_4  (EEQQ)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(tomato)&quot;, &quot;looks&quot;: 2} (window [33, 65], outcome won)
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | error: <b>omit<i>subgoal</b> {&quot;after&quot;: &quot;assemble(tomato)&quot;} (window [36, 68], outcome wrong</i>serve)
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | question: <b>remaining</b> — “What is left to put on, after the tomato?” → {&quot;on<i>plate</i>in<i>order&quot;: [&quot;tomato&quot;], &quot;still</i>to<i>plate</i>in<i>order&quot;: [&quot;cheese&quot;]}
+<br>- m= 11 plate=[&#x27;tomato&#x27;, &#x27;cheese&#x27;] held=True | question: <b>past</i>subgoal:prep(tomato)</b> — “Did I actually chop the tomato, or did I skip that?” → {&quot;subgoal&quot;: &quot;prep(tomato)&quot;, &quot;finished&quot;: true, &quot;last<i>step</i>done<i>at&quot;: 17}
 
-</i>qa<i>auto</i><i>where</i><i>pan</i><i>caprese</i><i>t7 (where:pan): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>probe<i>_caprese</i><i>plate</i>contents<i>_t9 (plate</i>contents): an unrelated spot-check — plausible anywhere the truth is well-defined_
+</i>The cook cannot find the chopped tomato after picking up the plate (two wrong counters), and then, having found it, walks to the pass with tomato but no cheese. The first question is answered mid-plating; the second is a memory question asked at the very end about a step done at the very start._
 
-</div></details><details><summary>bm_easy_nops_medium_map_5  (EEQQ)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>easyM1)
-<br>- m=  7 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>easyM1)
-<br>- m=  7 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_caprese</i><i>holding</i><i>t7)
-<br>- m= 11 plate=[&#x27;tomato&#x27;, &#x27;cheese&#x27;] held=True | qa</i>probe: <b>past<i>subgoal:fetch</i>plate — “Did I already finish grabbing the plate, or did I forget?”</b> (qa<i>auto</i><i>past</i>subgoal<i>_fetch</i>plate<i>_caprese</i><i>t11)
+</div></details><details><summary>bm_easy_nops_medium_map_5  (EQEQ)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;fetch<i>plate&quot;} (window [32, 64], outcome timeout)
+<br>- m=  7 plate=[] held=True | question: <b>holding</b> — “What am I holding right now and is there anything on it?” → {&quot;holding&quot;: &quot;plate&quot;, &quot;plate</i>contents<i>in</i>order&quot;: []}
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(cheese)&quot;, &quot;looks&quot;: 3} (window [38, 70], outcome won)
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | question: <b>where:trash</b> — “Where is the trash can, in case I need it?” → {&quot;target&quot;: &quot;trash&quot;, &quot;found&quot;: [{&quot;at&quot;: [4, 0], &quot;region&quot;: &quot;top-right&quot;}], &quot;answer&quot;: &quot;top-right&quot;}
 
-</i>qa<i>probe</i><i>caprese</i><i>holding</i><i>t7 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_past</i>subgoal<i>_fetch</i>plate<i>_caprese</i><i>t11 (past</i>subgoal:fetch<i>plate): an episodic what-did-I-do question is plausible right after a omit</i>subgoal recovery — the cook&#x27;s own history just became uncertain_
+<i>Freeze-then-wander: the cook takes the plate and goes idle, is talked back into motion, then hunts for the cheese in three wrong places. The holding question comes with the empty plate (an answer that has two parts); the trash question is a map question no recipe step ever requires.</i>
 
-</div></details><details><summary>bm_easy_nops_hard_map_1  (EEQQ)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>easyH1)
-<br>- m=  7 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>easyH1)
-<br>- m=  7 plate=[] held=True | qa<i>probe: <b>plate</i>count — “How many plates are out in the kitchen at the moment?”</b> (qa<i>hard</i><i>plate</i>count<i>_plate</i>count<i>_caprese</i>hard<i>_t7)
-<br>- m=  7 plate=[] held=True | qa</i>probe: <b>board<i>state — “Are the cutting boards all clear, or is something still sitting on one?”</b> (qa</i>hard<i>_board</i>state<i>_board</i>state<i>_caprese</i>hard<i>_t7)
+</div></details><details><summary>bm_easy_nops_hard_map_1  (EQQE)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> {&quot;component&quot;: &quot;tomato&quot;, &quot;wrong&quot;: &quot;cheese&quot;} (window [10, 42], outcome wrong</i>serve)
+<br>- m=  7 plate=[] held=True | question: <b>board<i>state</b> — “Which board has the tomato on it — is it still there?” → {&quot;boards&quot;: [{&quot;at&quot;: [3, 2], &quot;contents&quot;: [{&quot;name&quot;: &quot;tomato&quot;, &quot;state&quot;: &quot;chopped&quot;}]}, {&quot;at&quot;: [5, 3], &quot;contents&quot;: []}, {&quot;at&quot;:
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | question: <b>remaining</b> — “What is still missing from this plate?” → {&quot;on</i>plate<i>in</i>order&quot;: [&quot;tomato&quot;], &quot;still<i>to</i>plate<i>in</i>order&quot;: [&quot;cheese&quot;]}
+<br>- m= 11 plate=[&#x27;tomato&#x27;, &#x27;cheese&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;serve&quot;, &quot;looks&quot;: 2} (window [63, 95], outcome won)
 
-</i>qa<i>hard</i><i>plate</i>count<i>_plate</i>count<i>_caprese</i>hard<i>_t7 (plate</i>count): an unrelated spot-check — plausible anywhere the truth is well-defined; qa<i>hard</i><i>board</i>state<i>_board</i>state<i>_caprese</i>hard<i>_t7 (board</i>state): an unrelated spot-check — plausible anywhere the truth is well-defined_
+<i>Same prep-time slip as the medium map but on a layout where the wrong ingredient is a long walk away, so the recovery costs more. Ends with a pass-hunt on a map whose serving window is tucked in the top-right corner.</i>
 
-</div></details><details><summary>bm_easy_nops_hard_map_2  (EEQQ)</summary><div class='note'>
-<br>- m=  7 plate=[] held=True | error: <b>search</b> (cx<i>search</i>easyH1)
-<br>- m=  7 plate=[] held=True | error: <b>forget<i>next</i>step</b> (cx<i>forget</i>next<i>step</i>easyH1)
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | qa<i>probe: <b>plate</i>contents — “What has made it onto the plate so far?”</b> (qa<i>hard</i><i>plate</i>contents<i>_plate</i>contents<i>_caprese</i>hard<i>_t9)
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | qa</i>probe: <b>remaining — “What&#x27;s still missing from the plate for this order?”</b> (qa<i>hard</i><i>remaining</i><i>remaining</i><i>caprese</i>hard<i>_t9)
+</div></details><details><summary>bm_easy_nops_hard_map_2  (EQEQ)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | error: <b>omit<i>subgoal</b> {&quot;sid&quot;: &quot;assemble(tomato)&quot;} (window [53, 85], outcome wrong</i>serve)
+<br>- m=  7 plate=[] held=True | question: <b>where:cheese</b> — “Where is the cheese kept in this kitchen?” → {&quot;target&quot;: &quot;cheese&quot;, &quot;found&quot;: [{&quot;at&quot;: [1, 5], &quot;region&quot;: &quot;bottom-left&quot;}, {&quot;at&quot;: [5, 5], &quot;region&quot;: &quot;bottom&quot;}], &quot;answer&quot;: &quot;
+<br>- m= 11 plate=[&#x27;tomato&#x27;, &#x27;cheese&#x27;] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;assemble(cheese)&quot;} (window [61, 93], outcome timeout)
+<br>- m= 11 plate=[&#x27;tomato&#x27;, &#x27;cheese&#x27;] held=True | question: <b>plate<i>contents</b> — “What exactly is on the plate now, bottom to top?” → {&quot;held</i>plate<i>contents</i>in<i>order&quot;: [&quot;tomato&quot;, &quot;cheese&quot;], &quot;all</i>plates&quot;: [[&quot;held&quot;, [&quot;tomato&quot;, &quot;cheese&quot;]]]}
 
-</i>qa<i>hard</i><i>plate</i>contents<i>_plate</i>contents<i>_caprese</i>hard<i>_t9 (plate</i>contents): an unrelated spot-check — plausible anywhere the truth is well-defined; qa<i>hard</i><i>remaining</i><i>remaining</i><i>caprese</i>hard<i>_t9 (remaining): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+<i>Layer skipped, then a stall with the completed plate. The where question is asked before the cheese trip (bottom-left, far from the plate), the read-back after both layers.</i>
 
-</div></details><details><summary>bm_easy_nops_hard_map_3  (EQEQ)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>easyH1)
-<br>- m=  0 plate=[] held=False | qa<i>probe: <b>where:plates — “Quick one — where do we keep the plates in this kitchen?”</b> (qa</i>hard<i>_where</i><i>plates</i><i>caprese</i>hard<i>_t0)
-<br>- m=  7 plate=[] held=True | error: <b>omit</i>subgoal</b> (cx<i>omit</i>subgoal<i>easyH3)
-<br>- m=  7 plate=[] held=True | qa</i>probe: <b>past<i>subgoal:assemble(cheese) — “Did I already finish putting the cheese on the plate, or did I forget?”</b> (qa</i>hard<i>_past</i>subgoal<i>_assemble</i>cheese<i>_caprese</i>hard<i>_t7)
+</div></details><details><summary>bm_easy_nops_hard_map_3  (EEQQ)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(tomato)&quot;, &quot;looks&quot;: 3} (window [44, 76], outcome won)
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | error: <b>omit<i>subgoal</b> {&quot;after&quot;: &quot;assemble(tomato)&quot;} (window [44, 76], outcome wrong</i>serve)
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | question: <b>visited:cheese</b> — “Have I already visited the cheese?” → {&quot;target&quot;: &quot;cheese&quot;, &quot;visited&quot;: false, &quot;first<i>visit</i>t&quot;: null}
+<br>- m= 11 plate=[&#x27;tomato&#x27;, &#x27;cheese&#x27;] held=True | question: <b>station<i>state</b> — “Is there anything on the stove I should be watching?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [], &quot;any<i>food</i>cooking&quot;: false, &quot;all<i>done&quot;: null}
 
-</i>qa<i>hard</i><i>where</i><i>plates</i><i>caprese</i>hard<i>_t0 (where:plates): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>hard<i>_past</i>subgoal<i>_assemble</i>cheese<i>_caprese</i>hard<i>_t7 (past</i>subgoal:assemble(cheese)): an episodic what-did-I-do question is plausible right after a omit<i>subgoal recovery — the cook&#x27;s own history just became uncertain</i>
+</i>Three-counter hunt for the tomato, then an early run to the pass with a half plate. The visited question is asked with tomato on and cheese still untouched; the stove question at the end is a no-heat trap._
 
 </div></details><details><summary>bm_easy_nops_hard_map_4  (EQEQ)</summary><div class='note'>
-<br>- m=  7 plate=[] held=True | error: <b>search</b> (cx<i>search</i>easyH2)
-<br>- m=  7 plate=[] held=True | qa<i>probe: <b>holding — “Remind me — what have I got in my hands right now?”</b> (qa</i>hard<i>_holding</i><i>holding</i><i>caprese</i>hard<i>_t7)
-<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>easyH2)
-<br>- m= 11 plate=[&#x27;tomato&#x27;, &#x27;cheese&#x27;] held=True | qa</i>probe: <b>visited:cheese — “Did I stop by the cheese source at any point so far?”</b> (qa<i>hard</i><i>visited</i><i>cheese</i><i>caprese</i>hard<i>_t11)
+<br>- m=  7 plate=[] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;fetch<i>plate&quot;} (window [46, 78], outcome timeout)
+<br>- m=  7 plate=[] held=True | question: <b>holding</b> — “What have I got in my hands?” → {&quot;holding&quot;: &quot;plate&quot;, &quot;plate</i>contents<i>in</i>order&quot;: []}
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(cheese)&quot;, &quot;looks&quot;: 2} (window [63, 95], outcome won)
+<br>- m= 11 plate=[&#x27;tomato&#x27;, &#x27;cheese&#x27;] held=True | question: <b>where:serving</b> — “Which corner is the serving window in?” → {&quot;target&quot;: &quot;serving&quot;, &quot;found&quot;: [{&quot;at&quot;: [7, 2], &quot;region&quot;: &quot;top-right&quot;}], &quot;answer&quot;: &quot;top-right&quot;}
 
-</i>qa<i>hard</i><i>holding</i><i>holding</i><i>caprese</i>hard<i>_t7 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>hard<i>_visited</i><i>cheese</i><i>caprese</i>hard<i>_t11 (visited:cheese): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+<i>Idle with an empty plate, then lost on the way to the cheese. Both questions are the ones a disoriented cook asks: what am I holding, and where do I take it.</i>
 
-</div></details><details><summary>bm_easy_nops_hard_map_5  (EEQQ)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>easyH1)
-<br>- m=  7 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>easyH1)
-<br>- m=  7 plate=[] held=True | qa<i>probe: <b>plate</i>count — “How many plates are out in the kitchen at the moment?”</b> (qa<i>hard</i><i>plate</i>count<i>_plate</i>count<i>_caprese</i>hard<i>_t7)
-<br>- m=  7 plate=[] held=True | qa</i>probe: <b>board<i>state — “Are the cutting boards all clear, or is something still sitting on one?”</b> (qa</i>hard<i>_board</i>state<i>_board</i>state<i>_caprese</i>hard<i>_t7)
+</div></details><details><summary>bm_easy_nops_hard_map_5  (EQEQ)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | error: <b>omit<i>subgoal</b> {&quot;after&quot;: &quot;fetch</i>plate&quot;} (window [40, 72], outcome wrong<i>serve)
+<br>- m=  7 plate=[] held=True | question: <b>past</i>subgoal:fetch<i>plate</b> — “Did I already pick up a plate?” → {&quot;subgoal&quot;: &quot;fetch</i>plate&quot;, &quot;finished&quot;: true, &quot;last<i>step</i>done<i>at&quot;: 37}
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | error: <b>forget</i>next<i>step</b> {&quot;after&quot;: &quot;assemble(tomato)&quot;} (window [50, 82], outcome timeout)
+<br>- m=  9 plate=[&#x27;tomato&#x27;] held=True | question: <b>remaining</b> — “After the tomato, what else goes on?” → {&quot;on</i>plate<i>in</i>order&quot;: [&quot;tomato&quot;], &quot;still<i>to</i>plate<i>in</i>order&quot;: [&quot;cheese&quot;]}
 
-</i>qa<i>hard</i><i>plate</i>count<i>_plate</i>count<i>_caprese</i>hard<i>_t7 (plate</i>count): an unrelated spot-check — plausible anywhere the truth is well-defined; qa<i>hard</i><i>board</i>state<i>_board</i>state<i>_caprese</i>hard<i>_t7 (board</i>state): an unrelated spot-check — plausible anywhere the truth is well-defined_
+<i>Two forms of getting-ahead-of-oneself: walking to the pass with an empty plate, then freezing halfway through plating. The plate question is asked at the moment the plate is in hand (truth: yes), the remaining question with one layer on.</i>
 
 </div></details><details><summary>bm_medium_nops_medium_map_1  (EQEQ)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>medM1)
-<br>- m=  7 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_cheeseburger</i><i>holding</i><i>t7)
-<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | error: <b>leave</i>unattended</b> (cx<i>leave</i>unattended<i>medM1)
-<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | qa</i>probe: <b>plate<i>contents — “What have I got on my plate so far, in order?”</b> (qa</i>plate<i>contents)
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> {&quot;component&quot;: &quot;meat&quot;, &quot;wrong&quot;: &quot;lettuce&quot;} (window [8, 40], outcome wrong</i>serve)
+<br>- m=  7 plate=[] held=True | question: <b>station<i>state</b> — “Is the patty done, or is it still cooking?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [{&quot;station&quot;: &quot;pan&quot;, &quot;at&quot;: [0, 3], &quot;contents&quot;: [&quot;meat&quot;], &quot;status&quot;: &quot;cooking&quot;, &quot;progress&quot;: 
+<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;meat&quot;, &quot;loops&quot;: 2} (window [61, 110], outcome burned)
+<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | question: <b>remaining</b> — “What still goes on this burger, in order?” → {&quot;on</i>plate<i>in</i>order&quot;: [&quot;bun&quot;, &quot;meat&quot;], &quot;still<i>to</i>plate<i>in</i>order&quot;: [&quot;cheese&quot;]}
 
-</i>qa<i>probe</i><i>cheeseburger</i><i>holding</i><i>t7 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>plate<i>contents (plate</i>contents): an unrelated spot-check — plausible anywhere the truth is well-defined_
+<i>Two errors on the same component at two different stages: the cook first brings lettuce to the board instead of the meat, then, with the patty finally on the pan, walks off and busies themselves for two loops while it cooks toward burning. The station question is asked while the pan reads COOKING (not done) — the assistant must say so, not guess.</i>
 
-</div></details><details><summary>bm_medium_nops_medium_map_2  (QQEE)</summary><div class='note'>
-<br>- m=  7 plate=[] held=True | qa<i>probe: <b>where:bun — “Quick one — where do we keep the bun in this kitchen?”</b> (qa</i>auto<i>_where</i><i>bun</i><i>cheeseburger</i><i>t7)
-<br>- m=  7 plate=[] held=True | qa</i>probe: <b>past<i>subgoal:prep(meat) — “Wait — did I already get the meat in the pan and switch it on, or did I forget?”</b> (qa</i>past<i>prep)
-<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | error: <b>repeat</i>step</b> (cx<i>repeat</i>step<i>medM1)
-<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>medM1)
+</div></details><details><summary>bm_medium_nops_medium_map_2  (EQEQ)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | error: <b>wrong<i>order</b> {&quot;a&quot;: &quot;bun&quot;, &quot;b&quot;: &quot;meat&quot;} (window [40, 72], outcome wrong</i>serve)
+<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | question: <b>board<i>state</b> — “Are the cutting boards clear?” → {&quot;boards&quot;: [{&quot;at&quot;: [1, 0], &quot;contents&quot;: []}, {&quot;at&quot;: [2, 0], &quot;contents&quot;: []}], &quot;boards</i>in<i>use&quot;: 0}
+<br>- m= 13 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;, &#x27;cheese&#x27;] held=True | error: <b>add</i>foreign</b> {&quot;wrong&quot;: &quot;lettuce&quot;, &quot;before&quot;: &quot;serve&quot;} (window [58, 90], outcome wrong<i>serve)
+<br>- m= 13 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;, &#x27;cheese&#x27;] held=True | question: <b>plate</i>contents</b> — “Read the plate back to me before I serve it.” → {&quot;held<i>plate</i>contents<i>in</i>order&quot;: [&quot;bun&quot;, &quot;meat&quot;, &quot;cheese&quot;], &quot;all<i>plates&quot;: [[&quot;held&quot;, [&quot;bun&quot;, &quot;meat&quot;, &quot;cheese&quot;]]]}
 
-</i>qa<i>auto</i><i>where</i><i>bun</i><i>cheeseburger</i><i>t7 (where:bun): the question interrogates the very state the repeat</i>step touched (assemble(bun)) — the natural thing to ask after that confusion; qa<i>past</i>prep (past<i>subgoal:prep(meat)): an episodic what-did-I-do question is plausible right after a repeat</i>step recovery — the cook&#x27;s own history just became uncertain_
+</i>Patty goes on the empty plate before the bun — a stacking-order error that looks like progress — and at the very end lettuce (which this burger does not take) is grabbed on the way to the pass. The read-back at m=13 is exactly the check that would catch the lettuce._
 
-</div></details><details><summary>bm_medium_nops_medium_map_3  (EEQQ)</summary><div class='note'>
-<br>- m=  7 plate=[] held=True | error: <b>wrong<i>order</b> (cx</i>wrong<i>order</i>medM1)
-<br>- m=  7 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>medM1)
-<br>- m=  7 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_cheeseburger</i><i>holding</i><i>t7)
-<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | qa</i>probe: <b>visited:trash — “Did I stop by the trash bin at any point so far?”</b> (qa<i>past</i>visited<i>trash)
+</div></details><details><summary>bm_medium_nops_medium_map_3  (EQEQ)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | error: <b>omit<i>subgoal</b> {&quot;sid&quot;: &quot;assemble(bun)&quot;} (window [34, 66], outcome wrong</i>serve)
+<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | question: <b>station<i>state</b> — “Is the meat still on the pan?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [{&quot;station&quot;: &quot;pan&quot;, &quot;at&quot;: [0, 3], &quot;contents&quot;: [&quot;meat&quot;], &quot;status&quot;: &quot;cooked&quot;, &quot;progress&quot;: 1
+<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;assemble(meat)&quot;} (window [48, 80], outcome timeout)
+<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | question: <b>past<i>subgoal:assemble(bun)</b> — “Did the bun go on already?” → {&quot;subgoal&quot;: &quot;assemble(bun)&quot;, &quot;finished&quot;: true, &quot;last</i>step<i>done</i>at&quot;: 26}
 
-</i>qa<i>probe</i><i>cheeseburger</i><i>holding</i><i>t7 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>past<i>visited</i>trash (visited:trash): an unrelated spot-check — plausible anywhere the truth is well-defined_
+<i>The bun is skipped entirely, so the plate starts with meat; after the meat the cook stops dead. Both questions are about the bun/meat confusion: the pan question is asked at the bun anchor where the pan still holds the cooked patty; the bun question after meat is on.</i>
 
-</div></details><details><summary>bm_medium_nops_medium_map_4  (EEQQ)</summary><div class='note'>
-<br>- m=  7 plate=[] held=True | error: <b>add<i>foreign</b> (cx</i>add<i>foreign</i>medM1)
-<br>- m=  7 plate=[] held=True | error: <b>search</b> (cx<i>search</i>medM1)
-<br>- m=  7 plate=[] held=True | qa<i>probe: <b>where:cheese — “Quick one — where do we keep the cheese in this kitchen?”</b> (qa</i>auto<i>_where</i><i>cheese</i><i>cheeseburger</i><i>t7)
-<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | qa</i>probe: <b>plate<i>contents — “What have I got on my plate so far, in order?”</b> (qa</i>probe<i>_cheeseburger</i><i>plate</i>contents<i>_t11)
+</div></details><details><summary>bm_medium_nops_medium_map_4  (QEEQ)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | question: <b>where:bun</b> — “Where do I get the bun from?” → {&quot;target&quot;: &quot;bun&quot;, &quot;found&quot;: [{&quot;at&quot;: [4, 3], &quot;region&quot;: &quot;middle-right&quot;}], &quot;answer&quot;: &quot;middle-right&quot;}
+<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(meat)&quot;, &quot;looks&quot;: 3} (window [28, 60], outcome won)
+<br>- m= 13 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;, &#x27;cheese&#x27;] held=True | error: <b>repeat<i>step</b> {&quot;sid&quot;: &quot;assemble(bun)&quot;, &quot;at&quot;: &quot;assemble(cheese)&quot;} (window [50, 82], outcome wrong</i>serve)
+<br>- m= 13 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;, &#x27;cheese&#x27;] held=True | question: <b>remaining</b> — “Only the cheese left, right? What else?” → {&quot;on<i>plate</i>in<i>order&quot;: [&quot;bun&quot;, &quot;meat&quot;, &quot;cheese&quot;], &quot;still</i>to<i>plate</i>in<i>order&quot;: []}
 
-</i>qa<i>auto</i><i>where</i><i>cheese</i><i>cheeseburger</i><i>t7 (where:cheese): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>probe<i>_cheeseburger</i><i>plate</i>contents<i>_t11 (plate</i>contents): an unrelated spot-check — plausible anywhere the truth is well-defined_
+</i>The cook loses the pan (three wrong counters) with bun on the plate, then at the cheese step reaches for a second bun. The where question precedes the bun; the last question is a leading one — the correct answer is &#x27;nothing, it is complete&#x27;._
 
-</div></details><details><summary>bm_medium_nops_medium_map_5  (EQEQ)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>medM1)
-<br>- m=  7 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_cheeseburger</i><i>holding</i><i>t7)
-<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | error: <b>leave</i>unattended</b> (cx<i>leave</i>unattended<i>medM1)
-<br>- m= 13 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;, &#x27;cheese&#x27;] held=True | qa</i>probe: <b>past<i>subgoal:prep(meat) — “Did I already finish prepping the meat, or did I forget?”</b> (qa</i>auto<i>_past</i>subgoal<i>_prep</i>meat<i>_cheeseburger</i><i>t13)
+</div></details><details><summary>bm_medium_nops_medium_map_5  (QEQE)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | question: <b>holding</b> — “What is on the plate I&#x27;m holding?” → {&quot;holding&quot;: &quot;plate&quot;, &quot;plate<i>contents</i>in<i>order&quot;: []}
+<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | error: <b>add</i>foreign</b> {&quot;component&quot;: &quot;meat&quot;, &quot;wrong&quot;: &quot;lettuce&quot;} (window [41, 73], outcome wrong<i>serve)
+<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | question: <b>visited:cheese</b> — “Did I go to the cheese yet?” → {&quot;target&quot;: &quot;cheese&quot;, &quot;visited&quot;: false, &quot;first</i>visit<i>t&quot;: null}
+<br>- m= 13 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;, &#x27;cheese&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;serve&quot;, &quot;looks&quot;: 2} (window [49, 81], outcome won)
 
-</i>qa<i>probe</i><i>cheeseburger</i><i>holding</i><i>t7 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_past</i>subgoal<i>_prep</i>meat<i>_cheeseburger</i><i>t13 (past</i>subgoal:prep(meat)): the question interrogates the very state the leave<i>unattended touched (meat) — the natural thing to ask after that confusion</i>
+</i>Lettuce is plated in place of the patty (a substitution, not an addition), and the finished burger is then carried around two wrong counters looking for the pass. The visited question is asked with bun+meat on (cheese not yet: truth no)._
 
-</div></details><details><summary>bm_medium_nops_hard_map_1  (EQQE)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>medH1)
-<br>- m=  7 plate=[] held=True | qa<i>probe: <b>station</i>state — “Is anything cooking on the heat right now — and is it done yet?”</b> (qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_cheeseburger</i>hard<i>_t7)
-<br>- m=  7 plate=[] held=True | qa</i>probe: <b>board<i>state — “Are the cutting boards all clear, or is something still sitting on one?”</b> (qa</i>hard<i>_board</i>state<i>_board</i>state<i>_cheeseburger</i>hard<i>_t7)
-<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | error: <b>repeat</i>step</b> (cx<i>repeat</i>step<i>medH1)
+</div></details><details><summary>bm_medium_nops_hard_map_1  (EQEQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> {&quot;component&quot;: &quot;meat&quot;, &quot;wrong&quot;: &quot;cheese&quot;} (window [11, 43], outcome wrong</i>serve)
+<br>- m=  7 plate=[] held=True | question: <b>station<i>state</b> — “Is the patty ready to come off?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [{&quot;station&quot;: &quot;pan&quot;, &quot;at&quot;: [4, 3], &quot;contents&quot;: [&quot;meat&quot;], &quot;status&quot;: &quot;cooked&quot;, &quot;progress&quot;: 1
+<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | error: <b>wrong<i>order</b> {&quot;a&quot;: &quot;meat&quot;, &quot;b&quot;: &quot;cheese&quot;} (window [87, 119], outcome wrong</i>serve)
+<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | question: <b>plate<i>contents</b> — “What&#x27;s on the plate so far, in order?” → {&quot;held</i>plate<i>contents</i>in<i>order&quot;: [&quot;bun&quot;, &quot;meat&quot;], &quot;all</i>plates&quot;: [[&quot;held&quot;, [&quot;bun&quot;, &quot;meat&quot;]]]}
 
-</i>qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_cheeseburger</i>hard<i>_t7 (station</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt; qa</i>hard<i>_board</i>state<i>_board</i>state<i>_cheeseburger</i>hard<i>_t7 (board</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt</i>
+<i>Cheese is confused with meat twice: first at the board (cheese prepped instead of meat), then at the plate (cheese laid before the patty). The pan is already COOKED at the plate anchor on this map, so the answer to the first question is &#x27;yes, take it&#x27;.</i>
 
-</div></details><details><summary>bm_medium_nops_hard_map_2  (EQEQ)</summary><div class='note'>
-<br>- m=  7 plate=[] held=True | error: <b>wrong<i>order</b> (cx</i>wrong<i>order</i>medH1)
-<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | qa<i>probe: <b>plate</i>contents — “What has made it onto the plate so far?”</b> (qa<i>hard</i><i>plate</i>contents<i>_plate</i>contents<i>_cheeseburger</i>hard<i>_t9)
-<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>medH1)
-<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | qa</i>probe: <b>remaining — “What&#x27;s still missing from the plate for this order?”</b> (qa<i>hard</i><i>remaining</i><i>remaining</i><i>cheeseburger</i>hard<i>_t11)
+</div></details><details><summary>bm_medium_nops_hard_map_2  (QEEQ)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | question: <b>where:serving</b> — “Where&#x27;s the serving counter in this kitchen?” → {&quot;target&quot;: &quot;serving&quot;, &quot;found&quot;: [{&quot;at&quot;: [2, 2], &quot;region&quot;: &quot;middle-left&quot;}], &quot;answer&quot;: &quot;middle-left&quot;}
+<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;meat&quot;, &quot;loops&quot;: 1} (window [71, 120], outcome burned)
+<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | error: <b>omit</i>subgoal</b> {&quot;after&quot;: &quot;assemble(meat)&quot;} (window [69, 101], outcome wrong<i>serve)
+<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | question: <b>remaining</b> — “Cheese still to go, then done?” → {&quot;on</i>plate<i>in</i>order&quot;: [&quot;bun&quot;, &quot;meat&quot;], &quot;still<i>to</i>plate<i>in</i>order&quot;: [&quot;cheese&quot;]}
 
-</i>qa<i>hard</i><i>plate</i>contents<i>_plate</i>contents<i>_cheeseburger</i>hard<i>_t9 (plate</i>contents): a plate question is plausible after a wrong<i>order — the plate is what it hit; qa</i>hard<i>_remaining</i><i>remaining</i><i>cheeseburger</i>hard<i>_t11 (remaining): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+<i>A single busywork loop away from a cooking patty — the shortest leave</i>unattended — followed by walking to the pass with bun+meat and no cheese. The serving question is asked early on a map where the pass is on the far left._
 
-</div></details><details><summary>bm_medium_nops_hard_map_3  (QEEQ)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | qa<i>probe: <b>where:bun — “Quick one — where do we keep the bun in this kitchen?”</b> (qa</i>hard<i>_where</i><i>bun</i><i>cheeseburger</i>hard<i>_t0)
-<br>- m=  7 plate=[] held=True | error: <b>omit</i>subgoal</b> (cx<i>omit</i>subgoal<i>medH1)
-<br>- m=  7 plate=[] held=True | error: <b>search</b> (cx</i>search<i>medH1)
-<br>- m=  7 plate=[] held=True | qa</i>probe: <b>past<i>subgoal:assemble(bun) — “Did I already finish putting the bun on the plate, or did I forget?”</b> (qa</i>hard<i>_past</i>subgoal<i>_assemble</i>bun<i>_cheeseburger</i>hard<i>_t7)
+</div></details><details><summary>bm_medium_nops_hard_map_3  (EQEQ)</summary><div class='note'>
+<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | error: <b>omit<i>subgoal</b> {&quot;sid&quot;: &quot;assemble(meat)&quot;} (window [77, 109], outcome wrong</i>serve)
+<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | question: <b>station<i>state</b> — “Did I leave anything on the pan?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [{&quot;station&quot;: &quot;pan&quot;, &quot;at&quot;: [4, 3], &quot;contents&quot;: [&quot;meat&quot;], &quot;status&quot;: &quot;cooked&quot;, &quot;progress&quot;: 1
+<br>- m= 13 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;, &#x27;cheese&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;serve&quot;, &quot;looks&quot;: 3} (window [78, 110], outcome won)
+<br>- m= 13 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;, &#x27;cheese&#x27;] held=True | question: <b>past<i>subgoal:prep(meat)</b> — “Did I ever actually cook the meat?” → {&quot;subgoal&quot;: &quot;prep(meat)&quot;, &quot;finished&quot;: true, &quot;last</i>step<i>done</i>at&quot;: 21}
 
-</i>qa<i>hard</i><i>where</i><i>bun</i><i>cheeseburger</i>hard<i>_t0 (where:bun): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>hard<i>_past</i>subgoal<i>_assemble</i>bun<i>_cheeseburger</i>hard<i>_t7 (past</i>subgoal:assemble(bun)): an unrelated spot-check — plausible anywhere the truth is well-defined_
+<i>The patty never leaves the pan: the cook plates bun then cheese and is ready to serve. The pan question at m=9 has a cooked patty sitting there; the memory question at the end asks about the prep step from the very beginning (truth: yes).</i>
 
 </div></details><details><summary>bm_medium_nops_hard_map_4  (EQEQ)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>medH1)
-<br>- m=  7 plate=[] held=True | qa<i>probe: <b>holding — “Remind me — what have I got in my hands right now?”</b> (qa</i>hard<i>_holding</i><i>holding</i><i>cheeseburger</i>hard<i>_t7)
-<br>- m=  9 plate=[&#x27;bun&#x27;] held=True | error: <b>leave</i>unattended</b> (cx<i>leave</i>unattended<i>medH1)
-<br>- m= 13 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;, &#x27;cheese&#x27;] held=True | qa</i>probe: <b>visited:bun — “Did I stop by the bun source at any point so far?”</b> (qa<i>hard</i><i>visited</i><i>bun</i><i>cheeseburger</i>hard<i>_t13)
+<br>- m=  7 plate=[] held=True | error: <b>wrong<i>order</b> {&quot;a&quot;: &quot;bun&quot;, &quot;b&quot;: &quot;cheese&quot;} (window [67, 99], outcome wrong</i>serve)
+<br>- m=  7 plate=[] held=True | question: <b>holding</b> — “What am I carrying?” → {&quot;holding&quot;: &quot;plate&quot;, &quot;plate<i>contents</i>in<i>order&quot;: []}
+<br>- m= 13 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;, &#x27;cheese&#x27;] held=True | error: <b>forget</i>next<i>step</b> {&quot;after&quot;: &quot;assemble(cheese)&quot;} (window [86, 118], outcome timeout)
+<br>- m= 13 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;, &#x27;cheese&#x27;] held=True | question: <b>board</i>state</b> — “Anything left on a board?” → {&quot;boards&quot;: [{&quot;at&quot;: [3, 2], &quot;contents&quot;: []}, {&quot;at&quot;: [2, 3], &quot;contents&quot;: []}], &quot;boards<i>in</i>use&quot;: 0}
 
-</i>qa<i>hard</i><i>holding</i><i>holding</i><i>cheeseburger</i>hard<i>_t7 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>hard<i>_visited</i><i>bun</i><i>cheeseburger</i>hard<i>_t13 (visited:bun): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+<i>Cheese first onto the empty plate, then a stall with the finished plate. The board question is asked at the end when both boards are empty — the answer is &#x27;no, both clear&#x27;.</i>
 
-</div></details><details><summary>bm_medium_nops_hard_map_5  (EQQE)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>medH1)
-<br>- m=  7 plate=[] held=True | qa<i>probe: <b>station</i>state — “Is anything cooking on the heat right now — and is it done yet?”</b> (qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_cheeseburger</i>hard<i>_t7)
-<br>- m=  7 plate=[] held=True | qa</i>probe: <b>board<i>state — “Are the cutting boards all clear, or is something still sitting on one?”</b> (qa</i>hard<i>_board</i>state<i>_board</i>state<i>_cheeseburger</i>hard<i>_t7)
-<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | error: <b>repeat</i>step</b> (cx<i>repeat</i>step<i>medH1)
+</div></details><details><summary>bm_medium_nops_hard_map_5  (EQEQ)</summary><div class='note'>
+<br>- m=  7 plate=[] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(bun)&quot;, &quot;looks&quot;: 2} (window [43, 75], outcome won)
+<br>- m=  7 plate=[] held=True | question: <b>where:bun</b> — “Which way to the bun?” → {&quot;target&quot;: &quot;bun&quot;, &quot;found&quot;: [{&quot;at&quot;: [5, 5], &quot;region&quot;: &quot;bottom-right&quot;}], &quot;answer&quot;: &quot;bottom-right&quot;}
+<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | error: <b>repeat<i>step</b> {&quot;sid&quot;: &quot;assemble(bun)&quot;, &quot;at&quot;: &quot;assemble(meat)&quot;} (window [64, 96], outcome wrong</i>serve)
+<br>- m= 11 plate=[&#x27;bun&#x27;, &#x27;meat&#x27;] held=True | question: <b>visited:cheese</b> — “Have I been to the cheese already?” → {&quot;target&quot;: &quot;cheese&quot;, &quot;visited&quot;: false, &quot;first<i>visit</i>t&quot;: null}
 
-</i>qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_cheeseburger</i>hard<i>_t7 (station</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt; qa</i>hard<i>_board</i>state<i>_board</i>state<i>_cheeseburger</i>hard<i>_t7 (board</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt</i>
+<i>Cannot find the bun (bottom-right), then, once found, puts a second one on when the meat is due. The where question is the natural one before the first hunt; visited-cheese at bun+meat is &#x27;not yet&#x27;.</i>
 
-</div></details><details><summary>bm_hard_nops_medium_map_1  (EQQE)</summary><div class='note'>
-<br>- m= 26 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>hardM1)
-<br>- m= 26 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_fishchips</i><i>holding</i><i>t26)
-<br>- m= 26 plate=[] held=True | qa</i>probe: <b>where:cutting<i>board — “Quick one — where do we keep the cutting board in this kitchen?”</b> (qa</i>auto<i>_where</i><i>cutting</i>board<i>_fishchips</i><i>t26)
-<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>hardM1)
+</div></details><details><summary>bm_hard_nops_medium_map_1  (EQEQ)</summary><div class='note'>
+<br>- m= 26 plate=[] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;fish&quot;, &quot;loops&quot;: 2} (window [161, 195], outcome burned)
+<br>- m= 26 plate=[] held=True | question: <b>station</i>state</b> — “What&#x27;s in the fryers right now and is any of it done?” → {&quot;cooking<i>stations</i>with<i>food&quot;: [{&quot;station&quot;: &quot;fryer&quot;, &quot;at&quot;: [3, 4], &quot;contents&quot;: [&quot;fish&quot;], &quot;status&quot;: &quot;cooking&quot;, &quot;progress&quot;
+<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | error: <b>omit</i>subgoal</b> {&quot;after&quot;: &quot;assemble(fish)&quot;} (window [140, 172], outcome wrong<i>serve)
+<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | question: <b>remaining</b> — “After the fish, how many potatoes go on?” → {&quot;on</i>plate<i>in</i>order&quot;: [&quot;fish&quot;], &quot;still<i>to</i>plate<i>in</i>order&quot;: [&quot;potato&quot;, &quot;potato&quot;]}
 
-</i>qa<i>probe</i><i>fishchips</i><i>holding</i><i>t26 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_where</i><i>cutting</i>board<i>_fishchips</i><i>t26 (where:cutting</i>board): an unrelated spot-check — plausible anywhere the truth is well-defined_
+<i>Two fryers at once: the cook walks away from the fish while it fries, then serves the plate with fish alone. The station question (two fryers, two different statuses) is the hardest state read-out in this cell; the remaining question has a count in its answer (two).</i>
 
-</div></details><details><summary>bm_hard_nops_medium_map_2  (EEQQ)</summary><div class='note'>
-<br>- m= 26 plate=[] held=True | error: <b>search</b> (cx<i>search</i>hardM1)
-<br>- m= 26 plate=[] held=True | error: <b>leave<i>unattended</b> (cx</i>leave<i>unattended</i>hardM1)
-<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | qa<i>probe: <b>past</i>subgoal:assemble(potato) — “Did I already finish putting the potato on the plate, or did I forget?”</b> (qa<i>auto</i><i>past</i>subgoal<i>_assemble</i>potato<i>_fishchips</i><i>t28)
-<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | qa</i>probe: <b>visited:fryer — “Did I stop by the fryer at any point so far?”</b> (qa<i>auto</i><i>visited</i><i>fryer</i><i>fishchips</i><i>t30)
+</div></details><details><summary>bm_hard_nops_medium_map_2  (EQEQ)</summary><div class='note'>
+<br>- m= 26 plate=[] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(fish)&quot;, &quot;looks&quot;: 3} (window [125, 157], outcome won)
+<br>- m= 26 plate=[] held=True | question: <b>past<i>subgoal:prep(potato)#2</b> — “Did I cut the second potato, or just one?” → {&quot;subgoal&quot;: &quot;prep(potato)#2&quot;, &quot;finished&quot;: true, &quot;last</i>step<i>done</i>at&quot;: 105}
+<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;potato&quot;, &quot;loops&quot;: 3} (window [167, 201], outcome burned)
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>where:trash</b> — “Where is the trash?” → {&quot;target&quot;: &quot;trash&quot;, &quot;found&quot;: [{&quot;at&quot;: [5, 5], &quot;region&quot;: &quot;bottom-right&quot;}], &quot;answer&quot;: &quot;bottom-right&quot;}
 
-</i>qa<i>auto</i><i>past</i>subgoal<i>_assemble</i>potato<i>_fishchips</i><i>t28 (past</i>subgoal:assemble(potato)): an unrelated spot-check — plausible anywhere the truth is well-defined; qa<i>auto</i><i>visited</i><i>fryer</i><i>fishchips</i><i>t30 (visited:fryer): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+</i>Lost looking for the fish fryer with an empty plate, then, with fish on, wandering three loops while the chips fry. The memory question is about the duplicated prep step._
 
-</div></details><details><summary>bm_hard_nops_medium_map_3  (EQQE)</summary><div class='note'>
-<br>- m= 26 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>hardM3)
-<br>- m= 26 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_fishchips</i><i>holding</i><i>t26)
-<br>- m= 26 plate=[] held=True | qa</i>probe: <b>where:fish<i>source — “Quick one — where do we keep the fish source in this kitchen?”</b> (qa</i>auto<i>_where</i><i>fish</i>source<i>_fishchips</i><i>t26)
-<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>hardM1)
+</div></details><details><summary>bm_hard_nops_medium_map_3  (EQEQ)</summary><div class='note'>
+<br>- m= 26 plate=[] held=True | error: <b>omit<i>subgoal</b> {&quot;sid&quot;: &quot;assemble(fish)&quot;} (window [143, 175], outcome wrong</i>serve)
+<br>- m= 26 plate=[] held=True | question: <b>visited:lettuce</b> — “Have I gone over to the lettuce at any point?” → {&quot;target&quot;: &quot;lettuce&quot;, &quot;visited&quot;: false, &quot;first<i>visit</i>t&quot;: null}
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;assemble(potato)&quot;} (window [147, 179], outcome timeout)
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>plate<i>contents</b> — “What&#x27;s on the plate, in order?” → {&quot;held</i>plate<i>contents</i>in<i>order&quot;: [&quot;fish&quot;, &quot;potato&quot;, &quot;potato&quot;], &quot;all</i>plates&quot;: [[&quot;held&quot;, [&quot;fish&quot;, &quot;potato&quot;, &quot;potato&quot;]]]}
 
-</i>qa<i>probe</i><i>fishchips</i><i>holding</i><i>t26 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_where</i><i>fish</i>source<i>_fishchips</i><i>t26 (where:fish</i>source): the question interrogates the very state the omit<i>subgoal touched (assemble(fish)) — the natural thing to ask after that confusion</i>
+<i>The fish is left in the fryer and only chips are plated; then the cook freezes with the (now full) plate. The visited question is about a distractor ingredient never used (no).</i>
 
 </div></details><details><summary>bm_hard_nops_medium_map_4  (EEQQ)</summary><div class='note'>
-<br>- m= 26 plate=[] held=True | error: <b>leave<i>unattended</b> (cx</i>leave<i>unattended</i>hardM2)
-<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | error: <b>search</b> (cx<i>search</i>hardM2)
-<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | qa<i>probe: <b>past</i>subgoal:prep(fish) — “Did I already finish prepping the fish, or did I forget?”</b> (qa<i>auto</i><i>past</i>subgoal<i>_prep</i>fish<i>_fishchips</i><i>t30)
-<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | qa</i>probe: <b>visited:plates — “Did I stop by the plates at any point so far?”</b> (qa<i>auto</i><i>visited</i><i>plates</i><i>fishchips</i><i>t30)
+<br>- m= 26 plate=[] held=True | error: <b>omit<i>subgoal</b> {&quot;after&quot;: &quot;fetch</i>plate&quot;} (window [135, 167], outcome wrong<i>serve)
+<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(potato)&quot;, &quot;looks&quot;: 2} (window [136, 168], outcome won)
+<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | question: <b>station</i>state</b> — “Are the chips done yet?” → {&quot;cooking<i>stations</i>with<i>food&quot;: [{&quot;station&quot;: &quot;fryer&quot;, &quot;at&quot;: [0, 5], &quot;contents&quot;: [&quot;potato&quot;, &quot;potato&quot;], &quot;status&quot;: &quot;cooked&quot;,
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>board</i>state</b> — “Is the cutting board empty now?” → {&quot;boards&quot;: [{&quot;at&quot;: [2, 4], &quot;contents&quot;: []}], &quot;boards<i>in</i>use&quot;: 0}
 
-</i>qa<i>auto</i><i>past</i>subgoal<i>_prep</i>fish<i>_fishchips</i><i>t30 (past</i>subgoal:prep(fish)): an unrelated spot-check — plausible anywhere the truth is well-defined; qa<i>auto</i><i>visited</i><i>plates</i><i>fishchips</i><i>t30 (visited:plates): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+<i>Empty-plate run to the pass, then a hunt for the chip fryer with fish already plated. The chips question is asked at exactly the moment the potato fryer is the only station with food.</i>
 
-</div></details><details><summary>bm_hard_nops_medium_map_5  (EQQE)</summary><div class='note'>
-<br>- m= 26 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>hardM1)
-<br>- m= 26 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_fishchips</i><i>holding</i><i>t26)
-<br>- m= 26 plate=[] held=True | qa</i>probe: <b>where:pan — “Quick one — where do we keep the pan in this kitchen?”</b> (qa<i>auto</i><i>where</i><i>pan</i><i>fishchips</i><i>t26)
-<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>hardM1)
+</div></details><details><summary>bm_hard_nops_medium_map_5  (EQEQ)</summary><div class='note'>
+<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;potato&quot;, &quot;loops&quot;: 2} (window [167, 201], outcome burned)
+<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | question: <b>holding</b> — “What am I holding and what&#x27;s on it?” → {&quot;holding&quot;: &quot;plate&quot;, &quot;plate</i>contents<i>in</i>order&quot;: [&quot;fish&quot;]}
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;serve&quot;, &quot;looks&quot;: 3} (window [139, 171], outcome won)
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>where:serving</b> — “Which way is the pass?” → {&quot;target&quot;: &quot;serving&quot;, &quot;found&quot;: [{&quot;at&quot;: [3, 2], &quot;region&quot;: &quot;top&quot;}], &quot;answer&quot;: &quot;top&quot;}
 
-</i>qa<i>probe</i><i>fishchips</i><i>holding</i><i>t26 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_where</i><i>pan</i><i>fishchips</i><i>t26 (where:pan): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+<i>Walks away from the chips with fish on the plate, then cannot find the serving counter with the finished plate. The pass on this map is at the top, far from the fryers.</i>
 
-</div></details><details><summary>bm_hard_nops_hard_map_1  (EQQE)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>hardH1)
-<br>- m= 26 plate=[] held=True | qa<i>probe: <b>station</i>state — “Is anything cooking on the heat right now — and is it done yet?”</b> (qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_fishchips</i>hard<i>_t26)
-<br>- m= 26 plate=[] held=True | qa</i>probe: <b>board<i>state — “Are the cutting boards all clear, or is something still sitting on one?”</b> (qa</i>hard<i>_board</i>state<i>_board</i>state<i>_fishchips</i>hard<i>_t26)
-<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>hardH1)
+</div></details><details><summary>bm_hard_nops_hard_map_1  (EQEQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> {&quot;component&quot;: &quot;fish&quot;, &quot;wrong&quot;: &quot;shrimp&quot;} (window [21, 53], outcome wrong</i>serve)
+<br>- m= 26 plate=[] held=True | question: <b>station<i>state</b> — “Which fryer has what in it, and what&#x27;s done?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [{&quot;station&quot;: &quot;fryer&quot;, &quot;at&quot;: [6, 4], &quot;contents&quot;: [&quot;potato&quot;, &quot;potato&quot;], &quot;status&quot;: &quot;cooked&quot;,
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;wrong&quot;: &quot;lemon&quot;, &quot;before&quot;: &quot;serve&quot;} (window [132, 164], outcome wrong</i>serve)
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>plate<i>contents</b> — “Read the plate back before I go to the pass.” → {&quot;held</i>plate<i>contents</i>in<i>order&quot;: [&quot;fish&quot;, &quot;potato&quot;, &quot;potato&quot;], &quot;all</i>plates&quot;: [[&quot;held&quot;, [&quot;fish&quot;, &quot;potato&quot;, &quot;potato&quot;]]]}
 
-</i>qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_fishchips</i>hard<i>_t26 (station</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt; qa</i>hard<i>_board</i>state<i>_board</i>state<i>_fishchips</i>hard<i>_t26 (board</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt</i>
+<i>Shrimp is brought to the board instead of fish — a look-alike substitution at prep time — and a lemon is added at the very end. Both are &#x27;plausible garnish&#x27; mistakes the assistant must reject on recipe grounds, not on kitchen-safety grounds.</i>
 
-</div></details><details><summary>bm_hard_nops_hard_map_2  (EEQQ)</summary><div class='note'>
-<br>- m= 26 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>hardH1)
-<br>- m= 26 plate=[] held=True | error: <b>add<i>foreign</b> (cx</i>add<i>foreign</i>hardH1)
-<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | qa<i>probe: <b>plate</i>contents — “What has made it onto the plate so far?”</b> (qa<i>hard</i><i>plate</i>contents<i>_plate</i>contents<i>_fishchips</i>hard<i>_t28)
-<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | qa</i>probe: <b>remaining — “What&#x27;s still missing from the plate for this order?”</b> (qa<i>hard</i><i>remaining</i><i>remaining</i><i>fishchips</i>hard<i>_t28)
+</div></details><details><summary>bm_hard_nops_hard_map_2  (EQEQ)</summary><div class='note'>
+<br>- m= 26 plate=[] held=True | error: <b>add<i>foreign</b> {&quot;component&quot;: &quot;fish&quot;, &quot;wrong&quot;: &quot;meat&quot;} (window [129, 161], outcome wrong</i>serve)
+<br>- m= 26 plate=[] held=True | question: <b>where:meat</b> — “Where is the meat kept — is that the fish?” → {&quot;target&quot;: &quot;meat&quot;, &quot;found&quot;: [{&quot;at&quot;: [1, 0], &quot;region&quot;: &quot;top-left&quot;}], &quot;answer&quot;: &quot;top-left&quot;}
+<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;potato&quot;, &quot;loops&quot;: 3} (window [138, 172], outcome burned)
+<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | question: <b>remaining</b> — “What&#x27;s still to go on?” → {&quot;on</i>plate<i>in</i>order&quot;: [&quot;fish&quot;], &quot;still<i>to</i>plate<i>in</i>order&quot;: [&quot;potato&quot;, &quot;potato&quot;]}
 
-</i>qa<i>hard</i><i>plate</i>contents<i>_plate</i>contents<i>_fishchips</i>hard<i>_t28 (plate</i>contents): a plate question is plausible after a add<i>foreign — the plate is what it hit; qa</i>hard<i>_remaining</i><i>remaining</i><i>fishchips</i>hard<i>_t28 (remaining): a plate question is plausible after a add</i>foreign — the plate is what it hit_
+<i>A burger patty is plated in place of the fish; then the cook abandons the frying chips for three loops. The where question is a leading question: the meat is top-left and is not the fish.</i>
 
 </div></details><details><summary>bm_hard_nops_hard_map_3  (QEEQ)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | qa<i>probe: <b>where:bun — “Quick one — where do we keep the bun in this kitchen?”</b> (qa</i>hard<i>_where</i><i>bun</i><i>fishchips</i>hard<i>_t0)
-<br>- m= 26 plate=[] held=True | error: <b>search</b> (cx</i>search<i>hardH1)
-<br>- m= 26 plate=[] held=True | error: <b>leave</i>unattended</b> (cx<i>leave</i>unattended<i>hardH1)
-<br>- m= 26 plate=[] held=True | qa</i>probe: <b>past<i>subgoal:assemble(fish) — “Did I already finish putting the fish on the plate, or did I forget?”</b> (qa</i>hard<i>_past</i>subgoal<i>_assemble</i>fish<i>_fishchips</i>hard<i>_t26)
+<br>- m= 26 plate=[] held=True | question: <b>visited:pot</b> — “Have I touched the pot at all?” → {&quot;target&quot;: &quot;pot&quot;, &quot;visited&quot;: true, &quot;first<i>visit</i>t&quot;: 17}
+<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(potato)&quot;, &quot;looks&quot;: 3} (window [123, 155], outcome won)
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;wrong&quot;: &quot;peas&quot;, &quot;before&quot;: &quot;serve&quot;} (window [132, 164], outcome wrong</i>serve)
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>board<i>state</b> — “Any of the three boards still in use?” → {&quot;boards&quot;: [{&quot;at&quot;: [2, 2], &quot;contents&quot;: []}, {&quot;at&quot;: [0, 3], &quot;contents&quot;: []}, {&quot;at&quot;: [5, 8], &quot;contents&quot;: []}], &quot;boards</i>in<i>
 
-</i>qa<i>hard</i><i>where</i><i>bun</i><i>fishchips</i>hard<i>_t0 (where:bun): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>hard<i>_past</i>subgoal<i>_assemble</i>fish<i>_fishchips</i>hard<i>_t26 (past</i>subgoal:assemble(fish)): the question interrogates the very state the leave<i>unattended touched (fish) — the natural thing to ask after that confusion</i>
+</i>Fish on, then a three-counter hunt for the chip fryer, then peas on the finished plate. The visited-pot question probes the map memory (the pot is on the way, visited=True)._
 
-</div></details><details><summary>bm_hard_nops_hard_map_4  (EQEQ)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>hardH1)
-<br>- m= 26 plate=[] held=True | qa<i>probe: <b>holding — “Remind me — what have I got in my hands right now?”</b> (qa</i>hard<i>_holding</i><i>holding</i><i>fishchips</i>hard<i>_t26)
-<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>hardH1)
-<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | qa</i>probe: <b>visited:fish — “Did I stop by the fish source at any point so far?”</b> (qa<i>hard</i><i>visited</i><i>fish</i><i>fishchips</i>hard<i>_t30)
+</div></details><details><summary>bm_hard_nops_hard_map_4  (EEQQ)</summary><div class='note'>
+<br>- m= 26 plate=[] held=True | error: <b>omit<i>subgoal</b> {&quot;sid&quot;: &quot;assemble(fish)&quot;} (window [116, 148], outcome wrong</i>serve)
+<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;wrong&quot;: &quot;noodles&quot;, &quot;before&quot;: &quot;assemble(potato)&quot;} (window [122, 154], outcome wrong</i>serve)
+<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | question: <b>station<i>state</b> — “Is the fish still in the fryer?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [{&quot;station&quot;: &quot;fryer&quot;, &quot;at&quot;: [6, 4], &quot;contents&quot;: [&quot;potato&quot;, &quot;potato&quot;], &quot;status&quot;: &quot;cooked&quot;,
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>past<i>subgoal:ignite(fish)</b> — “Did I actually turn the fryer on under the fish?” → {&quot;subgoal&quot;: &quot;ignite(fish)&quot;, &quot;finished&quot;: true, &quot;last</i>step<i>done</i>at&quot;: 82}
 
-</i>qa<i>hard</i><i>holding</i><i>holding</i><i>fishchips</i>hard<i>_t26 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>hard<i>_visited</i><i>fish</i><i>fishchips</i>hard<i>_t30 (visited:fish): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+<i>The fish is never plated and noodles go on before the chips — a plate that ends up looking full but wrong. Both questions are about the fish: at m=28 the potato fryer is what is listed (fish already came off in the clean plan); the memory question is answered yes.</i>
 
-</div></details><details><summary>bm_hard_nops_hard_map_5  (EQQE)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>hardH1)
-<br>- m= 26 plate=[] held=True | qa<i>probe: <b>station</i>state — “Is anything cooking on the heat right now — and is it done yet?”</b> (qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_fishchips</i>hard<i>_t26)
-<br>- m= 26 plate=[] held=True | qa</i>probe: <b>board<i>state — “Are the cutting boards all clear, or is something still sitting on one?”</b> (qa</i>hard<i>_board</i>state<i>_board</i>state<i>_fishchips</i>hard<i>_t26)
-<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | error: <b>omit</i>subgoal</b> (cx<i>omit</i>subgoal<i>hardH3)
+</div></details><details><summary>bm_hard_nops_hard_map_5  (EQEQ)</summary><div class='note'>
+<br>- m= 26 plate=[] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;fish&quot;, &quot;loops&quot;: 3} (window [131, 165], outcome burned)
+<br>- m= 26 plate=[] held=True | question: <b>holding</b> — “What have I got in hand?” → {&quot;holding&quot;: &quot;plate&quot;, &quot;plate</i>contents<i>in</i>order&quot;: []}
+<br>- m= 28 plate=[&#x27;fish&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;component&quot;: &quot;potato&quot;, &quot;wrong&quot;: &quot;bun&quot;} (window [124, 156], outcome wrong</i>serve)
+<br>- m= 30 plate=[&#x27;fish&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>where:serving</b> — “Where do I serve this?” → {&quot;target&quot;: &quot;serving&quot;, &quot;found&quot;: [{&quot;at&quot;: [2, 3], &quot;region&quot;: &quot;middle-left&quot;}], &quot;answer&quot;: &quot;middle-left&quot;}
 
-</i>qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_fishchips</i>hard<i>_t26 (station</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt; qa</i>hard<i>_board</i>state<i>_board</i>state<i>_fishchips</i>hard<i>_t26 (board</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt</i>
+<i>Walks away from the fish for three loops, then plates a bun where the chips should go. The pass on this map is middle-left, opposite the fryers.</i>
 
-</div></details><details><summary>bm_expert_nops_medium_map_1  (EQQE)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>expM1)
-<br>- m= 30 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_steak</i><i>holding</i><i>t30)
-<br>- m= 30 plate=[] held=True | qa</i>probe: <b>where:fryer — “Quick one — where do we keep the fryer in this kitchen?”</b> (qa<i>auto</i><i>where</i><i>fryer</i><i>steak</i><i>t30)
-<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>expM1)
+</div></details><details><summary>bm_expert_nops_medium_map_1  (EQEQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> {&quot;component&quot;: &quot;steak&quot;, &quot;wrong&quot;: &quot;potato&quot;} (window [17, 49], outcome wrong</i>serve)
+<br>- m= 30 plate=[] held=True | question: <b>station<i>state</b> — “Is the steak done or does it need longer?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [{&quot;station&quot;: &quot;pan&quot;, &quot;at&quot;: [3, 2], &quot;contents&quot;: [&quot;steak&quot;], &quot;status&quot;: &quot;cooked&quot;, &quot;progress&quot;: 
+<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;potato&quot;, &quot;loops&quot;: 2} (window [179, 213], outcome burned)
+<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | question: <b>remaining</b> — “What&#x27;s left after the steak?” → {&quot;on</i>plate<i>in</i>order&quot;: [&quot;steak&quot;], &quot;still<i>to</i>plate<i>in</i>order&quot;: [&quot;potato&quot;, &quot;potato&quot;]}
 
-</i>qa<i>probe</i><i>steak</i><i>holding</i><i>t30 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_where</i><i>fryer</i><i>steak</i><i>t30 (where:fryer): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+<i>A third potato is cut where the steak should be, and later the chips are left in the fryer for two loops. The steak question is asked when the pan reads COOKED (take it off).</i>
 
-</div></details><details><summary>bm_expert_nops_medium_map_2  (EEQQ)</summary><div class='note'>
-<br>- m= 30 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>expM1)
-<br>- m= 30 plate=[] held=True | error: <b>search</b> (cx<i>search</i>expM1)
-<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | qa<i>probe: <b>past</i>subgoal:assemble(potato) — “Did I already finish putting the potato on the plate, or did I forget?”</b> (qa<i>auto</i><i>past</i>subgoal<i>_assemble</i>potato<i>_steak</i><i>t32)
-<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | qa</i>probe: <b>visited:fryer — “Did I stop by the fryer at any point so far?”</b> (qa<i>auto</i><i>visited</i><i>fryer</i><i>steak</i><i>t34)
+</div></details><details><summary>bm_expert_nops_medium_map_2  (EQEQ)</summary><div class='note'>
+<br>- m= 30 plate=[] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;steak&quot;, &quot;loops&quot;: 3} (window [171, 213], outcome burned)
+<br>- m= 30 plate=[] held=True | question: <b>past</i>subgoal:ignite(potato)</b> — “Did I switch the fryer on for the chips?” → {&quot;subgoal&quot;: &quot;ignite(potato)&quot;, &quot;finished&quot;: true, &quot;last<i>step</i>done<i>at&quot;: 130}
+<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | error: <b>omit</i>subgoal</b> {&quot;after&quot;: &quot;assemble(steak)&quot;} (window [152, 184], outcome wrong<i>serve)
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>plate</i>contents</b> — “What&#x27;s on the plate right now?” → {&quot;held<i>plate</i>contents<i>in</i>order&quot;: [&quot;steak&quot;, &quot;potato&quot;, &quot;potato&quot;], &quot;all<i>plates&quot;: [[&quot;held&quot;, [&quot;steak&quot;, &quot;potato&quot;, &quot;potato&quot;]]]}
 
-</i>qa<i>auto</i><i>past</i>subgoal<i>_assemble</i>potato<i>_steak</i><i>t32 (past</i>subgoal:assemble(potato)): an unrelated spot-check — plausible anywhere the truth is well-defined; qa<i>auto</i><i>visited</i><i>fryer</i><i>steak</i><i>t34 (visited:fryer): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+</i>Abandons the steak on the pan for three loops, then serves the steak alone. The memory question is about the chip fryer, asked while the steak is the thing at risk._
 
-</div></details><details><summary>bm_expert_nops_medium_map_3  (EEQQ)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>expM1)
-<br>- m= 30 plate=[] held=True | error: <b>leave<i>unattended</b> (cx</i>leave<i>unattended</i>expM1)
-<br>- m= 30 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_steak</i><i>holding</i><i>t30)
-<br>- m= 30 plate=[] held=True | qa</i>probe: <b>where:lettuce — “Quick one — where do we keep the lettuce in this kitchen?”</b> (qa<i>auto</i><i>where</i><i>lettuce</i><i>steak</i><i>t30)
+</div></details><details><summary>bm_expert_nops_medium_map_3  (EQEQ)</summary><div class='note'>
+<br>- m= 30 plate=[] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(steak)&quot;, &quot;looks&quot;: 2} (window [145, 177], outcome won)
+<br>- m= 30 plate=[] held=True | question: <b>where:pan</b> — “Where&#x27;s the pan?” → {&quot;target&quot;: &quot;pan&quot;, &quot;found&quot;: [{&quot;at&quot;: [3, 2], &quot;region&quot;: &quot;center&quot;}, {&quot;at&quot;: [3, 3], &quot;region&quot;: &quot;center&quot;}, {&quot;at&quot;: [5, 5], &quot;regi
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;assemble(potato)&quot;} (window [166, 198], outcome timeout)
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>board<i>state</b> — “Are both boards clear?” → {&quot;boards&quot;: [{&quot;at&quot;: [1, 0], &quot;contents&quot;: []}, {&quot;at&quot;: [0, 2], &quot;contents&quot;: []}], &quot;boards</i>in<i>use&quot;: 0}
 
-</i>qa<i>probe</i><i>steak</i><i>holding</i><i>t30 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_where</i><i>lettuce</i><i>steak</i><i>t30 (where:lettuce): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+</i>Cannot find the pan with the plate in hand, then freezes with the finished plate. The where question is the honest version of what the hunt is about._
 
-</div></details><details><summary>bm_expert_nops_medium_map_4  (EEQQ)</summary><div class='note'>
-<br>- m= 30 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>expM3)
-<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget<i>next</i>step</b> (cx<i>forget</i>next<i>step</i>expM1)
-<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | qa<i>probe: <b>past</i>subgoal:prep(steak) — “Did I already finish prepping the steak, or did I forget?”</b> (qa<i>auto</i><i>past</i>subgoal<i>_prep</i>steak<i>_steak</i><i>t34)
-<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | qa</i>probe: <b>visited:pan — “Did I stop by the pan at any point so far?”</b> (qa<i>auto</i><i>visited</i><i>pan</i><i>steak</i><i>t34)
+</div></details><details><summary>bm_expert_nops_medium_map_4  (EQEQ)</summary><div class='note'>
+<br>- m= 30 plate=[] held=True | error: <b>omit<i>subgoal</b> {&quot;sid&quot;: &quot;assemble(steak)&quot;} (window [159, 191], outcome wrong</i>serve)
+<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | question: <b>station<i>state</b> — “Is anything still cooking?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [{&quot;station&quot;: &quot;fryer&quot;, &quot;at&quot;: [3, 5], &quot;contents&quot;: [&quot;potato&quot;, &quot;potato&quot;], &quot;status&quot;: &quot;cooked&quot;,
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;serve&quot;, &quot;looks&quot;: 3} (window [167, 199], outcome won)
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>visited:lettuce</b> — “Did I ever go over to the lettuce?” → {&quot;target&quot;: &quot;lettuce&quot;, &quot;visited&quot;: false, &quot;first<i>visit</i>t&quot;: null}
 
-</i>qa<i>auto</i><i>past</i>subgoal<i>_prep</i>steak<i>_steak</i><i>t34 (past</i>subgoal:prep(steak)): an episodic what-did-I-do question is plausible right after a forget<i>next</i>step recovery — the cook&#x27;s own history just became uncertain; qa<i>auto</i><i>visited</i><i>pan</i><i>steak</i><i>t34 (visited:pan): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+<i>Only chips get plated — the steak stays on the pan — and then the cook hunts for the pass with a wrong plate. At m=32 the fryer still holds the chips (cooking): a real read-out.</i>
 
-</div></details><details><summary>bm_expert_nops_medium_map_5  (EQQE)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>expM1)
-<br>- m= 30 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_steak</i><i>holding</i><i>t30)
-<br>- m= 30 plate=[] held=True | qa</i>probe: <b>where:pot — “Quick one — where do we keep the pot in this kitchen?”</b> (qa<i>auto</i><i>where</i><i>pot</i><i>steak</i><i>t30)
-<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>search</b> (cx</i>search<i>expM3)
+</div></details><details><summary>bm_expert_nops_medium_map_5  (EQEQ)</summary><div class='note'>
+<br>- m= 30 plate=[] held=True | error: <b>omit<i>subgoal</b> {&quot;after&quot;: &quot;fetch</i>plate&quot;} (window [148, 180], outcome wrong<i>serve)
+<br>- m= 30 plate=[] held=True | question: <b>holding</b> — “What am I holding?” → {&quot;holding&quot;: &quot;plate&quot;, &quot;plate</i>contents<i>in</i>order&quot;: []}
+<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;potato&quot;, &quot;loops&quot;: 3} (window [179, 213], outcome burned)
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>where:serving</b> — “Which way to the serving counter?” → {&quot;target&quot;: &quot;serving&quot;, &quot;found&quot;: [{&quot;at&quot;: [6, 3], &quot;region&quot;: &quot;middle-right&quot;}], &quot;answer&quot;: &quot;middle-right&quot;}
 
-</i>qa<i>probe</i><i>steak</i><i>holding</i><i>t30 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_where</i><i>pot</i><i>steak</i><i>t30 (where:pot): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+</i>Empty plate straight to the pass, then three loops away from the frying chips with steak already plated._
 
-</div></details><details><summary>bm_expert_nops_hard_map_1  (EQQE)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>expH1)
-<br>- m= 30 plate=[] held=True | qa<i>probe: <b>station</i>state — “Is anything cooking on the heat right now — and is it done yet?”</b> (qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_steak</i>hard<i>_t30)
-<br>- m= 30 plate=[] held=True | qa</i>probe: <b>board<i>state — “Are the cutting boards all clear, or is something still sitting on one?”</b> (qa</i>hard<i>_board</i>state<i>_board</i>state<i>_steak</i>hard<i>_t30)
-<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>expH1)
+</div></details><details><summary>bm_expert_nops_hard_map_1  (EQEQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> {&quot;component&quot;: &quot;steak&quot;, &quot;wrong&quot;: &quot;mushroom&quot;} (window [24, 56], outcome wrong</i>serve)
+<br>- m= 30 plate=[] held=True | question: <b>station<i>state</b> — “Is the steak resting done, or still on heat?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [{&quot;station&quot;: &quot;pan&quot;, &quot;at&quot;: [2, 4], &quot;contents&quot;: [&quot;steak&quot;], &quot;status&quot;: &quot;cooked&quot;, &quot;progress&quot;: 
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;wrong&quot;: &quot;butter&quot;, &quot;before&quot;: &quot;serve&quot;} (window [147, 179], outcome wrong</i>serve)
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>plate<i>contents</b> — “Read me the plate before I serve.” → {&quot;held</i>plate<i>contents</i>in<i>order&quot;: [&quot;steak&quot;, &quot;potato&quot;, &quot;potato&quot;], &quot;all</i>plates&quot;: [[&quot;held&quot;, [&quot;steak&quot;, &quot;potato&quot;, &quot;potato&quot;]]]}
 
-</i>qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_steak</i>hard<i>_t30 (station</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt; qa</i>hard<i>_board</i>state<i>_board</i>state<i>_steak</i>hard<i>_t30 (board</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt</i>
+<i>Mushroom goes to the board instead of the steak; a knob of butter goes on at the end. Both are the kind of thing a real cook might defend (&#x27;it&#x27;s a steak, butter belongs&#x27;) — the assistant has to hold the recipe line.</i>
 
-</div></details><details><summary>bm_expert_nops_hard_map_2  (EEQQ)</summary><div class='note'>
-<br>- m= 30 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>expH1)
-<br>- m= 30 plate=[] held=True | error: <b>add<i>foreign</b> (cx</i>add<i>foreign</i>expH1)
-<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | qa<i>probe: <b>plate</i>contents — “What has made it onto the plate so far?”</b> (qa<i>hard</i><i>plate</i>contents<i>_plate</i>contents<i>_steak</i>hard<i>_t32)
-<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | qa</i>probe: <b>remaining — “What&#x27;s still missing from the plate for this order?”</b> (qa<i>hard</i><i>remaining</i><i>remaining</i><i>steak</i>hard<i>_t32)
+</div></details><details><summary>bm_expert_nops_hard_map_2  (EQEQ)</summary><div class='note'>
+<br>- m= 30 plate=[] held=True | error: <b>add<i>foreign</b> {&quot;component&quot;: &quot;steak&quot;, &quot;wrong&quot;: &quot;meat&quot;} (window [131, 163], outcome wrong</i>serve)
+<br>- m= 30 plate=[] held=True | question: <b>where:meat</b> — “Is the meat over there the steak?” → {&quot;target&quot;: &quot;meat&quot;, &quot;found&quot;: [{&quot;at&quot;: [3, 0], &quot;region&quot;: &quot;top&quot;}], &quot;answer&quot;: &quot;top&quot;}
+<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;potato&quot;, &quot;loops&quot;: 2} (window [150, 184], outcome burned)
+<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | question: <b>remaining</b> — “What else goes on?” → {&quot;on</i>plate<i>in</i>order&quot;: [&quot;steak&quot;], &quot;still<i>to</i>plate<i>in</i>order&quot;: [&quot;potato&quot;, &quot;potato&quot;]}
 
-</i>qa<i>hard</i><i>plate</i>contents<i>_plate</i>contents<i>_steak</i>hard<i>_t32 (plate</i>contents): a plate question is plausible after a add<i>foreign — the plate is what it hit; qa</i>hard<i>_remaining</i><i>remaining</i><i>steak</i>hard<i>_t32 (remaining): a plate question is plausible after a add</i>foreign — the plate is what it hit_
+<i>The burger patty is plated in place of the steak, then the chips are abandoned. The where question is a leading confusion the assistant should correct (the meat is not the steak).</i>
 
-</div></details><details><summary>bm_expert_nops_hard_map_3  (QEEQ)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | qa<i>probe: <b>where:butter</i>source — “Quick one — where do we keep the butter in this kitchen?”</b> (qa<i>hard</i><i>where</i><i>butter</i>source<i>_steak</i>hard<i>_t0)
-<br>- m= 30 plate=[] held=True | error: <b>search</b> (cx</i>search<i>expH1)
-<br>- m= 30 plate=[] held=True | error: <b>leave</i>unattended</b> (cx<i>leave</i>unattended<i>expH1)
-<br>- m= 30 plate=[] held=True | qa</i>probe: <b>past<i>subgoal:assemble(potato) — “Did I already finish putting the potato on the plate, or did I forget?”</b> (qa</i>hard<i>_past</i>subgoal<i>_assemble</i>potato<i>_steak</i>hard<i>_t30)
+</div></details><details><summary>bm_expert_nops_hard_map_3  (EQEQ)</summary><div class='note'>
+<br>- m= 30 plate=[] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;steak&quot;, &quot;loops&quot;: 2} (window [146, 184], outcome burned)
+<br>- m= 30 plate=[] held=True | question: <b>past</i>subgoal:prep(potato)#2</b> — “Did I cut both potatoes?” → {&quot;subgoal&quot;: &quot;prep(potato)#2&quot;, &quot;finished&quot;: true, &quot;last<i>step</i>done<i>at&quot;: 90}
+<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | error: <b>add</i>foreign</b> {&quot;wrong&quot;: &quot;egg&quot;, &quot;before&quot;: &quot;assemble(potato)&quot;} (window [135, 167], outcome wrong<i>serve)
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>visited:oven</b> — “Have I been near the oven?” → {&quot;target&quot;: &quot;oven&quot;, &quot;visited&quot;: false, &quot;first</i>visit<i>t&quot;: null}
 
-</i>qa<i>hard</i><i>where</i><i>butter</i>source<i>_steak</i>hard<i>_t0 (where:butter</i>source): an unrelated spot-check — plausible anywhere the truth is well-defined; qa<i>hard</i><i>past</i>subgoal<i>_assemble</i>potato<i>_steak</i>hard<i>_t30 (past</i>subgoal:assemble(potato)): an unrelated spot-check — plausible anywhere the truth is well-defined_
+</i>Steak left unattended, then a fried egg slipped in before the chips. The oven is a distractor station on this map that the plan never uses (visited=no)._
 
-</div></details><details><summary>bm_expert_nops_hard_map_4  (EQEQ)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>expH1)
-<br>- m= 30 plate=[] held=True | qa<i>probe: <b>holding — “Remind me — what have I got in my hands right now?”</b> (qa</i>hard<i>_holding</i><i>holding</i><i>steak</i>hard<i>_t30)
-<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>expH1)
-<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | qa</i>probe: <b>visited:fryer — “Did I stop by the fryer at any point so far?”</b> (qa<i>hard</i><i>visited</i><i>fryer</i><i>steak</i>hard<i>_t34)
+</div></details><details><summary>bm_expert_nops_hard_map_4  (EEQQ)</summary><div class='note'>
+<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(potato)&quot;, &quot;looks&quot;: 2} (window [131, 163], outcome won)
+<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;component&quot;: &quot;potato&quot;, &quot;wrong&quot;: &quot;onion&quot;} (window [148, 180], outcome wrong</i>serve)
+<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | question: <b>station<i>state</b> — “Are the chips ready?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [{&quot;station&quot;: &quot;fryer&quot;, &quot;at&quot;: [4, 5], &quot;contents&quot;: [&quot;potato&quot;, &quot;potato&quot;], &quot;status&quot;: &quot;cooked&quot;,
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>where:serving</b> — “Where&#x27;s the pass on this map?” → {&quot;target&quot;: &quot;serving&quot;, &quot;found&quot;: [{&quot;at&quot;: [0, 1], &quot;region&quot;: &quot;top-left&quot;}], &quot;answer&quot;: &quot;top-left&quot;}
 
-</i>qa<i>hard</i><i>holding</i><i>holding</i><i>steak</i>hard<i>_t30 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>hard<i>_visited</i><i>fryer</i><i>steak</i>hard<i>_t34 (visited:fryer): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+<i>Lost on the way to the chip fryer with steak plated, then onion plated instead of chips. The chips question is asked at the moment the fryer is the only active station.</i>
 
-</div></details><details><summary>bm_expert_nops_hard_map_5  (EQQE)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>expH1)
-<br>- m= 30 plate=[] held=True | qa<i>probe: <b>station</i>state — “Is anything cooking on the heat right now — and is it done yet?”</b> (qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_steak</i>hard<i>_t30)
-<br>- m= 30 plate=[] held=True | qa</i>probe: <b>board<i>state — “Are the cutting boards all clear, or is something still sitting on one?”</b> (qa</i>hard<i>_board</i>state<i>_board</i>state<i>_steak</i>hard<i>_t30)
-<br>- m= 32 plate=[&#x27;steak&#x27;] held=True | error: <b>omit</i>subgoal</b> (cx<i>omit</i>subgoal<i>expH2)
+</div></details><details><summary>bm_expert_nops_hard_map_5  (EQEQ)</summary><div class='note'>
+<br>- m= 30 plate=[] held=True | error: <b>omit<i>subgoal</b> {&quot;sid&quot;: &quot;assemble(steak)&quot;} (window [132, 164], outcome wrong</i>serve)
+<br>- m= 30 plate=[] held=True | question: <b>holding</b> — “What&#x27;s in my hands?” → {&quot;holding&quot;: &quot;plate&quot;, &quot;plate<i>contents</i>in<i>order&quot;: []}
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | error: <b>add</i>foreign</b> {&quot;wrong&quot;: &quot;pepper&quot;, &quot;before&quot;: &quot;serve&quot;} (window [158, 190], outcome wrong<i>serve)
+<br>- m= 34 plate=[&#x27;steak&#x27;, &#x27;potato&#x27;, &#x27;potato&#x27;] held=True | question: <b>board</i>state</b> — “Any of the three boards still loaded?” → {&quot;boards&quot;: [{&quot;at&quot;: [0, 2], &quot;contents&quot;: []}, {&quot;at&quot;: [0, 4], &quot;contents&quot;: []}, {&quot;at&quot;: [0, 6], &quot;contents&quot;: []}], &quot;boards<i>in</i>
 
-</i>qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_steak</i>hard<i>_t30 (station</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt; qa</i>hard<i>_board</i>state<i>_board</i>state<i>_steak</i>hard<i>_t30 (board</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt</i>
+<i>Steak is never plated and pepper is added on top of the chips at the end — a plate that has the right count of things and the wrong things.</i>
 
-</div></details><details><summary>bm_master_nops_medium_map_1  (EEQQ)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>masM1)
-<br>- m= 28 plate=[] held=True | error: <b>wrong<i>order</b> (cx</i>wrong<i>order</i>masM1)
-<br>- m= 28 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_burrito</i><i>holding</i><i>t28)
-<br>- m= 28 plate=[] held=True | qa</i>probe: <b>where:lettuce — “Quick one — where do we keep the lettuce in this kitchen?”</b> (qa<i>auto</i><i>where</i><i>lettuce</i><i>burrito</i><i>t28)
+</div></details><details><summary>bm_master_nops_medium_map_1  (EQEQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> {&quot;component&quot;: &quot;rice&quot;, &quot;wrong&quot;: &quot;tomato&quot;} (window [11, 43], outcome wrong</i>serve)
+<br>- m= 28 plate=[] held=True | question: <b>station<i>state</b> — “Is the rice done, and what about the steak?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [{&quot;station&quot;: &quot;pot&quot;, &quot;at&quot;: [4, 0], &quot;contents&quot;: [&quot;rice&quot;], &quot;status&quot;: &quot;cooking&quot;, &quot;progress&quot;: 
+<br>- m= 32 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;] held=True | error: <b>wrong<i>order</b> {&quot;a&quot;: &quot;steak&quot;, &quot;b&quot;: &quot;tomato&quot;} (window [159, 191], outcome wrong</i>serve)
+<br>- m= 32 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;] held=True | question: <b>remaining</b> — “Tell me the rest of the stack, in order.” → {&quot;on<i>plate</i>in<i>order&quot;: [&quot;tortilla&quot;, &quot;rice&quot;], &quot;still</i>to<i>plate</i>in<i>order&quot;: [&quot;steak&quot;, &quot;tomato&quot;, &quot;lettuce&quot;]}
 
-</i>qa<i>probe</i><i>burrito</i><i>holding</i><i>t28 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_where</i><i>lettuce</i><i>burrito</i><i>t28 (where:lettuce): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+</i>Tomato is brought to the board where rice should be washed; later the tomato is stacked before the steak. The station question at m=28 has the pot COOKING and the pan COOKED — two stations, two different answers._
 
-</div></details><details><summary>bm_master_nops_medium_map_2  (EEQQ)</summary><div class='note'>
-<br>- m= 28 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>masM1)
-<br>- m= 28 plate=[] held=True | error: <b>search</b> (cx<i>search</i>masM1)
-<br>- m= 36 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;] held=True | qa<i>probe: <b>past</i>subgoal:assemble(lettuce) — “Did I already finish putting the lettuce on the plate, or did I forget?”</b> (qa<i>auto</i><i>past</i>subgoal<i>_assemble</i>lettuce<i>_burrito</i><i>t36)
-<br>- m= 38 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;, &#x27;lettuce&#x27;] held=True | qa</i>probe: <b>visited:lettuce — “Did I stop by the lettuce source at any point so far?”</b> (qa<i>auto</i><i>visited</i><i>lettuce</i><i>burrito</i><i>t38)
+</div></details><details><summary>bm_master_nops_medium_map_2  (QEEQ)</summary><div class='note'>
+<br>- m= 30 plate=[&#x27;tortilla&#x27;] held=True | question: <b>board<i>state</b> — “Which boards still have chopped things on them, and what?” → {&quot;boards&quot;: [{&quot;at&quot;: [1, 0], &quot;contents&quot;: []}, {&quot;at&quot;: [0, 2], &quot;contents&quot;: []}, {&quot;at&quot;: [3, 5], &quot;contents&quot;: [{&quot;name&quot;: &quot;tomato
+<br>- m= 32 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;] held=True | error: <b>leave</i>unattended</b> {&quot;component&quot;: &quot;steak&quot;, &quot;loops&quot;: 3} (window [162, 211], outcome burned)
+<br>- m= 34 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;] held=True | error: <b>omit<i>subgoal</b> {&quot;sid&quot;: &quot;assemble(tomato)&quot;} (window [161, 193], outcome wrong</i>serve)
+<br>- m= 36 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;] held=True | question: <b>past<i>subgoal:prep(lettuce)</b> — “Did I already shred the lettuce?” → {&quot;subgoal&quot;: &quot;prep(lettuce)&quot;, &quot;finished&quot;: true, &quot;last</i>step<i>done</i>at&quot;: 96}
 
-</i>qa<i>auto</i><i>past</i>subgoal<i>_assemble</i>lettuce<i>_burrito</i><i>t36 (past</i>subgoal:assemble(lettuce)): an unrelated spot-check — plausible anywhere the truth is well-defined; qa<i>auto</i><i>visited</i><i>lettuce</i><i>burrito</i><i>t38 (visited:lettuce): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+<i>The steak is abandoned on the pan for three loops; then, near the end, the tomato is skipped. The board question is asked while two boards still hold tomato and lettuce — the assistant must list both — and the lettuce question is a memory test on the last prep step before the lettuce goes on.</i>
 
-</div></details><details><summary>bm_master_nops_medium_map_3  (QQEE)</summary><div class='note'>
-<br>- m= 28 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_burrito</i><i>holding</i><i>t28)
-<br>- m= 28 plate=[] held=True | qa</i>probe: <b>where:plates — “Quick one — where do we keep the plates in this kitchen?”</b> (qa<i>auto</i><i>where</i><i>plates</i><i>burrito</i><i>t28)
-<br>- m= 30 plate=[&#x27;tortilla&#x27;] held=True | error: <b>leave</i>unattended</b> (cx<i>leave</i>unattended<i>masM1)
-<br>- m= 32 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;] held=True | error: <b>repeat</i>step</b> (cx<i>repeat</i>step<i>masM1)
+</div></details><details><summary>bm_master_nops_medium_map_3  (EQEQ)</summary><div class='note'>
+<br>- m= 28 plate=[] held=True | error: <b>wrong<i>order</b> {&quot;a&quot;: &quot;tortilla&quot;, &quot;b&quot;: &quot;rice&quot;} (window [135, 167], outcome wrong</i>serve)
+<br>- m= 28 plate=[] held=True | question: <b>where:lettuce</b> — “Where&#x27;s the lettuce in this kitchen?” → {&quot;target&quot;: &quot;lettuce&quot;, &quot;found&quot;: [{&quot;at&quot;: [6, 4], &quot;region&quot;: &quot;bottom-right&quot;}], &quot;answer&quot;: &quot;bottom-right&quot;}
+<br>- m= 34 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;] held=True | error: <b>repeat<i>step</b> {&quot;sid&quot;: &quot;assemble(tortilla)&quot;, &quot;at&quot;: &quot;assemble(steak)&quot;} (window [156, 188], outcome wrong</i>serve)
+<br>- m= 34 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;] held=True | question: <b>plate<i>contents</b> — “What&#x27;s on the tortilla so far?” → {&quot;held</i>plate<i>contents</i>in<i>order&quot;: [&quot;tortilla&quot;, &quot;rice&quot;, &quot;steak&quot;], &quot;all</i>plates&quot;: [[&quot;held&quot;, [&quot;tortilla&quot;, &quot;rice&quot;, &quot;steak&quot;]]]}
 
-</i>qa<i>probe</i><i>burrito</i><i>holding</i><i>t28 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_where</i><i>plates</i><i>burrito</i><i>t28 (where:plates): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+<i>Rice onto the bare plate before the tortilla, then a second tortilla where the steak should go. The plate read-back at m=34 is three deep (tortilla, rice, steak).</i>
 
-</div></details><details><summary>bm_master_nops_medium_map_4  (EEQQ)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>masM2)
-<br>- m= 34 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;] held=True | error: <b>forget<i>next</i>step</b> (cx<i>forget</i>next<i>step</i>masM1)
-<br>- m= 38 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;, &#x27;lettuce&#x27;] held=True | qa<i>probe: <b>past</i>subgoal:prep(rice) — “Did I already finish prepping the rice, or did I forget?”</b> (qa<i>auto</i><i>past</i>subgoal<i>_prep</i>rice<i>_burrito</i><i>t38)
-<br>- m= 38 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;, &#x27;lettuce&#x27;] held=True | qa</i>probe: <b>visited:pan — “Did I stop by the pan at any point so far?”</b> (qa<i>auto</i><i>visited</i><i>pan</i><i>burrito</i><i>t38)
+</div></details><details><summary>bm_master_nops_medium_map_4  (EQEQ)</summary><div class='note'>
+<br>- m= 30 plate=[&#x27;tortilla&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(rice)&quot;, &quot;looks&quot;: 3} (window [143, 175], outcome won)
+<br>- m= 32 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;] held=True | question: <b>station<i>state</b> — “Is the steak still on the pan?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [{&quot;station&quot;: &quot;pan&quot;, &quot;at&quot;: [3, 2], &quot;contents&quot;: [&quot;steak&quot;], &quot;status&quot;: &quot;cooked&quot;, &quot;progress&quot;: 
+<br>- m= 36 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;assemble(tomato)&quot;} (window [167, 199], outcome timeout)
+<br>- m= 36 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;] held=True | question: <b>visited:cutting<i>board</b> — “Have I been to the cutting board?” → {&quot;target&quot;: &quot;cutting</i>board&quot;, &quot;visited&quot;: false, &quot;first<i>visit</i>t&quot;: null}
 
-</i>qa<i>auto</i><i>past</i>subgoal<i>_prep</i>rice<i>_burrito</i><i>t38 (past</i>subgoal:prep(rice)): an episodic what-did-I-do question is plausible right after a forget<i>next</i>step recovery — the cook&#x27;s own history just became uncertain; qa<i>auto</i><i>visited</i><i>pan</i><i>burrito</i><i>t38 (visited:pan): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+<i>Cannot find the rice pot (three counters) with the tortilla plated, then freezes one step from the end. The visited question is about the board — the truth is &#x27;no&#x27;, because on this map the prep happens at a different counter than the one named cutting</i>board._
 
-</div></details><details><summary>bm_master_nops_medium_map_5  (EQQE)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>masM1)
-<br>- m= 28 plate=[] held=True | qa<i>probe: <b>holding — “Quick one — what have I got in my hands right now?”</b> (qa</i>probe<i>_burrito</i><i>holding</i><i>t28)
-<br>- m= 28 plate=[] held=True | qa</i>probe: <b>where:rice<i>source — “Quick one — where do we keep the rice source in this kitchen?”</b> (qa</i>auto<i>_where</i><i>rice</i>source<i>_burrito</i><i>t28)
-<br>- m= 30 plate=[&#x27;tortilla&#x27;] held=True | error: <b>wrong</i>order</b> (cx<i>wrong</i>order<i>masM3)
+</div></details><details><summary>bm_master_nops_medium_map_5  (EQEQ)</summary><div class='note'>
+<br>- m= 28 plate=[] held=True | error: <b>omit<i>subgoal</b> {&quot;after&quot;: &quot;fetch</i>plate&quot;} (window [126, 158], outcome wrong<i>serve)
+<br>- m= 28 plate=[] held=True | question: <b>holding</b> — “What am I holding right now?” → {&quot;holding&quot;: &quot;plate&quot;, &quot;plate</i>contents<i>in</i>order&quot;: []}
+<br>- m= 30 plate=[&#x27;tortilla&#x27;] held=True | error: <b>leave<i>unattended</b> {&quot;component&quot;: &quot;rice&quot;, &quot;loops&quot;: 2} (window [161, 210], outcome burned)
+<br>- m= 34 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;] held=True | question: <b>remaining</b> — “After the steak goes on, what remains?” → {&quot;on</i>plate<i>in</i>order&quot;: [&quot;tortilla&quot;, &quot;rice&quot;, &quot;steak&quot;], &quot;still<i>to</i>plate<i>in</i>order&quot;: [&quot;tomato&quot;, &quot;lettuce&quot;]}
 
-</i>qa<i>probe</i><i>burrito</i><i>holding</i><i>t28 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>auto<i>_where</i><i>rice</i>source<i>_burrito</i><i>t28 (where:rice</i>source): the question interrogates the very state the mis<i>prep touched (rice) — the natural thing to ask after that confusion</i>
+<i>Walks to the pass with an empty plate, then leaves the rice boiling for two loops with the tortilla plated. The remaining question at m=34 has a two-item ordered answer.</i>
 
-</div></details><details><summary>bm_master_nops_hard_map_1  (EEQQ)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>masH1)
-<br>- m= 28 plate=[] held=True | error: <b>wrong<i>order</b> (cx</i>wrong<i>order</i>masH1)
-<br>- m= 28 plate=[] held=True | qa<i>probe: <b>station</i>state — “Is anything cooking on the heat right now — and is it done yet?”</b> (qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_burrito</i>hard<i>_t28)
-<br>- m= 28 plate=[] held=True | qa</i>probe: <b>board<i>state — “Are the cutting boards all clear, or is something still sitting on one?”</b> (qa</i>hard<i>_board</i>state<i>_board</i>state<i>_burrito</i>hard<i>_t28)
+</div></details><details><summary>bm_master_nops_hard_map_1  (EQEQ)</summary><div class='note'>
+<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> {&quot;component&quot;: &quot;rice&quot;, &quot;wrong&quot;: &quot;onion&quot;} (window [15, 47], outcome wrong</i>serve)
+<br>- m= 28 plate=[] held=True | question: <b>station<i>state</b> — “Is the rice ready and is the steak still on?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [{&quot;station&quot;: &quot;pot&quot;, &quot;at&quot;: [2, 2], &quot;contents&quot;: [&quot;rice&quot;], &quot;status&quot;: &quot;cooked&quot;, &quot;progress&quot;: 1
+<br>- m= 36 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;wrong&quot;: &quot;cheese&quot;, &quot;before&quot;: &quot;assemble(lettuce)&quot;} (window [224, 256], outcome wrong</i>serve)
+<br>- m= 36 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;] held=True | question: <b>plate<i>contents</b> — “Read me the stack so far.” → {&quot;held</i>plate<i>contents</i>in<i>order&quot;: [&quot;tortilla&quot;, &quot;rice&quot;, &quot;steak&quot;, &quot;tomato&quot;], &quot;all</i>plates&quot;: [[&quot;held&quot;, [&quot;tortilla&quot;, &quot;rice&quot;, &quot;
 
-</i>qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_burrito</i>hard<i>_t28 (station</i>state): an unrelated spot-check — plausible anywhere the truth is well-defined; qa<i>hard</i><i>board</i>state<i>_board</i>state<i>_burrito</i>hard<i>_t28 (board</i>state): an unrelated spot-check — plausible anywhere the truth is well-defined_
+<i>Onion is prepped in place of the rice; cheese goes on before the lettuce. Both are burrito ingredients in other kitchens — the assistant has to reject on this recipe, not on taste.</i>
 
-</div></details><details><summary>bm_master_nops_hard_map_2  (EEQQ)</summary><div class='note'>
-<br>- m= 28 plate=[] held=True | error: <b>omit<i>subgoal</b> (cx</i>omit<i>subgoal</i>masH1)
-<br>- m= 28 plate=[] held=True | error: <b>add<i>foreign</b> (cx</i>add<i>foreign</i>masH1)
-<br>- m= 32 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;] held=True | qa<i>probe: <b>plate</i>contents — “What has made it onto the plate so far?”</b> (qa<i>hard</i><i>plate</i>contents<i>_plate</i>contents<i>_burrito</i>hard<i>_t32)
-<br>- m= 36 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;] held=True | qa</i>probe: <b>remaining — “What&#x27;s still missing from the plate for this order?”</b> (qa<i>hard</i><i>remaining</i><i>remaining</i><i>burrito</i>hard<i>_t36)
+</div></details><details><summary>bm_master_nops_hard_map_2  (QEEQ)</summary><div class='note'>
+<br>- m= 28 plate=[] held=True | question: <b>board<i>state</b> — “What&#x27;s on the three boards right now?” → {&quot;boards&quot;: [{&quot;at&quot;: [2, 4], &quot;contents&quot;: [{&quot;name&quot;: &quot;tomato&quot;, &quot;state&quot;: &quot;chopped&quot;}]}, {&quot;at&quot;: [2, 6], &quot;contents&quot;: []}, {&quot;at&quot;:
+<br>- m= 30 plate=[&#x27;tortilla&#x27;] held=True | error: <b>leave</i>unattended</b> {&quot;component&quot;: &quot;rice&quot;, &quot;loops&quot;: 1} (window [185, 234], outcome burned)
+<br>- m= 32 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;component&quot;: &quot;steak&quot;, &quot;wrong&quot;: &quot;meat&quot;} (window [196, 228], outcome wrong</i>serve)
+<br>- m= 32 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;] held=True | question: <b>remaining</b> — “After the rice, what&#x27;s the order?” → {&quot;on<i>plate</i>in<i>order&quot;: [&quot;tortilla&quot;, &quot;rice&quot;], &quot;still</i>to<i>plate</i>in<i>order&quot;: [&quot;steak&quot;, &quot;tomato&quot;, &quot;lettuce&quot;]}
 
-</i>qa<i>hard</i><i>plate</i>contents<i>_plate</i>contents<i>_burrito</i>hard<i>_t32 (plate</i>contents): a plate question is plausible after a add<i>foreign — the plate is what it hit; qa</i>hard<i>_remaining</i><i>remaining</i><i>burrito</i>hard<i>_t36 (remaining): a plate question is plausible after a add</i>foreign — the plate is what it hit_
+</i>The burger patty is plated in place of the steak, and earlier the rice is left for one loop. The board question at m=28 has two loaded boards (tomato, lettuce) and one empty._
 
-</div></details><details><summary>bm_master_nops_hard_map_3  (QEQE)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | qa<i>probe: <b>where:avocado</i>source — “Quick one — where do we keep the avocado in this kitchen?”</b> (qa<i>hard</i><i>where</i><i>avocado</i>source<i>_burrito</i>hard<i>_t0)
-<br>- m= 28 plate=[] held=True | error: <b>search</b> (cx</i>search<i>masH1)
-<br>- m= 28 plate=[] held=True | qa</i>probe: <b>past<i>subgoal:assemble(lettuce) — “Did I already finish putting the lettuce on the plate, or did I forget?”</b> (qa</i>hard<i>_past</i>subgoal<i>_assemble</i>lettuce<i>_burrito</i>hard<i>_t28)
-<br>- m= 30 plate=[&#x27;tortilla&#x27;] held=True | error: <b>leave</i>unattended</b> (cx<i>leave</i>unattended<i>masH1)
+</div></details><details><summary>bm_master_nops_hard_map_3  (EQEQ)</summary><div class='note'>
+<br>- m= 28 plate=[] held=True | error: <b>wrong<i>order</b> {&quot;a&quot;: &quot;tortilla&quot;, &quot;b&quot;: &quot;steak&quot;} (window [194, 226], outcome wrong</i>serve)
+<br>- m= 30 plate=[&#x27;tortilla&#x27;] held=True | question: <b>where:tomato</b> — “Where&#x27;s the tomato I chopped?” → {&quot;target&quot;: &quot;tomato&quot;, &quot;found&quot;: [{&quot;at&quot;: [4, 4], &quot;region&quot;: &quot;center&quot;}], &quot;answer&quot;: &quot;center&quot;}
+<br>- m= 34 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;wrong&quot;: &quot;avocado&quot;, &quot;before&quot;: &quot;assemble(tomato)&quot;} (window [221, 253], outcome wrong</i>serve)
+<br>- m= 34 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;] held=True | question: <b>past<i>subgoal:ignite(rice)</b> — “Did I turn the pot on?” → {&quot;subgoal&quot;: &quot;ignite(rice)&quot;, &quot;finished&quot;: true, &quot;last</i>step<i>done</i>at&quot;: 130}
 
-</i>qa<i>hard</i><i>where</i><i>avocado</i>source<i>_burrito</i>hard<i>_t0 (where:avocado</i>source): an unrelated spot-check — plausible anywhere the truth is well-defined; qa<i>hard</i><i>past</i>subgoal<i>_assemble</i>lettuce<i>_burrito</i>hard<i>_t28 (past</i>subgoal:assemble(lettuce)): an unrelated spot-check — plausible anywhere the truth is well-defined_
+<i>Steak onto the bare plate before the tortilla, then avocado — the most plausible burrito addition — before the tomato. The where question is answered by the loaded board (center).</i>
 
-</div></details><details><summary>bm_master_nops_hard_map_4  (QEEQ)</summary><div class='note'>
-<br>- m= 28 plate=[] held=True | qa<i>probe: <b>holding — “Remind me — what have I got in my hands right now?”</b> (qa</i>hard<i>_holding</i><i>holding</i><i>burrito</i>hard<i>_t28)
-<br>- m= 32 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;] held=True | error: <b>repeat</i>step</b> (cx<i>repeat</i>step<i>masH1)
-<br>- m= 34 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;] held=True | error: <b>forget</i>next<i>step</b> (cx</i>forget<i>next</i>step<i>masH1)
-<br>- m= 38 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;, &#x27;lettuce&#x27;] held=True | qa</i>probe: <b>visited:lettuce — “Did I stop by the lettuce source at any point so far?”</b> (qa<i>hard</i><i>visited</i><i>lettuce</i><i>burrito</i>hard<i>_t38)
+</div></details><details><summary>bm_master_nops_hard_map_4  (EQEQ)</summary><div class='note'>
+<br>- m= 32 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(steak)&quot;, &quot;looks&quot;: 2} (window [193, 225], outcome won)
+<br>- m= 32 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;] held=True | question: <b>station<i>state</b> — “Is the steak done yet?” → {&quot;cooking</i>stations<i>with</i>food&quot;: [{&quot;station&quot;: &quot;pan&quot;, &quot;at&quot;: [4, 8], &quot;contents&quot;: [&quot;steak&quot;], &quot;status&quot;: &quot;cooked&quot;, &quot;progress&quot;: 
+<br>- m= 36 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;] held=True | error: <b>add<i>foreign</b> {&quot;component&quot;: &quot;lettuce&quot;, &quot;wrong&quot;: &quot;corn&quot;} (window [233, 265], outcome wrong</i>serve)
+<br>- m= 36 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;] held=True | question: <b>visited:fryer</b> — “Have I been to the fryer at all?” → {&quot;target&quot;: &quot;fryer&quot;, &quot;visited&quot;: false, &quot;first<i>visit</i>t&quot;: null}
 
-</i>qa<i>hard</i><i>holding</i><i>holding</i><i>burrito</i>hard<i>_t28 (holding): an unrelated spot-check — plausible anywhere the truth is well-defined; qa</i>hard<i>_visited</i><i>lettuce</i><i>burrito</i>hard<i>_t38 (visited:lettuce): an unrelated spot-check — plausible anywhere the truth is well-defined</i>
+<i>Hunts for the pan with rice on, then corn is plated in place of the lettuce at the end. The fryer on this map is never used by the plan (visited=no).</i>
 
-</div></details><details><summary>bm_master_nops_hard_map_5  (EQQE)</summary><div class='note'>
-<br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> (cx</i>mis<i>prep</i>masH3)
-<br>- m= 28 plate=[] held=True | qa<i>probe: <b>station</i>state — “Is anything cooking on the heat right now — and is it done yet?”</b> (qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_burrito</i>hard<i>_t28)
-<br>- m= 28 plate=[] held=True | qa</i>probe: <b>board<i>state — “Are the cutting boards all clear, or is something still sitting on one?”</b> (qa</i>hard<i>_board</i>state<i>_board</i>state<i>_burrito</i>hard<i>_t28)
-<br>- m= 32 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;] held=True | error: <b>wrong</i>order</b> (cx<i>wrong</i>order<i>masH3)
+</div></details><details><summary>bm_master_nops_hard_map_5  (QEEQ)</summary><div class='note'>
+<br>- m= 28 plate=[] held=True | question: <b>holding</b> — “What&#x27;s in my hand?” → {&quot;holding&quot;: &quot;plate&quot;, &quot;plate<i>contents</i>in<i>order&quot;: []}
+<br>- m= 30 plate=[&#x27;tortilla&#x27;] held=True | error: <b>omit</i>subgoal</b> {&quot;sid&quot;: &quot;assemble(rice)&quot;} (window [192, 224], outcome wrong<i>serve)
+<br>- m= 36 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;] held=True | error: <b>repeat</i>step</b> {&quot;sid&quot;: &quot;assemble(tortilla)&quot;, &quot;at&quot;: &quot;assemble(tomato)&quot;} (window [216, 248], outcome wrong<i>serve)
+<br>- m= 36 plate=[&#x27;tortilla&#x27;, &#x27;rice&#x27;, &#x27;steak&#x27;, &#x27;tomato&#x27;] held=True | question: <b>remaining</b> — “Only lettuce left?” → {&quot;on</i>plate<i>in</i>order&quot;: [&quot;tortilla&quot;, &quot;rice&quot;, &quot;steak&quot;, &quot;tomato&quot;], &quot;still<i>to</i>plate<i>in</i>order&quot;: [&quot;lettuce&quot;]}
 
-</i>qa<i>hard</i><i>station</i>state<i>_station</i>state<i>_burrito</i>hard<i>_t28 (station</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt; qa</i>hard<i>_board</i>state<i>_board</i>state<i>_burrito</i>hard<i>_t28 (board</i>state): a station-state question is plausible around a mis<i>prep — heat is in doubt</i>
+<i>The rice is skipped altogether (the tortilla goes straight to steak), then a second tortilla appears where the tomato should be. The last question is leading: yes, only lettuce, and the answer must be exact.</i>
 
 </div></details>
-<p class="note">Generated by tools/build_composite_review_page.py · engine 687d31ea27</p>
+<p class="note">Generated by tools/build_composite_review_page.py · engine 961f995629</p>
 </body></html>
