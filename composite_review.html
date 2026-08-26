@@ -251,17 +251,17 @@ plate state) and the semantic rationale for the pairing.</p>
 <br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> {&quot;component&quot;: &quot;tomato&quot;, &quot;wrong&quot;: &quot;cheese&quot;} (window [7, 39], outcome wrong</i>serve)
 <br>- m=  7 plate=[] held=True | question: <b>board<i>state</b> — “Is there still anything sitting on a cutting board, and which one?” → {&quot;boards&quot;: [{&quot;at&quot;: [0, 1], &quot;contents&quot;: []}, {&quot;at&quot;: [5, 1], &quot;contents&quot;: [{&quot;name&quot;: &quot;tomato&quot;, &quot;state&quot;: &quot;chopped&quot;}]}], &quot;boar
 <br>- m=  9 plate=[&#x27;*&#x27;] held=True | question: <b>remaining</b> — “Tell me exactly what still has to go on this plate.” → {&quot;on</i>plate<i>in</i>order&quot;: [&quot;tomato&quot;], &quot;still<i>to</i>plate<i>in</i>order&quot;: [&quot;cheese&quot;]}
-<br>- m= 11 plate=[&#x27;*&#x27;, &#x27;*&#x27;] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;assemble(cheese)&quot;} (window [43, 75], outcome timeout)
+<br>- m= 11 plate=[&#x27;*&#x27;, &#x27;*&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;serve&quot;, &quot;looks&quot;: 2} (window [41, 73], outcome won)
 
-<i>Opens with the only prep-time mistake this dish allows (cheese goes to the board instead of the tomato); after the recovery the chopped tomato is still on the far board, which is what the first question probes (a loaded board, not an empty one). The second error is the opposite kind — nothing wrong is done, the cook simply stalls with a finished plate in hand — so the assistant must notice an absence of action at the very end.</i>
+<i>Opens with the only prep-time mistake this dish allows (cheese goes to the board instead of the tomato); after the recovery the chopped tomato is still on the far board, which is what the first question probes (a loaded board, not an empty one). At the end, plate complete, the cook wanders two wrong counters looking for the pass.</i>
 
 </div></details><details><summary>bm_easy_nops_medium_map_2  (EQQE)</summary><div class='note'>
-<br>- m=  7 plate=[] held=True | error: <b>omit<i>subgoal</b> {&quot;after&quot;: &quot;fetch</i>plate&quot;} (window [26, 58], outcome wrong<i>serve)
+<br>- m=  7 plate=[] held=True | error: <b>forget<i>next</i>step</b> {&quot;after&quot;: &quot;fetch<i>plate&quot;} (window [32, 64], outcome timeout)
 <br>- m=  9 plate=[&#x27;*&#x27;] held=True | question: <b>station</i>state</b> — “Is anything cooking anywhere right now, or is this dish all cold?” → {&quot;cooking<i>stations</i>with<i>food&quot;: [], &quot;any</i>food<i>cooking&quot;: false, &quot;all</i>done&quot;: null}
 <br>- m= 11 plate=[&#x27;*&#x27;, &#x27;*&#x27;] held=True | question: <b>where:serving</b> — “Which way is the serving window from here?” → {&quot;target&quot;: &quot;serving&quot;, &quot;found&quot;: [{&quot;at&quot;: [1, 3], &quot;region&quot;: &quot;middle-left&quot;}], &quot;answer&quot;: &quot;middle-left&quot;}
 <br>- m= 11 plate=[&#x27;*&#x27;, &#x27;*&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;serve&quot;, &quot;looks&quot;: 3} (window [41, 73], outcome won)
 
-<i>An impatient cook: grabs the plate and heads straight for the pass with nothing on it, then, once the plate is complete, wanders three wrong counters looking for the pass. The station question sits between the two errors and is a trap for an assistant that assumes every recipe has heat; the last question is asked just before the hunt (question first at a shared anchor) and is the one the lost cook should actually ask.</i>
+<i>The cook picks up the plate and goes idle, is talked back into motion, and then, once the plate is complete, wanders three wrong counters looking for the pass. The station question sits between the two errors and is a trap for an assistant that assumes every recipe has heat; the last question is asked just before the hunt (question first at a shared anchor) and is the one the lost cook should actually ask. (The premature empty-plate serve that used to open this episode gave the assistant five ticks on this map — 3 catches in 59 runs — and was retired as unmeasurable.)</i>
 
 </div></details><details><summary>bm_easy_nops_medium_map_3  (QEEQ)</summary><div class='note'>
 <br>- m=  7 plate=[] held=True | question: <b>visited:tomato</b> — “Have I already been over to the tomato?” → {&quot;target&quot;: &quot;tomato&quot;, &quot;visited&quot;: true, &quot;first<i>visit</i>t&quot;: 4}
@@ -279,13 +279,13 @@ plate state) and the semantic rationale for the pairing.</p>
 
 </i>The cook cannot find the chopped tomato after picking up the plate (two wrong counters), and then, having found it, walks to the pass with tomato but no cheese. The first question is asked just before that premature run; the second is a memory question asked at the very end about a step done at the very start._
 
-</div></details><details><summary>bm_easy_nops_medium_map_5  (QEQE)</summary><div class='note'>
+</div></details><details><summary>bm_easy_nops_medium_map_5  (QQEE)</summary><div class='note'>
 <br>- m=  7 plate=[] held=True | question: <b>holding</b> — “What am I holding right now and is there anything on it?” → {&quot;holding&quot;: &quot;plate&quot;, &quot;plate<i>contents</i>in<i>order&quot;: []}
-<br>- m=  7 plate=[] held=True | error: <b>forget</i>next<i>step</b> {&quot;after&quot;: &quot;fetch</i>plate&quot;} (window [32, 64], outcome timeout)
 <br>- m=  9 plate=[&#x27;*&#x27;] held=True | question: <b>where:trash</b> — “Where is the trash can, in case I need it?” → {&quot;target&quot;: &quot;trash&quot;, &quot;found&quot;: [{&quot;at&quot;: [4, 0], &quot;region&quot;: &quot;top-right&quot;}], &quot;answer&quot;: &quot;top-right&quot;}
 <br>- m=  9 plate=[&#x27;*&#x27;] held=True | error: <b>search</b> {&quot;before&quot;: &quot;assemble(cheese)&quot;, &quot;looks&quot;: 3} (window [38, 70], outcome won)
+<br>- m= 11 plate=[&#x27;*&#x27;, &#x27;*&#x27;] held=True | error: <b>forget</i>next<i>step</b> {&quot;after&quot;: &quot;assemble(cheese)&quot;} (window [43, 75], outcome timeout)
 
-<i>Freeze-then-wander: the cook takes the plate and goes idle, is talked back into motion, then hunts for the cheese in three wrong places. The holding question is asked the moment the plate is picked up (an answer with two parts: a plate, nothing on it); the trash question is a map question no recipe step ever requires.</i>
+</i>Wander-then-freeze: with the tomato on, the cook hunts for the cheese in three wrong places, and then, plate complete, simply stalls — nothing wrong is done, so the assistant must notice an absence of action at the very end. The holding question is asked the moment the plate is picked up (a plate, nothing on it); the trash question is a map question no recipe step ever requires, asked just before the hunt._
 
 </div></details><details><summary>bm_easy_nops_hard_map_1  (EQQE)</summary><div class='note'>
 <br>- m=  0 plate=[] held=False | error: <b>mis<i>prep</b> {&quot;component&quot;: &quot;tomato&quot;, &quot;wrong&quot;: &quot;cheese&quot;} (window [10, 42], outcome wrong</i>serve)
