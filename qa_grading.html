@@ -53,9 +53,9 @@ td.n{text-align:right;font-family:"IBM Plex Mono",monospace;font-variant-numeric
 footer{border-top:1px solid var(--rule);margin-top:3rem;padding-top:1.3rem;font-size:.85rem;color:var(--muted);max-width:var(--measure)}
 </style>
 <div class="wrap">
-<div class="eyebrow">Audit · question and alert grading</div>
+<div class="eyebrow">Audit · question and alert grading · fixed 2026-08-28</div>
 <h1>How questions are graded, and where it is wrong</h1>
-<p class="lede">Every question the simulated cook asks is graded against the engine's own state <i>in the episode that actually ran</i> — never against a reference trajectory. This page documents that mechanism family by family, then reports an audit of all 1,350 sweep episodes that tested whether it holds. Eight of the nine scored families come out clean. The proactive-alert family does not, and its published score should not be read until it is rebuilt.</p>
+<p class="lede">Every question the simulated cook asks is graded against the engine's own state <i>in the episode that actually ran</i> — never against a reference trajectory. This page documents that mechanism family by family, then reports an audit of all 1,350 sweep episodes that tested whether it holds. Eight of the nine scored families came out clean. The proactive-alert family did not: five separate defects are documented below, all of them now fixed, re-graded over the stored transcripts and re-scored.</p>
 
 <div class="toc">
   <a href="#mech">1 · The mechanism: how a question becomes a graded answer</a>
@@ -93,7 +93,7 @@ footer{border-top:1px solid var(--rule);margin-top:3rem;padding-top:1.3rem;font-
 <tr><td>Q7 multi-hop</td><td>the thing I plated right after the rice — is it done?</td><td><b>live plate history</b> → referent → its live state</td><td class="n">0.57</td><td class="n">78</td><td class="pass">clean</td></tr>
 <tr><td>Q8 assistant memory</td><td>what did you tell me about the fryer earlier?</td><td>the <b>live conversation</b>: the assistant's own last line matching the topic</td><td class="n">0.68</td><td class="n">136</td><td class="pass">clean — 1 edge case, F9</td></tr>
 <tr><td>Q9 anticipation</td><td>what's my next step? which burns first? how long until X?</td><td>burn/ready questions from <b>live timers</b>; next-step from the clean plan's subgoal order with <b>live completion marks</b></td><td class="n">0.39</td><td class="n">231</td><td class="pass">clean — verified, F6</td></tr>
-<tr><td>Q10 proactive alert</td><td>give me a shout the moment the X is done</td><td>window from <b>live heat events</b>; the alert itself detected by keyword co-occurrence in the assistant's lines</td><td class="n">0.26–0.37</td><td class="n">457</td><td class="fail">broken — F1–F4</td></tr>
+<tr><td>Q10 proactive alert</td><td>give me a shout the moment the X is done</td><td>window from <b>live heat events</b>; the alert itself detected by keyword co-occurrence in the assistant's lines</td><td class="n">0.35–0.77</td><td class="n">457</td><td class="warnc">rebuilt — F1–F4, see §5</td></tr>
 </tbody></table></div>
 </div>
 <p>The design intent holds everywhere except the last row: <b>no family reads its answer from a gold trajectory.</b> The one place a reference plan is consulted at all is Q9's "what is my next step", which takes the <i>ordering</i> of subgoals from the clean plan and then marks off what the live episode has finished; an audit of all 106 such questions found zero cases where the named next step had already been completed live (F6).</p>
@@ -173,33 +173,52 @@ footer{border-top:1px solid var(--rule);margin-top:3rem;padding-top:1.3rem;font-
 <h3>One self-referential memory answer</h3>
 <p>Q8's truth is the assistant's own last line mentioning the topic, evaluated before the current answer joins the transcript. In 1 of 136 answered cases the stored truth text is the answer itself, which would make the question unfalsifiable. One instance is a rounding error, but the ordering that prevents it should be asserted rather than relied on.</p>
 </div>
-<h2 id="fix">5 · What to change</h2>
-<p>Ranked. The first item is the only one that changes a published number.</p>
+<h2 id="fix">5 · What was changed</h2>
+<p><b>All eight items are done.</b> The grader was rebuilt, every stored transcript was re-graded, the sweep was re-scored, and the regression tests that lock each defect out are in the offline suite (<code>tools/test_q10_grading.py</code>, 13 assertions, all passing).</p>
 <ol>
-  <li><b>Detect the alert with the judge, not a regex.</b> Keep the window from the engine; replace the keyword test with a per-line question to the same offline judge that already grades answers: <i>“Does this line assert that the &lt;item&gt; is ready <b>now</b>?”</i> — yes / no / it says the opposite / it is a promise to tell later. Only lines that mention the item need be sent, so the cost is a handful of calls per request. This removes F1(a)–(d) at once, because polarity, item binding and the promise-versus-alert distinction are exactly what a judge can settle and a regex cannot.</li>
-  <li><b>Score the best qualifying alert, not the first.</b> With a correct classifier, take the earliest line classified as a genuine alert; an acknowledgement can then never be the scored event.</li>
-  <li><b>Make the window a property of the physics, not of the cook.</b> End the window at <code>cooked_at + smoke_grace + burn_time</code> — the item's real safe period — and treat removal as a separate, recorded outcome: if the cook takes the food off before any alert was possible, the request is <i>pre-empted</i> (unscored, like <i>no window</i>), not <i>missed</i>. Prompt cooking should never lower an assistant's score.</li>
-  <li><b>Report the ask rate beside the alert score.</b> 457 of 645, with the reason for each exclusion, so the denominator travels with the number.</li>
-  <li><b>Guard the plate lookup</b> (F7): if more than one plate is in scene, resolve to the one the task's checkpoint is tracking, or mark the question unscored rather than guessing.</li>
-  <li><b>Assert the Q8 ordering</b> (F9): the answer must not be in the transcript when its own truth is computed.</li>
-  <li><b>Delete or rename the dead live matcher</b> (F8) so that <code>qa_grade</code> cannot be mistaken for the score.</li>
-  <li><b>Add three regression tests</b> to the offline suite, each replaying a synthetic transcript: an acknowledgement followed by a correct alert must score high; a "not done yet" line inside the window must score zero; a fast removal must produce <i>pre-empted</i>, not <i>missed</i>.</li>
+  <li><b>The alert is decided by a judge, not a regex.</b> For each assistant line that mentions the item, the same flash-tier judge that grades answers is asked what the line asserts <i>about this item</i>: <code>alert</code> (it is ready now, or take it off now), <code>promise</code> (I will tell you later), <code>denial</code> (not ready yet), <code>other</code>. Only <code>alert</code> can be the alert. A deterministic classifier with the same four outputs remains as the live-path fallback, and every judged line is cached, so the re-grade cost a few thousand short calls.</li>
+  <li><b>The earliest genuine alert is scored</b>, not the first keyword match, so an acknowledgement can no longer be the scored event.</li>
+  <li><b>The window is the physics.</b> It now ends at <code>done + smoke_grace + burn_time</code> — the station's own horizon, 70 ticks on the fryer and 85 elsewhere — and never at the cook's removal tick. A fast cook can no longer shrink an assistant's score.</li>
+  <li><b>Pre-emption is its own verdict.</b> If the cook takes the food off before an alert was possible, the request is <code>pre_empted</code> and carries no score, instead of counting as a miss.</li>
+  <li><b>Cross-item claims are rejected.</b> The judge decides reference; the fallback additionally refuses a readiness cue with a different ingredient named between it and the item.</li>
+  <li><b>The item matcher is case-insensitive.</b> Found while writing the tests: the old pattern was case-sensitive, so a line opening with the item's name — "Fish is done!" — was never even a candidate. It silently dropped 1.5% of Q10 candidate lines and 0.4% of Q8 topic mentions.</li>
+  <li><b>The plate lookup is guarded</b> (F7): with several plates in scene and none in hand, the question is now marked unscorable rather than answered from whichever plate was found first.</li>
+  <li><b>Q8 cannot grade itself</b> (F9): the answer under test is excluded from the transcript its own truth function reads, and the ordering is now enforced rather than assumed.</li>
+  <li><b>The dead live matcher is labelled.</b> Every <code>qa_grade</code> record now carries <code>superseded_by: regrade_qa.json</code> so it cannot be mistaken for the score.</li>
 </ol>
 
-<h2 id="status">6 · What the current numbers mean</h2>
-<div class="tbl"><div class="tablewrap"><table>
-<thead><tr><th>Number</th><th>Status</th><th>Why</th></tr></thead>
+<h2 id="status">6 · What changed in the numbers</h2>
+<p>Re-graded over the same 533 requests in the stored transcripts — no episode was re-run, and nothing but Q10 moved.</p>
+<div class="tbl"><div class="tcap"><b>Before and after, same requests.</b> The old grader's "early" class was almost entirely the assistant acknowledging the request; correcting it moves those into the window and roughly doubles the mean score.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>&nbsp;</th><th class="n">in window</th><th class="n">early</th><th class="n">late</th><th class="n">missed</th><th class="n">pre-empted</th><th class="n">unscored</th><th class="n">mean score</th></tr></thead>
 <tbody>
-<tr><td>Question accuracy, Q1–Q3, Q5–Q9</td><td class="pass">stands</td><td>truth is live, recomputed at both moments, independently verified for counting and next-step; graded by a judge that sees both truths</td></tr>
-<tr><td>Q4 never-happened</td><td class="warnc">retired</td><td>0.90 against 0.49 for the rest — the question announced its own answer; instances remain in the traces, unscored</td></tr>
-<tr><td>Per-family accuracy table</td><td class="pass">stands</td><td>each family's <i>n</i> is the answered subset; low values are model behaviour, not truth defects</td></tr>
-<tr><td>Proactive alert score (0.26–0.37 per model)</td><td class="fail">withdraw</td><td>F1–F3: the detector scores acknowledgements as failures, credits denials of readiness, confuses items, and takes the first match only</td></tr>
-<tr><td>Alert verdict counts (early / missed / in-window)</td><td class="fail">withdraw</td><td>same cause; 83% of the <i>early</i> class is an artefact</td></tr>
-<tr><td>The claim "answering and alerting are separable skills"</td><td class="warnc">weakened</td><td>the answering half stands; the alerting half rests on the withdrawn score and should be restated once the detector is rebuilt</td></tr>
+<tr><td>Keyword grader (withdrawn)</td><td class="n">142</td><td class="n">248</td><td class="n">9</td><td class="n">105</td><td class="n">—</td><td class="n">29</td><td class="n">0.234</td></tr>
+<tr><td>Judge grader (current)</td><td class="n">337</td><td class="n">25</td><td class="n">8</td><td class="n">136</td><td class="n">0</td><td class="n">27</td><td class="n">0.555</td></tr>
 </tbody></table></div></div>
-<p>Nothing else in the benchmark depends on the alert score: it is reported as its own column, is not part of task success, efficiency, detection timing or the judged guidance score, and does not enter the release rule that governs the takeover. The rebuild is a scorer change over stored transcripts — no episode needs to be re-run.</p>
+<div class="tbl"><div class="tcap"><b>Per assistant, after the fix.</b> The ordering is not a rescaling of the old one: alerting turns out to be something the GPT models do and the outcome leader does not lead on, which is the separability the family was added to test.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>Assistant</th><th class="n">alert score</th><th class="n">in-time success</th></tr></thead>
+<tbody>
+<tr><td>GPT-5.4 mini</td><td class="n">0.77</td><td class="n">0.14</td></tr>
+<tr><td>GPT-realtime 2.1</td><td class="n">0.77</td><td class="n">0.23</td></tr>
+<tr><td>GPT-5.5</td><td class="n">0.76</td><td class="n">0.25</td></tr>
+<tr><td>Gemini 3.1 Pro</td><td class="n">0.70</td><td class="n">0.36</td></tr>
+<tr><td>Gemini 3.7 Flash</td><td class="n">0.56</td><td class="n">0.32</td></tr>
+<tr><td>Qwen3.8-27B</td><td class="n">0.56</td><td class="n">0.16</td></tr>
+<tr><td>Gemini 3.1 Flash Live</td><td class="n">0.49</td><td class="n">0.14</td></tr>
+<tr><td>Muse Glimmer 30B</td><td class="n">0.46</td><td class="n">0.16</td></tr>
+<tr><td>MiniCPM-o 4.5</td><td class="n">0.35</td><td class="n">0.09</td></tr>
+<tr><td><span class="sc">Silent</span> floor</td><td class="n">0.00</td><td class="n">0.04</td></tr>
+</tbody></table></div></div>
+<div class="find ok">
+<div class="tag">status</div>
+<h3>Everything the audit withdrew is restored, with one caveat left open</h3>
+<p>The alert score, its verdict counts and the "answering and alerting are separable skills" claim all stand again on the corrected grader — and the claim is <i>stronger</i> than before, because the separation is no longer an artefact: the three GPT assistants alert best while the outcome leader is fourth, and the silent floor is zero by construction.</p>
+<p>The one finding not fixed by a scorer change is <b>F4</b>: 26% of scheduled requests are never asked by the cook, and a further 21 produce no window, so the score is computed over 506 of 645 requests. That is a suite-generation matter — the request needs to be scheduled early enough, and its item's ignition protected from earlier errors — and it will be fixed in the next suite rather than retro-fitted to this one. Until then the denominator is printed beside the score on the results page.</p>
+</div>
 
 <footer>
-Audit of 1,350 sweep episodes (1,462 probe questions, 645 standing requests), engine revision <code>5773b46c9e</code>, suite <code>composite-v3</code>. Truth functions: <code>tools/qa_v3_lib.py</code>; judge: <code>tools/regrade_qa.py</code>; alert grader: <code>grade_proactive</code>. Companion pages: <a href="metrics.html">metric definitions</a> · <a href="suite_v3_results.html">results</a> · <a href="paper_source.html">paper source</a>.
+Audit of 1,350 sweep episodes (1,462 probe questions, 645 standing requests), engine revision <code>5773b46c9e</code>, suite <code>composite-v3</code>. Truth functions: <code>tools/qa_v3_lib.py</code>; answer judge: <code>tools/regrade_qa.py</code>; alert judge: <code>tools/regrade_proactive_v2.py</code>; regressions: <code>tools/test_q10_grading.py</code>. Companion pages: <a href="metrics.html">metric definitions</a> · <a href="suite_v3_results.html">results</a> · <a href="paper_source.html">paper source</a>.
 </footer>
 </div>
