@@ -7,22 +7,37 @@ figure{margin:0 0 26px} img{width:100%;border:1px solid #D9E0E8;border-radius:6p
 figcaption{color:#5B6673;font-size:13.5px;margin-top:10px}
 h2{font-size:17px;margin:30px 0 8px} ul{margin:0 0 14px 20px} li{margin:5px 0}
 code{background:#F2F5F9;padding:1px 5px;border-radius:4px;font-size:13px}
+table{border-collapse:collapse;font-size:13.5px;margin:6px 0 14px}
+td,th{border:1px solid #E3E8EE;padding:5px 10px;text-align:left}
 a{color:#2C4BB8}
 </style></head><body><main>
-<h1>Teaser figure — one warning, two simulated people, two scored futures</h1>
-<p class="sub">20 × 5 in native Google Slides page. Built from a single spec (<code>tools/teaser_build.py</code>) and refined over 28 rounds of paired critique by GPT-5.5 and Gemini 3.1 Pro.</p>
+<h1>Teaser figure — one correction, two simulated people, two scored futures</h1>
+<p class="sub">20 × 5 in native Google Slides page, built from one spec (<code>tools/teaser2_build.py</code>). The visual language follows the authors' own teasers (MolmoMotion, TrajViT): the pictures carry the argument, text appears only as short pastel pill labels and verbatim dialogue fragments.</p>
 <figure><img src="https://hellomuffin.github.io/cooksim-slides/teaser/teaser_final.png" alt="teaser figure">
-<figcaption>Every element is taken from one real episode of the v3 suite: the frame the assistant saw at t = 72, the sentence it sent, the two simulated people's replies and action traces, and the two plates the engine read at the end.</figcaption></figure>
+<figcaption>Every panel is a real frame of a recorded episode at the tick printed under it; every quotation is verbatim from the logged transcript.</figcaption></figure>
+
+<h2>The episode</h2>
+<p>One case of the v3 suite — <code>b3_easy_nops_hard_map_4</code>, a Caprese (chopped tomato + raw cheese) — run twice with the same assistant model (<code>gemini-3.7-flash</code>) and the same injected error: the cook never picks up the cheese and walks to the serving pass with tomato only. The only thing that differs between the two runs is the simulated person.</p>
+<table>
+<tr><th></th><th>person A — <code>classic_novice</code></th><th>person B — <code>baseline</code></th></tr>
+<tr><td>persona</td><td>low skill, high trust</td><td>medium skill, medium trust</td></tr>
+<tr><td>assistant at t = 88</td><td colspan="2">the same correction: only tomato is on the plate, do not serve, go back to the cheese crate</td></tr>
+<tr><td>reply</td><td>“… you’re totally right, I only have tomato on here!”</td><td>“I’m pretty sure I already got the cheese …”</td></tr>
+<tr><td>what happens next</td><td>t 94 back at the crate · t 98 cheese on the plate · t 105 serves</td><td>t 89 walks on, never turns · t 90 serves</td></tr>
+<tr><td>engine outcome</td><td><b>won</b> — plate: tomato + cheese, in-time success 1</td><td><b>wrong_serve</b> — plate: tomato only, in-time success 0</td></tr>
+</table>
+
 <h2>What the three panels claim</h2>
 <ul>
-<li><b>1 · same warning.</b> The episode, the assistant model, the world state, the tick and the sentence are held fixed. The forced error is already in the world: the cook skipped the cheese and is walking out to serve.</li>
-<li><b>2 · roll out two personas.</b> The simulator continues the person <i>and</i> the world after the utterance. Persona A's words and actions agree; persona B's reply sounds compliant and the action trace contradicts it — she walks past the crate and serves anyway.</li>
-<li><b>3 · score the world outcome.</b> The verdict is read from the plate at the pass, not from the transcript: in-time success 1 versus 0 on the same assistant sentence.</li>
+<li><b>Rollout.</b> The simulator does not stop at the utterance: the person and the world keep moving, and the figure shows the frames that follow.</li>
+<li><b>Persona.</b> The same correction, in the same world state, at the same tick, produces a different reply <i>and</i> a different trajectory depending on who is cooking.</li>
+<li><b>Outcome-based evaluation.</b> The verdict is read off the final plate by the engine, not judged from the transcript: order accepted versus rejected, in-time success 1 versus 0.</li>
 </ul>
+
 <h2>Provenance</h2>
 <ul>
 <li>Deck: <a href="https://docs.google.com/presentation/d/1ggqXqZki-KO9SKNNTQD8Bh5IJc6abKQrqdSzvMnq2Og/edit">Google Slides, 20 × 5 in</a></li>
 <li>Full-resolution PNG: <a href="https://hellomuffin.github.io/cooksim-slides/teaser/teaser_final.png">teaser_final.png</a></li>
-<li>Benchmark numbers in the footer strip: 1,515 scored episodes of the v3 suite (50 tasks × 9 assistants + silent floor × 3 simulated people).</li>
+<li>Source recordings: <code>tmp/assist_bench_v3/frames/{classic_novice,baseline}/gemini-3.7-flash/b3_easy_nops_hard_map_4.mp4</code></li>
 </ul>
 </main></body></html>
