@@ -62,6 +62,7 @@ footer{border-top:1px solid var(--rule);margin-top:3rem;padding-top:1.3rem;font-
   <a href="#io">2 · The interface: what the model sees and must return</a>
   <a href="#backends">3 · Backends, and how to add one</a>
   <a href="#settings">4 · Per-model settings we run</a>
+  <a href="#serve">4.1 · Serving the three open-weight assistants (copy-paste)</a>
   <a href="#profiles">5 · Request profiles (why sampling is per-model)</a>
   <a href="#env">6 · Environment variables</a>
   <a href="#launch">7 · Launch recipes, copy-paste</a>
@@ -132,6 +133,103 @@ footer{border-top:1px solid var(--rule);margin-top:3rem;padding-top:1.3rem;font-
 <tr><td><b>silent floor</b></td><td>—</td><td><code>COOKSIM_SILENT_ASSISTANT=1</code>, text observation, no video</td><td class="n">8</td></tr>
 </tbody></table></div></div>
 <p>Local models need only an OpenAI-compatible server that accepts image content parts; we serve them on 18100 / 18200 / 18300 and the harness does not care what serves them. <code>--assist-image-scale 0.5</code> exists because one model's context could not hold a full-resolution composite frame — scaling is per-model and recorded in the report, so it is visible rather than silent.</p>
+
+
+<h2 id="serve">4.1 · Serving the three open-weight assistants</h2>
+<p>Three of the nine seats are open-weight models we serve ourselves; the harness only ever sees an
+OpenAI-compatible endpoint, so these are the seats a port can run with no API key at all. Everything below is
+what we actually ran, and every command lives in the repo beside its logs
+(<code>local_models/&lt;model&gt;/{SETUP.md,serve.sh,smoke.py,RESULTS.md}</code>).</p>
+
+<p><b>Two rules before any of it.</b> (1) <b>Pick the vLLM build from your driver, not from the changelog.</b>
+This box runs driver 570 / CUDA 12.8, so the newest usable PyPI wheel is <code>vllm==0.19.1</code> (torch
+2.10.0+cu128); vLLM ≥ 0.20 pins a cu130 torch that needs driver ≥ 580 and fails at import with
+<code>libcudart.so.13: cannot open shared object file</code>. If a model needs a nightly, take the
+<code>cu129</code> variant explicitly. (2) <b>One private environment and HF cache per model</b>
+(<code>envs/&lt;model&gt;</code>, <code>HF_HOME=hf_cache/&lt;model&gt;</code>) — the three stacks pin conflicting
+transformers versions, and installing into a shared env is how you lose a working server. Weights are
+pre-downloaded and every server runs with <code>HF_HUB_OFFLINE=1</code>.</p>
+
+<div class="tbl"><div class="tcap"><b>The three servers.</b> Ports are fixed because the harness flags name them;
+one GPU each; all bind to localhost.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>tag</th><th>weights</th><th>serving stack</th><th class="n">port</th><th class="n">GPU</th><th>measured, 8 frames per call</th></tr></thead>
+<tbody>
+<tr><td><code>qwen-27b</code></td><td><code>Qwen/Qwen3.8-27B</code> (bf16, 52 GB)</td><td>vLLM 0.19.1</td><td class="n">18300</td><td class="n">~72 GiB</td><td>≈ 3–4 s (2B sibling 1.1 s, 9B 1.8 s)</td></tr>
+<tr><td><code>minicpmo</code></td><td><code>openbmb/MiniCPM-o-4_5-awq</code> (W4A16, 8 GB)</td><td>vLLM 0.19.1 + <code>--trust-remote-code</code></td><td class="n">18100</td><td class="n">~7 GiB weights</td><td>0.76 s at 64 vision tok/frame, 1.63 s with HD slicing</td></tr>
+<tr><td><code>museglimmer</code></td><td><code>RedHatAI/Muse-Glimmer-30B-INT4</code> + DFlash drafter</td><td>vLLM nightly <b>cu129</b></td><td class="n">18200</td><td class="n">~40 GiB</td><td>9.4 s no-think, 33 s with reasoning on</td></tr>
+</tbody></table></div></div>
+
+<h3>qwen-27b — Qwen3.8-27B on vLLM</h3>
+<pre><code>ROOT=&lt;your root&gt;;  export HF_HOME=$ROOT/hf_cache/qwen
+/opt/conda/bin/python3 -m venv $ROOT/envs/qwen
+$ROOT/envs/qwen/bin/pip install "vllm==0.19.1" openai pillow requests
+hf download Qwen/Qwen3.8-27B                       <span class="c"># 52 GB; 9B and 2B siblings also work</span>
+
+CUDA_VISIBLE_DEVICES=3 HF_HUB_OFFLINE=1 $ROOT/envs/qwen/bin/vllm serve Qwen/Qwen3.8-27B \
+    --served-model-name qwen-27b --host 127.0.0.1 --port 18300 \
+    --tensor-parallel-size 1 --dtype auto --max-model-len 32768 --max-num-seqs 4 \
+    --limit-mm-per-prompt '{"image": 8}' --gpu-memory-utilization 0.90 \
+    --reasoning-parser qwen3 --default-chat-template-kwargs '{"enable_thinking": false}'</code></pre>
+<p><b>Why those last two flags.</b> The harness sends no <code>chat_template_kwargs</code>, so thinking has to be
+turned off server-wide or every call pays for a <code>&lt;think&gt;</code> block; <code>--reasoning-parser qwen3</code>
+keeps that block out of <code>message.content</code> if you ever turn it back on
+(<code>THINK=1 bash serve.sh 27b</code>). <code>--limit-mm-per-prompt '{"image": 8}'</code> must match the frame
+window or the server rejects the poll. Harness side: <code>--assist-backend openai --assist-model qwen-27b
+--assist-base-url http://127.0.0.1:18300/v1</code> (default request profile).</p>
+
+<h3>minicpmo — MiniCPM-o 4.5 (AWQ) on vLLM</h3>
+<pre><code>export HF_HOME=$ROOT/hf_cache/minicpmo
+/opt/conda/bin/python3 -m venv $ROOT/envs/minicpmo-vllm
+$ROOT/envs/minicpmo-vllm/bin/pip install "vllm==0.19.1" "transformers==4.57.6" openai pillow
+hf download openbmb/MiniCPM-o-4_5-awq --exclude "assets/*"      <span class="c"># 8 GB; bf16 repo also serves</span>
+
+MODEL_DIR=$(ls -d $HF_HOME/hub/models--openbmb--MiniCPM-o-4_5-awq/snapshots/*/ | head -1)
+CUDA_VISIBLE_DEVICES=2 HF_HUB_OFFLINE=1 $ROOT/envs/minicpmo-vllm/bin/vllm serve "$MODEL_DIR" \
+    --served-model-name minicpmo --host 127.0.0.1 --port 18100 \
+    --dtype bfloat16 --trust-remote-code --max-model-len 8192 --max-num-seqs 4 \
+    --gpu-memory-utilization 0.85 --enable-prefix-caching \
+    --limit-mm-per-prompt '{"image": 8, "video": 0, "audio": 0}' \
+    --mm-processor-kwargs '{"max_slice_nums": 1}'</code></pre>
+<p><b>transformers must stay below 5</b> — the model ships remote code written for the 4.x processor API, and a 5.x
+env fails to load it. <code>max_slice_nums</code> is the resolution knob: <code>1</code> gives 64 vision tokens per
+frame and 0.76 s per 8-frame call, <code>9</code> turns on HD slicing (320 tokens per frame, 1.63 s) and fixed a
+direction error we saw at the low setting — a real trade the port has to make and record. The context is only
+8k, which is why this seat runs <code>--assist-max-tokens 2000</code> and the <code>minicpmo</code> profile
+(temperature 0.1, thinking off, <b>images before text</b>, which its model card requires).</p>
+
+<h3>museglimmer — Muse Glimmer 30B INT4 on a vLLM nightly</h3>
+<pre><code>export HF_HOME=$ROOT/hf_cache/museglimmer
+uv venv --python 3.12 $ROOT/envs/museglimmer
+uv pip install --python $ROOT/envs/museglimmer/bin/python --prerelease=allow -U \
+    "vllm==0.27.2rc1.dev193+gaa9903490.cu129" --torch-backend=cu129 \
+    --extra-index-url https://wheels.vllm.ai/nightly/cu129
+hf download RedHatAI/Muse-Glimmer-30B-INT4
+hf download meta-models/Muse-Glimmer-30B-assistant          <span class="c"># +5 GB DFlash drafter, ~2x decode</span>
+
+CUDA_VISIBLE_DEVICES=1 HF_HUB_OFFLINE=1 $ROOT/envs/museglimmer/bin/vllm serve RedHatAI/Muse-Glimmer-30B-INT4 \
+    --served-model-name museglimmer --host 127.0.0.1 --port 18200 \
+    --tensor-parallel-size 1 --dtype auto --max-model-len 32768 --max-num-seqs 4 \
+    --limit-mm-per-prompt '{"image": 8}' --gpu-memory-utilization 0.90 \
+    --reasoning-parser muse_glimmer \
+    --speculative-config '{"method":"dflash","model":"meta-models/Muse-Glimmer-30B-assistant","num_speculative_tokens":15}'</code></pre>
+<p><b>Why a nightly.</b> Muse Glimmer support landed after the last release wheel; the plain nightly is built for
+CUDA 13 and will not import on driver 570, so the <code>cu129</code> index and the pinned build above are the
+working combination. <b>Why the odd request profile.</b> The RedHatAI chat template appends
+<i>"Reasoning strength: high."</i> to whatever system prompt you send, so the only reliable knob is the request
+field <code>chat_template_kwargs={"reasoning_strength": "low"}</code>; the <code>museglimmer-nothink</code>
+profile sends that <i>and</i> prefills an empty assistant turn
+(<code>add_generation_prompt=false, continue_final_message=true</code>), which cuts a reply from ~450 completion
+tokens to ~125 and the call from 33 s to 9.4 s. <code>--assist-image-scale 0.5</code> is there because a
+full-resolution composite frame does not fit the context at eight frames.</p>
+
+<h3>Prove each server before you sweep</h3>
+<pre><code>curl -s http://127.0.0.1:18300/v1/models | head -c 200      <span class="c"># the server answers, name matches --assist-model</span>
+$ROOT/envs/qwen/bin/python local_models/qwen/smoke.py --model qwen-27b --out /tmp/qwen_smoke.json</code></pre>
+<p>The per-model <code>smoke.py</code> sends the real shape — eight 800×580 frames plus the system prompt — and
+records latency, token counts and whether the reply parsed as JSON. A seat that fails the smoke test will fail
+1,515 times in a sweep. Then run §7.1 with <code>--assist-base-url</code> pointed at the port and check the same
+five fields; only then start <code>launch_v3.sh local</code>.</p>
 
 <h2 id="profiles">5 · Request profiles</h2>
 <p>Sampling is a property of the model, not of the harness: imposing one temperature on every model is a way of testing your own defaults. A profile is a named bundle of request fields applied by the OpenAI-compatible backend.</p>
