@@ -11,34 +11,34 @@ table{border-collapse:collapse;font-size:13.5px;margin:6px 0 14px}
 td,th{border:1px solid #E3E8EE;padding:5px 10px;text-align:left}
 a{color:#2C4BB8}
 </style></head><body><main>
-<h1>Teaser figure — one forced slip, four rollouts, one clock</h1>
-<p class="sub">20 × 7.4 in native Google Slides page, built from one spec (<code>tools/teaser3_build.py</code>).</p>
+<h1>Teaser figure — after the assistant speaks, the kitchen keeps running</h1>
+<p class="sub">20 × 9 in native Google Slides page, built from one spec (<code>tools/teaser4_build.py</code>). Written for a reader who has never heard of the simulator: no tick numbers, no metric acronyms, no dish names — and nothing below 18 pt on the canvas, so every word stays readable when the figure is printed one page wide.</p>
 <figure><img src="https://hellomuffin.github.io/cooksim-slides/teaser/teaser_final.png" alt="teaser figure">
-<figcaption>Top: the cook's own run, identical in every lane — the engine forces the slip at t 84 and the plate reaches the pass with tomato only at t 88. Below: four rollouts on that same clock.</figcaption></figure>
+<figcaption>Top right: what happens in the kitchen in every run — the user is cooking, skips the cheese, and walks out to serve. Below: four runs of that same moment on one clock, with what was said, how long each took, and how each scored.</figcaption></figure>
 
 <h2>The controlled comparison</h2>
-<p>A and D share a cook and differ only in the assistant; B and C receive the identical warning and differ only in the person. That is the whole argument of the paper in one picture: the assistant's sentence is not the outcome — the rollout is.</p>
+<p>Assistants 1 and 4 face the same user type and differ only in when they speak; assistants 2 and 3 send the identical warning and differ only in who is cooking. That is the whole argument of the paper in one picture: the assistant's sentence is not the outcome — the rollout is.</p>
 <table>
-<tr><th>lane</th><th>assistant</th><th>simulated cook</th><th>what happens</th><th>score</th></tr>
-<tr><td>A</td><td>catches the slip <b>before</b> it happens</td><td>average · med skill / med trust</td><td>cook turns back at once, serves t 92</td><td>success 1 · DT 1.0 · 92 ticks · 1 turn · AQ 0.91</td></tr>
-<tr><td>B</td><td>catches it <b>after</b> the slip</td><td>low-trust · med skill / low trust</td><td>argues first, is convinced, serves t 124</td><td>success 1 · DT 0.5 · 124 ticks · 3 turns · AQ 0.84</td></tr>
-<tr><td>C</td><td>same warning, after the slip</td><td>novice · low skill / high trust</td><td>complies but asks at every step, serves t 141</td><td>success 1 · DT 0.5 · 141 ticks · 6 turns · AQ 0.63</td></tr>
-<tr><td>D</td><td><b>never</b> mentions the cheese</td><td>average · med skill / med trust</td><td>serves tomato only at t 90</td><td>success 0 · DT 0.0 · 90 ticks · 1 turn · AQ 0.22</td></tr>
+<tr><th>lane</th><th>assistant</th><th>user type</th><th>what happens</th><th>score</th></tr>
+<tr><td>1</td><td>warns <b>before</b> the missed ingredient</td><td>trusting</td><td>user turns back at once, finishes in 92 steps</td><td>dish accepted · warning before · 92 steps · 1 turn · advice 0.91</td></tr>
+<tr><td>2</td><td>warns <b>after</b></td><td>doubts advice</td><td>argues first, is convinced, finishes in 124 steps</td><td>dish accepted · warning after · 124 steps · 3 turns · advice 0.84</td></tr>
+<tr><td>3</td><td>the same warning, after</td><td>needs steps</td><td>complies but asks at every step, finishes in 141 steps</td><td>dish accepted · warning after · 141 steps · 6 turns · advice 0.63</td></tr>
+<tr><td>4</td><td><b>never</b> mentions the cheese</td><td>trusting</td><td>serves the incomplete dish after 90 steps</td><td>dish rejected · no warning · 90 steps · 1 turn · advice 0.22</td></tr>
 </table>
 
 <h2>What the metrics show</h2>
 <ul>
-<li><b>in-time success</b> separates D from the rest — the only binary the transcript cannot fake.</li>
-<li><b>detection timing DT</b> separates A (prevention, 1.0) from B and C (caught after the commit, 0.5) from D (missed, 0).</li>
-<li><b>ticks to serve</b> is the efficiency term: all three successes are wins, but the person's disposition costs 32 and 49 ticks.</li>
-<li><b>assistant turns</b> is the conversation cost that the persona-weighted efficiency term charges for.</li>
-<li><b>guidance quality AQ</b> is the judged rubric score, which drops for C's step-by-step hand-holding and collapses for D.</li>
+<li><b>dish accepted</b> separates assistant 4 from the rest — the one thing a transcript cannot fake.</li>
+<li><b>warning came</b> separates prevention (assistant 1) from a late catch (2 and 3) from a miss (4); in the paper this is the detection-timing term.</li>
+<li><b>steps to finish</b> is the efficiency term: all three wins are wins, but the user's disposition costs 32 and 49 extra steps.</li>
+<li><b>turns of talk</b> is the conversation cost the persona-weighted efficiency term charges for.</li>
+<li><b>advice quality</b> is the judged rubric score, which drops for the step-by-step hand-holding and collapses for the assistant that never warns.</li>
 </ul>
 
 <h2>Provenance</h2>
 <ul>
-<li>Deck: <a href="https://docs.google.com/presentation/d/1SFGAuS5wFKUxuWCGYiZrPjV2UC5BmFMO7_UK32W_tnA/edit">Google Slides, 20 × 7.4 in</a></li>
+<li>Deck: <a href="https://docs.google.com/presentation/d/1UwcLRumpmtfgoXYcWeTOeb9qXgBHZyEfQKrGQPYlkKQ/edit">Google Slides, 20 × 9 in</a></li>
 <li>Full-resolution PNG: <a href="https://hellomuffin.github.io/cooksim-slides/teaser/teaser_final.png">teaser_final.png</a></li>
-<li>Frames: recorded episode <code>b3_easy_nops_hard_map_4</code> (<code>gemini-3.7-flash</code>, personas <code>baseline</code> / <code>classic_novice</code>). The four exchanges are written in engine style to show the space of behaviours the harness produces; the earlier two-lane version, built entirely from one verbatim episode, is at <a href="https://hellomuffin.github.io/cooksim-slides/teaser/teaser_v2.png">teaser_v2.png</a>.</li>
+<li>Frames: recorded episode <code>b3_easy_nops_hard_map_4</code> (<code>gemini-3.7-flash</code>, personas <code>baseline</code> / <code>classic_novice</code>). The four exchanges are written in engine style to show the space of behaviours the harness produces; earlier versions: <a href="https://hellomuffin.github.io/cooksim-slides/teaser/teaser_v3.png">teaser_v3.png</a> (four lanes, engine vocabulary) and <a href="https://hellomuffin.github.io/cooksim-slides/teaser/teaser_v2.png">teaser_v2.png</a> (two lanes, fully verbatim).</li>
 </ul>
 </main></body></html>
