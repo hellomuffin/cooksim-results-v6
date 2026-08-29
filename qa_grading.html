@@ -1,0 +1,205 @@
+<title>How Questions Are Graded</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,500;0,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--paper:#f6f7f9;--card:#ffffff;--ink:#161a20;--muted:#5b6673;--faint:#8a93a0;--rule:#dfe3e8;
+ --accent:#2c4bb8;--accent-soft:#e9edfb;--ok:#2f7a4f;--ok-soft:#e7f2ec;--warn:#9a5b12;--warn-soft:#f7f0e2;
+ --bad:#b3402f;--bad-soft:#faeae7;--measure:46rem;--wide:64rem}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#12151a;--card:#171b21;--ink:#e7ebf1;
+ --muted:#98a2ae;--faint:#727d8a;--rule:#252b33;--accent:#8ba4ff;--accent-soft:#1c2333;--ok:#61b98a;--ok-soft:#122019;
+ --warn:#d6a94a;--warn-soft:#241f14;--bad:#e58076;--bad-soft:#2a1614}}
+:root[data-theme="dark"]{--paper:#12151a;--card:#171b21;--ink:#e7ebf1;--muted:#98a2ae;--faint:#727d8a;--rule:#252b33;
+ --accent:#8ba4ff;--accent-soft:#1c2333;--ok:#61b98a;--ok-soft:#122019;--warn:#d6a94a;--warn-soft:#241f14;
+ --bad:#e58076;--bad-soft:#2a1614}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:16px;line-height:1.62}
+.wrap{max-width:var(--wide);margin:0 auto;padding:3.2rem 1.4rem 5rem}
+.wrap>p,.wrap>ul,.wrap>ol,.wrap>h2,.wrap>h3,.lede,.toc{max-width:var(--measure)}
+.wrap>p{margin:0 0 .95rem}
+h1,h2,h3{font-family:Spectral,Georgia,serif;text-wrap:balance;margin:0}
+h1{font-size:2.1rem;font-weight:600;line-height:1.15}
+h2{font-size:1.32rem;font-weight:600;margin:2.6rem 0 .7rem;padding-top:.85rem;border-top:1px solid var(--rule)}
+h3{font-size:1.03rem;font-weight:600;margin:1.7rem 0 .5rem}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);margin-bottom:.8rem}
+.lede{font-size:1.02rem;color:var(--muted);margin:.9rem 0 1.4rem}
+a{color:var(--accent)}
+ul,ol{margin:.2rem 0 1rem;padding-left:1.25rem}li{margin-bottom:.4rem}
+code{font-family:"IBM Plex Mono",monospace;font-size:.85em;background:var(--accent-soft);padding:.05em .32em;border-radius:2px}
+pre{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:.8rem 1rem;overflow-x:auto;
+ font-family:"IBM Plex Mono",monospace;font-size:.78rem;line-height:1.5;max-width:var(--wide);white-space:pre-wrap}
+.toc{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:.9rem 1.1rem;margin:1.4rem 0 2rem;font-size:.9rem}
+.toc a{display:block;color:var(--muted);text-decoration:none;padding:.1rem 0}.toc a:hover{color:var(--accent)}
+.tbl{margin:1.2rem 0 1.6rem;max-width:var(--wide)}
+.tcap{font-size:.83rem;color:var(--muted);margin-bottom:.6rem;max-width:var(--measure)}.tcap b{color:var(--ink)}
+.tablewrap{overflow-x:auto;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:.79rem;line-height:1.45}
+th{font-weight:500;text-align:left;color:var(--muted);padding:.42rem .55rem;font-size:.71rem;letter-spacing:.03em;
+ text-transform:uppercase;border-bottom:1px solid var(--rule);vertical-align:bottom}
+td{padding:.4rem .55rem;vertical-align:top;border-bottom:1px solid var(--rule)}
+tbody tr:last-child td{border-bottom:none}
+td:first-child{font-weight:500;white-space:nowrap}
+td.n{text-align:right;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pass{color:var(--ok);font-weight:600}.fail{color:var(--bad);font-weight:600}.warnc{color:var(--warn);font-weight:600}
+.find{border:1px solid var(--rule);border-left:3px solid var(--bad);background:var(--bad-soft);border-radius:0 3px 3px 0;
+ padding:.9rem 1.1rem;margin:1.3rem 0;max-width:var(--wide)}
+.find.med{border-left-color:var(--warn);background:var(--warn-soft)}
+.find.ok{border-left-color:var(--ok);background:var(--ok-soft)}
+.find h3{margin:0 0 .45rem;font-size:1rem}
+.find .tag{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--bad)}
+.find.med .tag{color:var(--warn)}.find.ok .tag{color:var(--ok)}
+.find p{margin:.45rem 0;font-size:.93rem;max-width:var(--measure)}
+.quote{font-family:"IBM Plex Mono",monospace;font-size:.76rem;background:var(--card);border:1px solid var(--rule);
+ border-radius:2px;padding:.5rem .7rem;margin:.5rem 0;color:var(--ink)}
+.quote i{color:var(--muted);font-style:normal}
+footer{border-top:1px solid var(--rule);margin-top:3rem;padding-top:1.3rem;font-size:.85rem;color:var(--muted);max-width:var(--measure)}
+</style>
+<div class="wrap">
+<div class="eyebrow">Audit · question and alert grading</div>
+<h1>How questions are graded, and where it is wrong</h1>
+<p class="lede">Every question the simulated cook asks is graded against the engine's own state <i>in the episode that actually ran</i> — never against a reference trajectory. This page documents that mechanism family by family, then reports an audit of all 1,350 sweep episodes that tested whether it holds. Eight of the nine scored families come out clean. The proactive-alert family does not, and its published score should not be read until it is rebuilt.</p>
+
+<div class="toc">
+  <a href="#mech">1 · The mechanism: how a question becomes a graded answer</a>
+  <a href="#families">2 · What each family's truth reads</a>
+  <a href="#method">3 · How this audit was carried out</a>
+  <a href="#findings">4 · Findings</a>
+  <a href="#fix">5 · What to change</a>
+  <a href="#status">6 · What the current numbers mean</a>
+</div>
+
+<h2 id="mech">1 · The mechanism</h2>
+<p>A question is not a string with a stored answer. It is a scheduled event with a truth <i>function</i>, and the function is evaluated against the live world twice.</p>
+<ol>
+  <li><b>Scheduling.</b> At design time the question is bound to an anchor — a point of task progress, not a tick — and the candidate is accepted only if it passes the content-hardness filter on the replayed clean trace (memory questions after ≥35% of the plan and after the first error, counts spread over ≥30 ticks, ≥30% negative truths, and so on). Nothing about the <i>answer</i> is stored at this stage; only the question form and its truth kind, e.g. <code>count:visit(cutting board)</code>.</li>
+  <li><b>Asking.</b> During the episode, when the world reaches the anchor, the sub-case goes live and the cook asks the question in its own words on its next turn. The tick it is asked is whatever the live episode produced.</li>
+  <li><b>Truth at ask time.</b> The moment the cook speaks, the engine evaluates the truth function against the live game object and the live action log: <code>gt_at_ask</code>. Nothing is read from the reference plan.</li>
+  <li><b>The answer.</b> The first thing the assistant says after the question is the answer under test.</li>
+  <li><b>Truth at answer time.</b> The same function is evaluated again: <code>gt_at_answer</code>. The kitchen moves between question and answer, and an answer that was true when it was given must not be graded wrong for that.</li>
+  <li><b>Grading.</b> An offline judge receives the question as asked, both truths, the plate history and a synonym list, and grades <i>only the factual claims about the thing asked</i>. An answer true at either moment is correct. Advice attached to the answer counts neither for nor against unless it contradicts the truth.</li>
+</ol>
+<p>Two consequences are worth stating plainly, because they are the properties that make the number mean anything. <b>The truth follows the rollout:</b> if the assistant redirected the cook, or a forced error sent it somewhere else, the count, the order, the plate contents and the timers all change, and the truth changes with them. <b>The truth is a function of state, not of the script:</b> two assistants that produce different trajectories are graded against different, correct answers to the same question.</p>
+<p>Measured on the sweep: 1,146 of 1,462 probe questions were both asked and answered; 58% were answered in the same tick they were asked (median lag 0 ticks, p90 1, max 12), so the two-moment rule usually binds trivially — but it is what keeps the 42% honest.</p>
+<h2 id="families">2 · What each family's truth actually reads</h2>
+<div class="tbl">
+<div class="tcap"><b>Truth functions, their inputs, and the audit verdict.</b> "Live state" = the engine's game object at that tick; "live log" = the completed-command log of this episode; "live plate history" = the ordered record of what actually reached the plate. <i>Accuracy</i> is the current sweep value with its graded <i>n</i>.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>Family</th><th>Question form</th><th>Truth is computed from</th><th class="n">acc.</th><th class="n">n</th><th>Audit</th></tr></thead>
+<tbody>
+<tr><td>Q1 order</td><td>did I do A before or after B?</td><td>first finish ticks of A and B in the <b>live log</b>; <i>neither</i> and <i>only one</i> are valid answers</td><td class="n">0.45</td><td class="n">105</td><td class="pass">clean</td></tr>
+<tr><td>Q2 counting</td><td>how many times have I gone to a …?</td><td>completed <code>go to</code> commands in the <b>live log</b> matching the target words</td><td class="n">0.21</td><td class="n">91</td><td class="pass">clean — verified exactly, see F5</td></tr>
+<tr><td>Q3 duration</td><td>how long has X been on? which has been on longest? is anything past done?</td><td><b>live station timers</b> (<code>timer</code>, <code>cook_time</code>, status)</td><td class="n">0.60</td><td class="n">171</td><td class="pass">clean</td></tr>
+<tr><td>Q4 never-happened</td><td>did I already …? is there even a …?</td><td>empty event set in the live log / station kinds in the layout</td><td class="n">0.90</td><td class="n">154</td><td class="warnc">retired from scoring</td></tr>
+<tr><td>Q5 absence</td><td>what still has to go on this plate? how many boards are free?</td><td>recipe minus the <b>live plate</b>; live board occupancy</td><td class="n">0.51</td><td class="n">135</td><td class="pass">clean — latent risk F7</td></tr>
+<tr><td>Q6 re-ask</td><td>the same question later, and what changed</td><td>the truth function re-evaluated now, compared with the stored earlier evaluation</td><td class="n">—</td><td class="n">rare</td><td class="pass">clean</td></tr>
+<tr><td>Q7 multi-hop</td><td>the thing I plated right after the rice — is it done?</td><td><b>live plate history</b> → referent → its live state</td><td class="n">0.57</td><td class="n">78</td><td class="pass">clean</td></tr>
+<tr><td>Q8 assistant memory</td><td>what did you tell me about the fryer earlier?</td><td>the <b>live conversation</b>: the assistant's own last line matching the topic</td><td class="n">0.68</td><td class="n">136</td><td class="pass">clean — 1 edge case, F9</td></tr>
+<tr><td>Q9 anticipation</td><td>what's my next step? which burns first? how long until X?</td><td>burn/ready questions from <b>live timers</b>; next-step from the clean plan's subgoal order with <b>live completion marks</b></td><td class="n">0.39</td><td class="n">231</td><td class="pass">clean — verified, F6</td></tr>
+<tr><td>Q10 proactive alert</td><td>give me a shout the moment the X is done</td><td>window from <b>live heat events</b>; the alert itself detected by keyword co-occurrence in the assistant's lines</td><td class="n">0.26–0.37</td><td class="n">457</td><td class="fail">broken — F1–F4</td></tr>
+</tbody></table></div>
+</div>
+<p>The design intent holds everywhere except the last row: <b>no family reads its answer from a gold trajectory.</b> The one place a reference plan is consulted at all is Q9's "what is my next step", which takes the <i>ordering</i> of subgoals from the clean plan and then marks off what the live episode has finished; an audit of all 106 such questions found zero cases where the named next step had already been completed live (F6).</p>
+
+<h2 id="method">3 · How this audit was carried out</h2>
+<p>Not by reading the code alone. Every claim below was tested against the 1,350 episodes of the published sweep — 1,462 probe questions and 645 standing requests — by recomputing the truth independently and comparing, or by re-reading the transcript around each graded event.</p>
+<ul>
+  <li><b>Liveness.</b> For each family, check that the stored <code>gt_at_ask</code> is a function of this episode's state, and that <code>gt_at_answer</code> is recomputed. Measured how often the two differ (next-step 29/108, longest-on 17/44, ready-in 8/176, past-done 4/214 — the families whose truth can move in a tick or two).</li>
+  <li><b>Independent recomputation.</b> For counting, the truth was recomputed from the episode's own command feedback log with both the strict matcher and a looser one, and compared (91 questions).</li>
+  <li><b>Staleness.</b> For every next-step answer naming a plating subgoal, check the live plate history for whether that item was already plated before the question (106 questions).</li>
+  <li><b>Alert re-derivation.</b> For every standing request, recompute the window, re-scan the full assistant transcript inside it, classify what the credited line actually says, and look for genuine alerts the matcher missed (645 requests, 457 with a window).</li>
+  <li><b>Ambiguity.</b> For "what is still missing", check the engine snapshot at the ask tick for more than one plate in the scene (41 usable snapshots).</li>
+</ul>
+
+<h2 id="findings">4 · Findings</h2>
+
+<div class="find">
+<div class="tag">F1 · critical</div>
+<h3>The proactive-alert detector fires on keyword co-occurrence, not on an alert</h3>
+<p>An alert is credited when a single assistant line contains the item's name <i>and</i> any word from a fixed ready-list (<code>done|ready|cooked|finished|take it out|…</code>) anywhere in the sentence. That test has no notion of polarity, of what the sentence is about, or of whether it is an alert at all. Four distinct failure modes, all present in the sweep:</p>
+<p><b>(a) The acknowledgement is scored as the alert.</b> Of the 247 requests verdicted <i>early</i> (score 0), <b>205 were flagged on a line spoken within 3 ticks of the request itself</b> — the assistant saying it will do what was asked:</p>
+<div class="quote">t=22, window opens at 35 &nbsp;<i>“Got it — I'll let you know the second the meat is done. You're currently near the plate stack…”</i> &nbsp;→ verdict <b>early</b>, score 0</div>
+<p><b>(b) Lines that deny readiness are credited.</b> 21 of the 141 credited alerts (15%) contain an explicit not-ready or promise phrase:</p>
+<div class="quote">score <b>1.000</b> &nbsp;<i>“The steak is <b>not done yet</b>; I'll call it. But the rice has been left smoking—stop everything now…”</i></div>
+<div class="quote">score <b>0.929</b> &nbsp;<i>“Got it — I'll stop nagging. The fish bar is <b>still filling</b>, so grab those potatoes…”</i></div>
+<div class="quote">score <b>0.914</b> &nbsp;<i>“The potato in the fryer is only <b>about half done</b>, and you still need to prep the steak…”</i></div>
+<p><b>(c) Cross-item confusion.</b> The test requires the item word and a ready word in the same line, not that the readiness claim is about that item. A line saying “stop checking the <b>potato</b> crate and scoop the <b>fish</b> before it burns” satisfies a <i>potato</i> request.</p>
+<p><b>(d) Genuine alerts are missed.</b> 7 of the 60 <i>missed</i> verdicts have a plain in-window instruction to take the item off the heat, phrased without any ready-word.</p>
+<p><b>Consequence.</b> The published alert score is close to a measurement of “did the assistant utter the item's name near a doneness word inside the window”. It is not measuring alert timing, and it is biased <i>downward</i> by (a) — the most cooperative behaviour, acknowledging the request, is the single most common way to score zero.</p>
+</div>
+
+<div class="find">
+<div class="tag">F2 · high</div>
+<h3>The alert window ends when the cook removes the food, so promptness is punished</h3>
+<p>The window is <code>[max(cooked_at, asked), burnt_at or removed_at or end)</code> and the score decays linearly across it. When the cook scoops the item out quickly — the correct behaviour, and the behaviour good assistance produces — the window collapses, and an assistant that alerted just as promptly gets a much lower score than one whose cook happened to be slow.</p>
+<p>Measured over the 457 requests with a window: median length 37 ticks, but p10 = 16 and the shortest is <b>2 ticks</b>; 45 windows are ≤15 ticks. The design intends the window to be the item's safe period (70–85 ticks under the tight clock, and 139 of the windows are indeed ≥70), so roughly a third of the graded requests are scored on a scale set by the cook's speed rather than by the physics.</p>
+</div>
+
+<div class="find">
+<div class="tag">F3 · medium</div>
+<h3>Only the first matching line is considered</h3>
+<p>The grader takes <code>alerts[0]</code>. A model that acknowledges the request and then alerts correctly is scored on the acknowledgement: of the 247 <i>early</i> verdicts, 192 (78%) have a later line inside the window that also matches the same test. Even with a correct detector, first-match is the wrong rule; the score should be the best qualifying alert.</p>
+</div>
+
+<div class="find">
+<div class="tag">F4 · medium</div>
+<h3>A quarter of the standing requests are never asked, and the exclusion is not random</h3>
+<p>Of 645 scheduled requests, <b>166 (26%) were never asked</b> — the sub-case went live but the cook never spoke it — and a further 22 produced no window because the item never reached <i>done</i> after the request. The effective denominator is 457 of 645 (71%). Exclusion is the right treatment (they are recorded as unscored, not as zeros), but the excluded set correlates with episodes that ended early or where the dish never got cooked, so the alert score is conditioned on the easier half of the corpus. The ask rate is at least even across the three personas (74–80%), so it is not a persona artefact.</p>
+</div>
+
+<div class="find ok">
+<div class="tag">F5 · cleared</div>
+<h3>Counting truth is exact — the low score is the models</h3>
+<p>Q2 has the worst accuracy of any family (0.21), which is exactly the shape a broken truth function would produce. It is not broken: recomputing all 91 counting questions from each episode's own command log, with both the strict matcher and a looser word match, produced <b>zero disagreements</b> with the stored truth. Models are simply bad at counting events over a long stream, which is what the family was chosen to test.</p>
+</div>
+
+<div class="find ok">
+<div class="tag">F6 · cleared, with a latent risk</div>
+<h3>Next-step truth is not stale</h3>
+<p>Q9's next-step answer is the only truth that consults the clean plan — for the subgoal <i>ordering</i> — and marks off completion from the live log. The failure mode to worry about is a cook that completes a step by its own route, leaving the plan's indices unmarked, so the truth names a step already done. Across all 106 next-step questions, <b>zero</b> named a subgoal whose item had already reached the plate. The risk remains latent for repair-heavy episodes and is worth a regression test rather than a rewrite.</p>
+</div>
+
+<div class="find ok">
+<div class="tag">F7 · cleared, latent</div>
+<h3>The "what is missing" truth reads one plate</h3>
+<p>The plate lookup returns the held plate if there is one, otherwise the first plate object it finds. In an episode with a parked plate and a fresh one — which a repair can produce — it could read the wrong plate. No instance occurred: of 41 such questions with a usable engine snapshot, none had more than one plate in scene. Worth a guard before the next suite.</p>
+</div>
+
+<div class="find ok">
+<div class="tag">F8 · documented, not a defect</div>
+<h3>The in-episode matcher is dead; the offline judge is the grader</h3>
+<p>The live per-kind matcher returns <code>ungradable</code> for essentially every answer (1,042 of 1,042 gradable-family records). That is by design since the 2026-08-26 audit — it was replaced by the offline judge, which sees both truths, the plate history and a synonym list — but the dead field is still written into every episode and is easy to mistake for the score. It should be removed or renamed.</p>
+</div>
+
+<div class="find ok">
+<div class="tag">F9 · edge case</div>
+<h3>One self-referential memory answer</h3>
+<p>Q8's truth is the assistant's own last line mentioning the topic, evaluated before the current answer joins the transcript. In 1 of 136 answered cases the stored truth text is the answer itself, which would make the question unfalsifiable. One instance is a rounding error, but the ordering that prevents it should be asserted rather than relied on.</p>
+</div>
+<h2 id="fix">5 · What to change</h2>
+<p>Ranked. The first item is the only one that changes a published number.</p>
+<ol>
+  <li><b>Detect the alert with the judge, not a regex.</b> Keep the window from the engine; replace the keyword test with a per-line question to the same offline judge that already grades answers: <i>“Does this line assert that the &lt;item&gt; is ready <b>now</b>?”</i> — yes / no / it says the opposite / it is a promise to tell later. Only lines that mention the item need be sent, so the cost is a handful of calls per request. This removes F1(a)–(d) at once, because polarity, item binding and the promise-versus-alert distinction are exactly what a judge can settle and a regex cannot.</li>
+  <li><b>Score the best qualifying alert, not the first.</b> With a correct classifier, take the earliest line classified as a genuine alert; an acknowledgement can then never be the scored event.</li>
+  <li><b>Make the window a property of the physics, not of the cook.</b> End the window at <code>cooked_at + smoke_grace + burn_time</code> — the item's real safe period — and treat removal as a separate, recorded outcome: if the cook takes the food off before any alert was possible, the request is <i>pre-empted</i> (unscored, like <i>no window</i>), not <i>missed</i>. Prompt cooking should never lower an assistant's score.</li>
+  <li><b>Report the ask rate beside the alert score.</b> 457 of 645, with the reason for each exclusion, so the denominator travels with the number.</li>
+  <li><b>Guard the plate lookup</b> (F7): if more than one plate is in scene, resolve to the one the task's checkpoint is tracking, or mark the question unscored rather than guessing.</li>
+  <li><b>Assert the Q8 ordering</b> (F9): the answer must not be in the transcript when its own truth is computed.</li>
+  <li><b>Delete or rename the dead live matcher</b> (F8) so that <code>qa_grade</code> cannot be mistaken for the score.</li>
+  <li><b>Add three regression tests</b> to the offline suite, each replaying a synthetic transcript: an acknowledgement followed by a correct alert must score high; a "not done yet" line inside the window must score zero; a fast removal must produce <i>pre-empted</i>, not <i>missed</i>.</li>
+</ol>
+
+<h2 id="status">6 · What the current numbers mean</h2>
+<div class="tbl"><div class="tablewrap"><table>
+<thead><tr><th>Number</th><th>Status</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>Question accuracy, Q1–Q3, Q5–Q9</td><td class="pass">stands</td><td>truth is live, recomputed at both moments, independently verified for counting and next-step; graded by a judge that sees both truths</td></tr>
+<tr><td>Q4 never-happened</td><td class="warnc">retired</td><td>0.90 against 0.49 for the rest — the question announced its own answer; instances remain in the traces, unscored</td></tr>
+<tr><td>Per-family accuracy table</td><td class="pass">stands</td><td>each family's <i>n</i> is the answered subset; low values are model behaviour, not truth defects</td></tr>
+<tr><td>Proactive alert score (0.26–0.37 per model)</td><td class="fail">withdraw</td><td>F1–F3: the detector scores acknowledgements as failures, credits denials of readiness, confuses items, and takes the first match only</td></tr>
+<tr><td>Alert verdict counts (early / missed / in-window)</td><td class="fail">withdraw</td><td>same cause; 83% of the <i>early</i> class is an artefact</td></tr>
+<tr><td>The claim "answering and alerting are separable skills"</td><td class="warnc">weakened</td><td>the answering half stands; the alerting half rests on the withdrawn score and should be restated once the detector is rebuilt</td></tr>
+</tbody></table></div></div>
+<p>Nothing else in the benchmark depends on the alert score: it is reported as its own column, is not part of task success, efficiency, detection timing or the judged guidance score, and does not enter the release rule that governs the takeover. The rebuild is a scorer change over stored transcripts — no episode needs to be re-run.</p>
+
+<footer>
+Audit of 1,350 sweep episodes (1,462 probe questions, 645 standing requests), engine revision <code>5773b46c9e</code>, suite <code>composite-v3</code>. Truth functions: <code>tools/qa_v3_lib.py</code>; judge: <code>tools/regrade_qa.py</code>; alert grader: <code>grade_proactive</code>. Companion pages: <a href="metrics.html">metric definitions</a> · <a href="suite_v3_results.html">results</a> · <a href="paper_source.html">paper source</a>.
+</footer>
+</div>
