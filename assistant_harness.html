@@ -1,0 +1,293 @@
+<title>The Assistant Seat</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,500;0,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--paper:#f6f7f9;--card:#ffffff;--ink:#161a20;--muted:#5b6673;--faint:#8a93a0;--rule:#dfe3e8;
+ --accent:#2c4bb8;--accent-soft:#e9edfb;--ok:#2f7a4f;--warn:#9a5b12;--warn-soft:#f7f0e2;--bad:#b3402f;
+ --term:#12161d;--term-ink:#dfe6f0;--measure:46rem;--wide:64rem}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#12151a;--card:#171b21;--ink:#e7ebf1;
+ --muted:#98a2ae;--faint:#727d8a;--rule:#252b33;--accent:#8ba4ff;--accent-soft:#1c2333;--ok:#61b98a;
+ --warn:#d6a94a;--warn-soft:#241f14;--bad:#e58076;--term:#0d1117;--term-ink:#dfe6f0}}
+:root[data-theme="dark"]{--paper:#12151a;--card:#171b21;--ink:#e7ebf1;--muted:#98a2ae;--faint:#727d8a;
+ --rule:#252b33;--accent:#8ba4ff;--accent-soft:#1c2333;--ok:#61b98a;--warn:#d6a94a;--warn-soft:#241f14;
+ --bad:#e58076;--term:#0d1117;--term-ink:#dfe6f0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;
+ font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--wide);margin:0 auto;padding:3.2rem 1.4rem 5rem}
+.wrap>p,.wrap>ul,.wrap>ol,.wrap>h2,.wrap>h3,.wrap>h4,.lede,.note{max-width:var(--measure)}
+.wrap>p{margin:0 0 .95rem}
+h1,h2,h3{font-family:Spectral,Georgia,serif;text-wrap:balance;margin:0}
+h1{font-size:2.15rem;font-weight:600;line-height:1.14;letter-spacing:-.012em}
+h2{font-size:1.34rem;font-weight:600;margin:2.7rem 0 .7rem;padding-top:.85rem;border-top:1px solid var(--rule)}
+h3{font-size:1.04rem;font-weight:600;margin:1.8rem 0 .5rem}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;
+ color:var(--faint);margin-bottom:.8rem}
+.lede{font-size:1.02rem;color:var(--muted);margin:.9rem 0 1.4rem}
+a{color:var(--accent);text-underline-offset:.18em}
+ul,ol{margin:.2rem 0 1rem;padding-left:1.25rem}li{margin-bottom:.4rem}
+code{font-family:"IBM Plex Mono",monospace;font-size:.85em;background:var(--accent-soft);padding:.05em .32em;border-radius:2px}
+pre{background:var(--term);color:var(--term-ink);border-radius:3px;padding:.9rem 1rem;overflow-x:auto;
+ font-family:"IBM Plex Mono",monospace;font-size:.79rem;line-height:1.55;max-width:var(--wide);margin:.7rem 0 1.2rem}
+pre code{background:none;padding:0;color:inherit;font-size:1em}
+pre .c{color:#7f8b9c}
+.toc{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:1rem 1.2rem;margin:1.6rem 0 2rem;
+ max-width:var(--measure);font-size:.9rem}
+.toc a{display:block;color:var(--muted);text-decoration:none;padding:.12rem 0}
+.toc a:hover{color:var(--accent)}
+.tbl{margin:1.2rem 0 1.6rem;max-width:var(--wide)}
+.tcap{font-size:.83rem;color:var(--muted);margin-bottom:.6rem;max-width:var(--measure)}
+.tcap b{color:var(--ink);font-weight:600}
+.tablewrap{overflow-x:auto;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:.79rem;line-height:1.45}
+th{font-weight:500;text-align:left;color:var(--muted);padding:.42rem .55rem;font-size:.71rem;letter-spacing:.03em;
+ text-transform:uppercase;border-bottom:1px solid var(--rule);vertical-align:bottom}
+td{text-align:left;padding:.4rem .55rem;vertical-align:top;border-bottom:1px solid var(--rule)}
+tbody tr:last-child td{border-bottom:none}
+td:first-child{font-weight:500;white-space:nowrap}
+td.n{text-align:right;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+.note{background:var(--warn-soft);border-left:2px solid var(--warn);padding:.8rem 1rem;margin:1.2rem 0;font-size:.92rem;border-radius:0 2px 2px 0}
+.note b{font-weight:600}
+.chk{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:.9rem 1.1rem;margin:1.2rem 0;max-width:var(--measure)}
+.chk h4{margin:0 0 .5rem;font-size:.92rem;font-family:"IBM Plex Sans",sans-serif;font-weight:600}
+.chk ol{margin:0;padding-left:1.2rem;font-size:.93rem}
+footer{border-top:1px solid var(--rule);margin-top:3rem;padding-top:1.3rem;font-size:.85rem;color:var(--muted);max-width:var(--measure)}
+</style>
+<div class="wrap">
+<div class="eyebrow">Integration guide · for the household and phone engines</div>
+<h1>The assistant seat</h1>
+<p class="lede">How a model is put in the assistant's chair, what settings each backend needs, what code is directly reusable, and the exact commands that launch a sweep, score it and publish it. Written so another engine can adopt the same harness without reading the kitchen's source.</p>
+
+<div class="toc">
+  <a href="#contract">1 · What the assistant seat is — the contract a port must keep</a>
+  <a href="#io">2 · The interface: what the model sees and must return</a>
+  <a href="#backends">3 · Backends, and how to add one</a>
+  <a href="#settings">4 · Per-model settings we run</a>
+  <a href="#profiles">5 · Request profiles (why sampling is per-model)</a>
+  <a href="#env">6 · Environment variables</a>
+  <a href="#launch">7 · Launch recipes, copy-paste</a>
+  <a href="#score">8 · Scoring, judging and publishing</a>
+  <a href="#fair">9 · What must be held fixed for a fair comparison</a>
+  <a href="#addmodel">10 · Adding a new assistant: the checklist</a>
+  <a href="#cost">11 · Measured cost and throughput</a>
+  <a href="#reuse">12 · What you can lift, and what you must write</a>
+  <a href="#trouble">13 · Troubleshooting</a>
+</div>
+
+<h2 id="contract">1 · What the assistant seat is</h2>
+<p>The assistant is the only component we do not build, and everything in the harness exists to make sure the thing we measure is the model rather than its plumbing. Four invariants define the seat; a port that keeps them produces numbers comparable in kind with ours, and a port that drops one does not.</p>
+<ul>
+  <li><b>It observes a rendering only.</b> Frames plus the public conversation. No symbolic state, no scene graph, no affordances, no schedule, no verdicts, no engine channel of any kind.</li>
+  <li><b>It cannot act.</b> Its only output that reaches the world is a sentence spoken to the person. A structured mistake flag goes to the engine for verdicting and for the takeover-release rule, and is never shown to the person and never changes an object.</li>
+  <li><b>It is polled on a fixed schedule</b> — every <code>K</code> ticks, with a fixed-length frame window — so that "how often it could speak" is a property of the protocol and not of the model's latency.</li>
+  <li><b>Its prompt is audited at run start.</b> Assertions run on the composed prompt the model actually receives, not on templates: no instance ids, no coordinates, no grading vocabulary. A violation aborts the run before it spends budget.</li>
+</ul>
+
+<h2 id="io">2 · The interface</h2>
+<h3>What arrives each poll</h3>
+<ul>
+  <li>the current tick;</li>
+  <li>the last <code>W</code> rendered frames, oldest first (kitchen: 8 frames at 1/tick, polled every 2 ticks; phone: 2 frames; household: 8 composite frames at 1/s);</li>
+  <li>the full public conversation with tick stamps, and the person's latest utterance;</li>
+  <li><b>its own previous output</b> — the only memory the harness gives it, which is deliberate: memory management is part of what is being measured;</li>
+  <li>a static system prompt: the task instruction, the person's public plan, the world's rules (what each station accepts, what a widget kind does), and the person's questionnaire answers.</li>
+</ul>
+<h3>What it must return</h3>
+<pre><code>{
+  "text": "what it says out loud; empty string = stay silent",
+  "flag": null | {"error": "&lt;one label from the engine's fixed taxonomy&gt;"},
+  "cook_progress": {            <span class="c">// its own tracking; never graded directly</span>
+     "completed": [...], "current": [...], "future": [...] },
+  "goal_change": null | "&lt;its record of an announced plan change&gt;"
+}</code></pre>
+<p>Only <code>text</code> crosses to the person. The kitchen's exact system prompt and reply schema are published verbatim on <a href="prompts.html">the prompts page</a>; the household's are rendered from its live harness in <a href="https://claude.ai/code/artifact/e4d2e5c9-5f4f-4391-ae49-f83e0c55c589">the observation-contract page</a>. Copy the shape, replace the world rules and the label vocabulary.</p>
+<div class="note"><b>Schema compliance is a measured property, not a harness problem.</b> Some models return prose, or a bare inner object instead of the envelope. The harness retries three times and then records an empty reply — it never repairs the output. Two of the nine models we ran are effectively disqualified by this alone, and that is a result about them.</div>
+
+<h2 id="backends">3 · Backends</h2>
+<p>All four backends implement one method, so the rollout calls a single funnel: <code>sup_call(system, user, frames) -&gt; dict</code>. The wrapper adds retries with backoff, per-call latency and token accounting, and session handling for the streaming APIs.</p>
+<div class="tbl"><div class="tcap"><b>The four backends.</b> <code>tools/assistant_backend.py</code> wraps any backend from <code>tools/controller_eval.py</code>; the rollout recognises it by its <code>.sup_call</code> attribute.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>kind</th><th>transport</th><th>use for</th><th>notes</th></tr></thead>
+<tbody>
+<tr><td><code>gemini</code></td><td>stateless Gemini API</td><td>Gemini chat models</td><td>thinking budget is a flag (<code>--assist-thinking</code>, default 640)</td></tr>
+<tr><td><code>openai</code></td><td>any <code>/v1/chat/completions</code></td><td>OpenAI models <i>and</i> every local server (vLLM, SGLang, …)</td><td>the workhorse: point <code>--assist-base-url</code> at your server; images are sent as <code>image_url</code> parts</td></tr>
+<tr><td><code>live</code></td><td>Gemini Live session</td><td>streaming-native Gemini</td><td>one session per episode; the system text is taken once, at open</td></tr>
+<tr><td><code>realtime</code></td><td>OpenAI Realtime WebSocket</td><td>streaming-native GPT</td><td>one session per episode, <code>output_modalities=["text"]</code>; see the token warning in §11</td></tr>
+</tbody></table></div></div>
+<p><b>To add a fifth backend</b>, implement <code>call(system, user, frames) -&gt; (dict, meta)</code> returning parsed JSON plus a meta dict with <code>latency_ms</code>, <code>prompt_tokens</code>, <code>completion_tokens</code>, and register it in <code>make_assistant()</code>. Nothing else in the harness needs to change. If the model holds a session, expose <code>reset_episode(system)</code> and the wrapper will open it once per episode instead of resending the system text every turn.</p>
+
+<h2 id="settings">4 · Per-model settings we run</h2>
+<div class="tbl"><div class="tcap"><b>The nine assistants of the published sweep</b>, with the exact flags. Worker counts are per-model concurrency in the runner, chosen from rate limits (API) or GPU capacity (local).</div>
+<div class="tablewrap"><table>
+<thead><tr><th>tag</th><th>backend</th><th>flags</th><th class="n">workers</th></tr></thead>
+<tbody>
+<tr><td>gemini-3.1-pro-preview</td><td>gemini</td><td><code>--assist-model gemini-3.1-pro-preview</code></td><td class="n">8</td></tr>
+<tr><td>gemini-3.7-flash</td><td>gemini</td><td><code>--assist-model gemini-3.7-flash</code></td><td class="n">8</td></tr>
+<tr><td>gemini-3.1-flash-live-preview</td><td>live</td><td><code>--assist-model gemini-3.1-flash-live-preview</code></td><td class="n">6</td></tr>
+<tr><td>gpt-5.5</td><td>openai</td><td><code>--assist-base-url https://api.openai.com/v1 --assist-profile gpt5</code></td><td class="n">8</td></tr>
+<tr><td>gpt-5.4-mini</td><td>openai</td><td><code>--assist-base-url https://api.openai.com/v1 --assist-profile gpt5</code></td><td class="n">8</td></tr>
+<tr><td>gpt-realtime-2.1</td><td>realtime</td><td><code>--assist-model gpt-realtime-2.1</code></td><td class="n">6</td></tr>
+<tr><td>qwen-27b</td><td>openai (local)</td><td><code>--assist-base-url http://127.0.0.1:18300/v1</code></td><td class="n">4</td></tr>
+<tr><td>minicpmo</td><td>openai (local)</td><td><code>--assist-base-url http://127.0.0.1:18100/v1 --assist-profile minicpmo --assist-max-tokens 2000</code></td><td class="n">4</td></tr>
+<tr><td>museglimmer</td><td>openai (local)</td><td><code>--assist-base-url http://127.0.0.1:18200/v1 --assist-profile museglimmer-nothink --assist-image-scale 0.5</code></td><td class="n">4</td></tr>
+<tr><td><b>silent floor</b></td><td>—</td><td><code>COOKSIM_SILENT_ASSISTANT=1</code>, text observation, no video</td><td class="n">8</td></tr>
+</tbody></table></div></div>
+<p>Local models need only an OpenAI-compatible server that accepts image content parts; we serve them on 18100 / 18200 / 18300 and the harness does not care what serves them. <code>--assist-image-scale 0.5</code> exists because one model's context could not hold a full-resolution composite frame — scaling is per-model and recorded in the report, so it is visible rather than silent.</p>
+
+<h2 id="profiles">5 · Request profiles</h2>
+<p>Sampling is a property of the model, not of the harness: imposing one temperature on every model is a way of testing your own defaults. A profile is a named bundle of request fields applied by the OpenAI-compatible backend.</p>
+<div class="tbl"><div class="tablewrap"><table>
+<thead><tr><th>profile</th><th>what it sets</th><th>why</th></tr></thead>
+<tbody>
+<tr><td><code>default</code></td><td>temperature 0.2</td><td>generic servers</td></tr>
+<tr><td><code>gpt5</code></td><td>temperature omitted; <code>max_completion_tokens</code> instead of <code>max_tokens</code>; <code>reasoning_effort: low</code></td><td>GPT-5.x rejects a temperature and prices reasoning as a request field; low effort is the latency lever</td></tr>
+<tr><td><code>minicpmo</code></td><td>temperature 0.1; <code>enable_thinking: false</code>; <b>images before the text part</b></td><td>from the model card; images-first was 30/30 valid JSON in the smoke test, images-last was not</td></tr>
+<tr><td><code>museglimmer-nothink</code></td><td>T 1.0, top_p 0.95, top_k 64; <code>reasoning_strength: low</code>; assistant-turn prefill with <code>continue_final_message</code></td><td>its own guide forbids greedy decoding; the prefill suppresses a reasoning preamble, ~125 completion tokens instead of ~450</td></tr>
+</tbody></table></div></div>
+<p>Adding a profile is a dict entry in <code>PROFILES</code> (<code>tools/controller_eval.py</code>). Rule of thumb: read the model's own guide, copy its recommended sampling, and record the profile name in the report so the setting travels with the number.</p>
+<h2 id="env">6 · Environment</h2>
+<div class="tbl"><div class="tablewrap"><table>
+<thead><tr><th>variable</th><th>meaning</th><th>value we use</th></tr></thead>
+<tbody>
+<tr><td><code>$PY</code></td><td>the interpreter with the engine's deps (playwright, the model SDKs)</td><td>set by <code>tmp/present/env.sh</code></td></tr>
+<tr><td><code>GEMINI_MODEL</code></td><td><b>the model in the person's voice</b> — not the assistant</td><td><code>gemini-3.7-flash</code> for every episode of the sweep</td></tr>
+<tr><td><code>GEMINI_API_KEY</code> / Vertex vars</td><td>Gemini access (key or <code>GOOGLE_GENAI_USE_VERTEXAI=true</code> + project)</td><td>from <code>tmp/present/env.sh</code></td></tr>
+<tr><td><code>OPENAI_API_KEY</code></td><td>OpenAI access</td><td><code>$(cat ~/.openai_key)</code>, never printed or committed</td></tr>
+<tr><td><code>COOKSIM_CASES</code></td><td>which suite to run</td><td><code>tmp/interact_eval/cases_composite_v3.json</code></td></tr>
+<tr><td><code>COOKSIM_PACE</code></td><td>physics preset</td><td><code>tight</code> (the benchmark); <code>human</code> is the retired 480/120 preset</td></tr>
+<tr><td><code>COOKSIM_DUMP_PER_EPISODE</code></td><td>write the per-tick world state beside each episode</td><td><code>1</code> — required by the round-level judge</td></tr>
+<tr><td><code>COOKSIM_SILENT_ASSISTANT</code></td><td>the floor: the assistant never speaks</td><td><code>1</code> for the floor runs only</td></tr>
+<tr><td><code>COOKSIM_NO_VIDEO</code></td><td>skip video encoding (text observation only)</td><td><code>1</code> for the floor</td></tr>
+<tr><td><code>ASSIST_ROOT</code></td><td>which results tree the scorers read</td><td><code>tmp/assist_bench_v3</code></td></tr>
+</tbody></table></div></div>
+
+<h2 id="launch">7 · Launch recipes</h2>
+<h3>7.1 One episode, to prove the seat works</h3>
+<p>Always do this before a sweep. It costs one episode and catches every wiring error.</p>
+<pre><code>cd &lt;engine root&gt;
+source tmp/present/env.sh                      <span class="c"># $PY, Gemini creds</span>
+export OPENAI_API_KEY=$(cat ~/.openai_key)
+export COOKSIM_PACE=tight COOKSIM_CASES=tmp/interact_eval/cases_composite_v3.json
+export GEMINI_MODEL=gemini-3.7-flash           <span class="c"># the PERSON's voice</span>
+
+$PY tools/e2e_stepin_rollout.py \
+    --case b3_easy_nops_medium_map_1 --persona-v2 baseline \
+    --paradigm hardsoft --sup-obs frames --out /tmp/smoke.json \
+    --assist-backend openai --assist-model gpt-5.5 \
+    --assist-base-url https://api.openai.com/v1 --assist-profile gpt5</code></pre>
+<p>Then read <code>/tmp/smoke.json</code> and check five things: <code>assistant_backend.calls</code> is non-zero; the conversation contains assistant lines; <code>injections[].injected</code> is true; every flag carries a verdict; and <code>engine_rev</code> is stamped.</p>
+
+<h3>7.2 One model over the whole suite</h3>
+<pre><code>$PY tools/run_assist_bench.py --tag gpt-5.5 --sup-obs frames --workers 8 \
+    --persona-v2 baseline classic_novice classic_expert \
+    --out-root tmp/assist_bench_v3/frames \
+    --assist-backend openai --assist-model gpt-5.5 \
+    --assist-base-url https://api.openai.com/v1 --assist-profile gpt5</code></pre>
+<p>The runner is a process-per-episode worker pool: one rollout owns one browser page, N run in parallel, and it is <b>resume-safe</b> — an episode whose output JSON exists is skipped, so the same command continues a partial sweep after any interruption. Logs go to local disk (<code>--log-dir</code>), never to network storage, because a wedged network directory takes the whole sweep with it. <code>--reverse</code> works the queue from the end, so a second runner can be pointed at the same cell without collision.</p>
+
+<h3>7.3 All the models</h3>
+<pre><code>bash tmp/assist_bench/launch_v3.sh api      <span class="c"># the six API assistants</span>
+bash tmp/assist_bench/launch_v3.sh local    <span class="c"># the three local ones (servers must be up)</span>
+bash tmp/assist_bench/launch_v3.sh silent   <span class="c"># the floor</span>
+bash tmp/assist_bench/launch_v3.sh one my-model 6 \
+     --assist-backend openai --assist-model my-model \
+     --assist-base-url http://127.0.0.1:18400/v1        <span class="c"># a single new entrant</span></code></pre>
+<p>Each launcher line detaches with <code>setsid nohup</code>, so runners survive a lost shell. Check progress with <code>pgrep -fc run_assist_bench</code> and the per-runner logs under <code>/tmp/assist_bench_logs/</code>.</p>
+
+<h2 id="score">8 · Scoring, judging and publishing</h2>
+<p>Scoring is offline and idempotent: it reads the episode JSONs and writes one file, so it can be re-run at any time, including while the sweep is still going.</p>
+<pre><code>export ASSIST_ROOT=tmp/assist_bench_v3
+
+$PY tools/regrade_qa.py --workers 8        <span class="c"># judge the cook's questions against engine truth</span>
+$PY tools/regrade_proactive.py             <span class="c"># score standing-request timing</span>
+$PY tools/eval_v2_sweep.py                 <span class="c"># outcomes, efficiency, detection -> eval_v2.json</span>
+$PY tools/aggregate_v2.py                  <span class="c"># per-cell aggregates</span>
+$PY tools/sq_v4_score.py --workers 6       <span class="c"># the round-level guidance rubric (the one judged score)</span>
+
+$PY tools/build_suite_v3_page.py ../&lt;site&gt;/suite_v3_results.html
+$PY tools/build_metrics_page.py   ../&lt;site&gt;/metrics.html</code></pre>
+<p>Or run the whole loop — judge, score, aggregate, build, push — with <code>bash tmp/assist_bench/v3_cycle.sh</code>, which is what republishes the results page every half hour.</p>
+<div class="note"><b>Judge policy, if you copy the rubric.</b> The judge must be from a different model family than the assistant under test (we use flash-tier judges in both directions and average the two for local models). Grade <b>per conversation round</b>, not per episode: one line, its reply, and what the person did next. Let the engine decide the two items a fluent model can talk its way past — is a claim about the world true, and could the advised action be started in that state. And publish the inter-judge agreement beside the score; ours is r = 0.51 with 78.1% agreement on the binary must-item verdict, which is exactly why that score carries no headline claim.</div>
+
+<h2 id="fair">9 · What must be held fixed</h2>
+<p>Everything below is a way for two numbers to stop being comparable. Hold them fixed, or report them as a factor.</p>
+<ul>
+  <li><b>The observation setting.</b> Frames only. Text-state settings exist in the harness as upper-bound controls and are not the benchmark.</li>
+  <li><b>The person's model.</b> One model in the voice for the whole sweep (a voice swap moves outcomes: in our slice, in-time success 0.54 against 0.33 with detection nearly unchanged).</li>
+  <li><b>The suite and the physics preset</b>, both stamped in every report along with the engine revision; the results page filters on the revision so a mixed corpus cannot be published by accident.</li>
+  <li><b>The poll schedule and frame window.</b> A model that is polled more often is a different experiment.</li>
+  <li><b>The silent floor</b>, run over the same episodes and personas, in every table.</li>
+  <li><b>The validity gates.</b> An episode where the injection never fired, or whose window was never anchored, is <i>not measured</i> — never a zero.</li>
+</ul>
+
+<h2 id="addmodel">10 · Adding a new assistant</h2>
+<div class="chk">
+<h4>Checklist</h4>
+<ol>
+  <li>Pick the backend (<code>gemini</code> / <code>openai</code> / <code>live</code> / <code>realtime</code>); for anything self-hosted, stand up an OpenAI-compatible server that accepts image parts.</li>
+  <li>Read the model's guide and add a <code>PROFILES</code> entry if its sampling or reply budget differs from the default. Do not skip this: two of our nine needed it to produce valid JSON at all.</li>
+  <li>Run the one-episode smoke test (§7.1). Confirm valid JSON, non-empty <code>text</code> on at least some turns, and a flag that carries a verdict.</li>
+  <li>Check the composed-prompt audit passed in the log — it aborts the run if the prompt leaks ids, coordinates or grading terms.</li>
+  <li>Measure a schema-compliance rate over ~10 episodes. Below ~90% valid replies the model is not testable in this seat, and that is a finding to report, not a bug to patch.</li>
+  <li>Estimate cost from §11: calls/episode × tokens/call × 150 episodes per persona-crossed sweep.</li>
+  <li>Choose workers from the rate limit or the GPU, start with 4, and watch for 429s in the runner log.</li>
+  <li>Launch the full sweep, then score. Re-run scoring as it fills; nothing needs to wait for completion.</li>
+</ol>
+</div>
+
+<h2 id="cost">11 · Measured cost and throughput</h2>
+<div class="tbl"><div class="tcap"><b>Per-episode cost of the assistant seat</b>, measured over the 50 baseline-persona episodes of the published sweep. "Calls" is polls that reached the model; token counts are what the backend reported.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>model</th><th class="n">calls/ep</th><th class="n">median latency</th><th class="n">prompt tok/ep</th><th class="n">completion tok/ep</th></tr></thead>
+<tbody>
+<tr><td>gemini-3.1-pro-preview</td><td class="n">92</td><td class="n">9.0 s</td><td class="n">1,041,466</td><td class="n">32,982</td></tr>
+<tr><td>gemini-3.7-flash</td><td class="n">96</td><td class="n">4.1 s</td><td class="n">1,072,873</td><td class="n">20,979</td></tr>
+<tr><td>gemini-3.1-flash-live-preview</td><td class="n">78</td><td class="n">1.2 s</td><td class="n">815,747</td><td class="n">3</td></tr>
+<tr><td>gpt-5.5</td><td class="n">87</td><td class="n">8.0 s</td><td class="n">595,824</td><td class="n">46,981</td></tr>
+<tr><td>gpt-5.4-mini</td><td class="n">79</td><td class="n">4.6 s</td><td class="n">540,201</td><td class="n">45,031</td></tr>
+<tr><td>gpt-realtime-2.1</td><td class="n">95</td><td class="n">5.8 s</td><td class="n"><b>11,445,614</b></td><td class="n">33,182</td></tr>
+<tr><td>qwen-27b (local)</td><td class="n">73</td><td class="n">13.4 s</td><td class="n">421,321</td><td class="n">20,563</td></tr>
+<tr><td>museglimmer (local)</td><td class="n">83</td><td class="n">4.9 s</td><td class="n">304,914</td><td class="n">28,766</td></tr>
+<tr><td>minicpmo (local)</td><td class="n">70</td><td class="n">3.1 s</td><td class="n">235,420</td><td class="n">14,413</td></tr>
+</tbody></table></div></div>
+<p>Three things worth knowing before you budget:</p>
+<ul>
+  <li><b>Frames dominate the prompt.</b> Roughly a million prompt tokens per episode for an 8-frame window at 0.5 Hz. Shrinking the window or the image is the only real lever, and both change the experiment, so change them for everyone or for no one.</li>
+  <li><b>Session APIs can bill an order of magnitude more.</b> The realtime seat reports 11.4 M prompt tokens per episode because the session re-sends accumulated context; it is the same protocol from the model's point of view and a very different invoice.</li>
+  <li><b>A full crossing is 150 episodes per assistant</b> (50 episodes × 3 personas). Nine assistants plus the floor is what produced the 1,344 completed rollouts, at roughly a day of wall clock with the worker counts in §4.</li>
+</ul>
+
+<h2 id="reuse">12 · What you can lift</h2>
+<div class="tbl"><div class="tcap"><b>Reusable as-is, adaptable, or yours to write.</b> Paths are in the kitchen engine's repository; ask for a copy of any of them.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>component</th><th>file</th><th>status</th></tr></thead>
+<tbody>
+<tr><td>Backend wrapper (retries, latency/token accounting, session handling)</td><td><code>tools/assistant_backend.py</code></td><td><b>lift as-is</b> — engine-independent</td></tr>
+<tr><td>The four backends + request profiles</td><td><code>tools/controller_eval.py</code></td><td><b>lift as-is</b>; add your own profiles</td></tr>
+<tr><td>Sweep runner: worker pool, resume, stagger, per-episode logs</td><td><code>tools/run_assist_bench.py</code></td><td><b>lift</b>; change only the line that builds the rollout command</td></tr>
+<tr><td>Launcher pattern (groups, detached runners, one-off entrants)</td><td><code>tmp/assist_bench/launch_v3.sh</code></td><td><b>lift</b> as a template</td></tr>
+<tr><td>Publish cycle: judge → score → aggregate → build → push under a lock</td><td><code>tmp/assist_bench/v3_cycle.sh</code></td><td><b>lift</b> as a template</td></tr>
+<tr><td>Round-level guidance rubric and its judge harness</td><td><code>tools/sq_v4_score.py</code>, <a href="sq_rubric_v4.html">rubric page</a></td><td><b>adapt</b>: the fifteen items are domain-general, the evidence block is not</td></tr>
+<tr><td>Verdict vocabulary and the single <i>Correct</i> set</td><td>in the scorer, imported by the release gate</td><td><b>adapt</b>: keep the one-set discipline, change the labels</td></tr>
+<tr><td>Metric definitions and formulas</td><td><a href="metrics.html">metrics page</a></td><td><b>adapt</b>: outcome and cost are engine-specific, timing and detection are not</td></tr>
+<tr><td>Scorer over episode JSONs</td><td><code>tools/eval_v2_sweep.py</code></td><td><b>rewrite</b> against your trace, keeping the gate-then-score shape</td></tr>
+<tr><td>Rollout loop, prompts, taxonomy, world rules</td><td><code>tools/e2e_stepin_rollout.py</code>, <code>tools/supervisor_eval.py</code></td><td><b>yours</b> — this is the engine</td></tr>
+</tbody></table></div></div>
+<p>The minimum viable adoption is: your rollout, plus <code>assistant_backend.py</code> + <code>controller_eval.py</code> for the seat, plus <code>run_assist_bench.py</code> for the sweep. That gives you every model in the table above behind one flag, with cost accounting and resume for free.</p>
+
+<h2 id="trouble">13 · Troubleshooting</h2>
+<div class="tbl"><div class="tablewrap"><table>
+<thead><tr><th>symptom</th><th>cause</th><th>fix</th></tr></thead>
+<tbody>
+<tr><td>Empty assistant text every turn, <code>calls</code> non-zero</td><td>the model replied with prose or a bare inner object; the harness parsed nothing</td><td>add a profile (prefill, thinking off, images-first); if it persists, report it as a schema-compliance result</td></tr>
+<tr><td>Run aborts at start with a prompt-audit error</td><td>the composed prompt leaked an id, a coordinate or a grading term</td><td>fix the prompt builder — do not relax the audit; it is protecting the comparison</td></tr>
+<tr><td>429s and stalled workers</td><td>worker count above the rate limit</td><td>lower <code>--workers</code>; the runner staggers starts by 8 s already</td></tr>
+<tr><td>Context-length errors on a local model</td><td>full-resolution composite frames</td><td><code>--assist-image-scale 0.5</code>, and record it in the report</td></tr>
+<tr><td>Episodes end immediately with a degraded-frame gate</td><td>black first frame — GPU/renderer not initialised</td><td>source the GPU environment before launching; check the first frame's luminance</td></tr>
+<tr><td>Sweep appears stuck near the end</td><td>the longest episodes (master recipes, hard maps) run last</td><td>expected; check per-episode logs before intervening, and remember the runner is resume-safe</td></tr>
+<tr><td>Numbers moved between two readings of the same page</td><td>the results cycle re-scored as more episodes landed</td><td>quote the engine revision and the episode count with any number you cite</td></tr>
+</tbody></table></div></div>
+
+<footer>
+Companion pages: <a href="paper_source.html">the paper source (introduction and method)</a> · <a href="metrics.html">metric definitions and the rubric prompt</a> · <a href="prompts.html">the two agents' prompts, verbatim</a> · <a href="suite_v3_results.html">current results</a>. Ask for repository access to lift any file named above.
+</footer>
+</div>
