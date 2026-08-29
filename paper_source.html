@@ -1,0 +1,765 @@
+<title>Streaming Interaction Agents — paper source</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['$$','$$']]},svg:{fontCache:'global'}};</script>
+<script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"></script>
+<style>
+:root{
+  --paper:#f6f7f9; --card:#ffffff; --ink:#161a20; --muted:#5b6673; --faint:#8a93a0;
+  --rule:#dfe3e8; --accent:#2c4bb8; --accent-soft:#e9edfb;
+  --ck:#b4532a; --vh:#2f7a4f; --ss:#5b53b8;
+  --flag:#9a5b12; --flag-soft:#f7f0e2;
+  --measure:44rem; --wide:62rem;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#12151a; --card:#171b21; --ink:#e7ebf1; --muted:#98a2ae; --faint:#727d8a;
+  --rule:#252b33; --accent:#8ba4ff; --accent-soft:#1c2333;
+  --ck:#e0916f; --vh:#61b98a; --ss:#a99cf5; --flag:#d6a94a; --flag-soft:#241f14;
+}}
+:root[data-theme="dark"]{
+  --paper:#12151a; --card:#171b21; --ink:#e7ebf1; --muted:#98a2ae; --faint:#727d8a;
+  --rule:#252b33; --accent:#8ba4ff; --accent-soft:#1c2333;
+  --ck:#e0916f; --vh:#61b98a; --ss:#a99cf5; --flag:#d6a94a; --flag-soft:#241f14;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
+.layout{display:grid;grid-template-columns:15rem minmax(0,1fr);gap:0 2.5rem;
+  max-width:82rem;margin:0 auto;padding:2.4rem 1.4rem 5rem;align-items:start}
+nav{position:sticky;top:1.5rem;max-height:calc(100vh - 3rem);overflow-y:auto;
+  font-size:.8rem;line-height:1.45;border-right:1px solid var(--rule);padding-right:1rem}
+nav .navtitle{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--faint);margin-bottom:.7rem}
+nav a{display:block;color:var(--muted);text-decoration:none;padding:.16rem 0}
+nav a:hover{color:var(--accent)}
+nav a.l1{color:var(--ink);font-weight:600;margin-top:.7rem}
+nav a.l3{padding-left:.9rem;font-size:.76rem}
+main{min-width:0;max-width:var(--wide)}
+main > p,main > ul,main > ol,main > h2,main > h3,main > h4,.lede,.note{max-width:var(--measure)}
+main > p{margin:0 0 .95rem}
+h1,h2,h3,h4{font-family:Spectral,Georgia,"Times New Roman",serif;text-wrap:balance;margin:0}
+h1{font-size:2.15rem;font-weight:600;line-height:1.15;letter-spacing:-.012em}
+h2{font-size:1.45rem;font-weight:600;margin:3rem 0 .8rem;padding-top:.9rem;border-top:1px solid var(--rule)}
+h3{font-size:1.1rem;font-weight:600;margin:2rem 0 .55rem}
+h4{font-size:.98rem;font-weight:600;margin:1.4rem 0 .4rem;font-family:"IBM Plex Sans",sans-serif}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--faint);margin-bottom:.8rem}
+.lede{font-size:1.02rem;color:var(--muted);margin:.9rem 0 0}
+a{color:var(--accent);text-underline-offset:.18em}
+ul,ol{margin:.2rem 0 1rem;padding-left:1.25rem}
+li{margin-bottom:.4rem}
+li > ul,li > ol{margin-top:.35rem;margin-bottom:.5rem}
+b.runin{font-weight:600}
+.sc{font-variant:small-caps;letter-spacing:.02em}
+.ck{color:var(--ck);font-weight:600;font-variant:small-caps;letter-spacing:.03em}
+.vh{color:var(--vh);font-weight:600;font-variant:small-caps;letter-spacing:.03em}
+.ss{color:var(--ss);font-weight:600;font-variant:small-caps;letter-spacing:.03em}
+code{font-family:"IBM Plex Mono",monospace;font-size:.85em;background:var(--accent-soft);
+  padding:.05em .32em;border-radius:2px}
+pre{background:var(--card);border:1px solid var(--rule);border-radius:2px;padding:.85rem 1rem;
+  overflow-x:auto;font-family:"IBM Plex Mono",monospace;font-size:.78rem;line-height:1.5;
+  max-width:var(--wide);white-space:pre-wrap}
+.tbl{margin:1.3rem 0 1.6rem;max-width:var(--wide)}
+.tcap{font-size:.83rem;line-height:1.5;color:var(--muted);margin-bottom:.6rem;max-width:var(--measure)}
+.tcap b{color:var(--ink);font-weight:600}
+.tablewrap{overflow-x:auto;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:.79rem;line-height:1.45}
+th{font-weight:500;text-align:left;color:var(--muted);padding:.42rem .55rem;font-size:.71rem;
+  letter-spacing:.03em;text-transform:uppercase;border-bottom:1px solid var(--rule);vertical-align:bottom}
+td{text-align:left;padding:.4rem .55rem;vertical-align:top;border-bottom:1px solid var(--rule)}
+tbody tr:last-child td{border-bottom:none}
+td:first-child,th:first-child{font-weight:500}
+td.n{text-align:right;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+.note{background:var(--flag-soft);border-left:2px solid var(--flag);padding:.8rem 1rem;margin:1.3rem 0;
+  font-size:.9rem;border-radius:0 2px 2px 0}
+.note b{font-weight:600}
+.def{background:var(--card);border:1px solid var(--rule);border-left:2px solid var(--accent);
+  padding:.8rem 1rem;margin:1.2rem 0;max-width:var(--wide);font-size:.94rem;border-radius:0 2px 2px 0}
+.def .dt{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:.4rem}
+footer{border-top:1px solid var(--rule);margin-top:3rem;padding-top:1.3rem;font-size:.84rem;color:var(--muted);max-width:var(--measure)}
+@media (max-width:900px){.layout{grid-template-columns:1fr}nav{position:static;max-height:none;border-right:none;
+  border-bottom:1px solid var(--rule);padding:0 0 1rem;margin-bottom:1.5rem}}
+</style>
+<div class="layout">
+<nav>
+  <div class="navtitle">Contents</div>
+  <a class="l1" href="#use">How to use this</a>
+  <a class="l1" href="#p1">Part I · Introduction</a>
+  <a href="#i1">1 The setting</a>
+  <a href="#i2">2 The decision under test</a>
+  <a href="#i3">3 Three requirements</a>
+  <a href="#i4">4 Why current evaluation cannot</a>
+  <a href="#i5">5 The user-simulation problem</a>
+  <a href="#i6">6 The design choice</a>
+  <a href="#i7">7 What we build around it</a>
+  <a href="#i8">8 Three engines</a>
+  <a href="#i9">9 Contributions</a>
+  <a href="#i10">10 Findings preview</a>
+  <a href="#i11">11 Claims ledger</a>
+  <a class="l1" href="#p2">Part II · Method</a>
+  <a href="#m1">1 Formal setting</a>
+  <a href="#m2">2 The engine</a>
+  <a class="l3" href="#m21">2.1 Visual simulation</a>
+  <a class="l3" href="#m22">2.2 Scene graph</a>
+  <a class="l3" href="#m23">2.3 Determinism</a>
+  <a class="l3" href="#m24">2.4 Time</a>
+  <a class="l3" href="#m25">2.5 Tasks</a>
+  <a class="l3" href="#m26">2.6 Progress key</a>
+  <a class="l3" href="#m27">2.7 Action space</a>
+  <a class="l3" href="#m28">2.8 Grounding</a>
+  <a class="l3" href="#m29">2.9 Scalable complexity</a>
+  <a href="#m3">3 The human agent</a>
+  <a class="l3" href="#m31">3.1 What must be controlled</a>
+  <a class="l3" href="#m32">3.2 Harness interface</a>
+  <a class="l3" href="#m33">3.3 Persona space</a>
+  <a class="l3" href="#m34">3.4 Error simulation</a>
+  <a class="l3" href="#m35">3.5 Certification</a>
+  <a class="l3" href="#m36">3.6 Injection control</a>
+  <a class="l3" href="#m37">3.7 Soft–hard takeover</a>
+  <a class="l3" href="#m38">3.8 Non-error events</a>
+  <a href="#m4">4 The assistant under test</a>
+  <a href="#m5">5 Measurement</a>
+  <a href="#m6">6 Invariance across engines</a>
+  <a href="#m7">7 Instrument limits</a>
+  <a class="l1" href="#p3">Part III · Fact appendix</a>
+</nav>
+<main>
+
+<div class="eyebrow">Paper source · intro + method · exhaustive</div>
+<h1>Visual and Physical Streaming Interaction Agents</h1>
+<p class="lede">Everything needed to write the introduction and the method, at full detail and in one place: the argument, the mechanisms, the taxonomies, the schemas, the constants and the numbers, for all three engines. Nothing here is compressed for page count, and nothing is allocated between main paper and supplement — that split is a later decision.</p>
+
+<h2 id="use">How to use this document</h2>
+<p>This is a <b>source document</b>, not a draft. It is organised the way the paper is organised, and every paragraph is written so it can be lifted, cut or compressed, but the goal is coverage, not economy: where there is a choice between saying a thing twice and losing a fact, the fact wins.</p>
+<ul>
+  <li><b>Provenance.</b> Every number comes from the engines, their specifications or the completed sweep. Where a claim is a design intention rather than a measurement it is marked <i>design claim</i>; where it is measured, the denominator is given.</li>
+  <li><b>Three engines.</b> <span class="ck">CookSim</span> (kitchen), <span class="vh">VHSim</span> (rendered household on VirtualHome), <span class="ss">ScreenSim</span> (deterministic phone). The method is written engine-general, with each engine as an instantiation, because the contribution is the contract, not the kitchen.</li>
+  <li><b>What is deliberately absent.</b> Results and ablations (they belong to the experiment section), related work, and any implementation detail — file names, function names, library versions — that carries no scientific content.</li>
+  <li><b>Terminology.</b> The person being helped is the <i>user</i> or <i>human agent</i>; the model under test is the <i>assistant</i>; the deterministic simulator is the <i>engine</i>; a scheduled thing that happens to the user is an <i>event</i> (an error, a question, a request, an announced deviation).</li>
+</ul>
+
+<h2 id="p1">Part I · Introduction</h2>
+
+<h3 id="i1">1 The setting</h3>
+<p>A person is doing something with their hands that takes many steps and cannot be paused: cooking a dish, tidying a house, changing a setting on a phone before a payment goes out. A model watches through a camera or a screen recording. It cannot touch anything. Its entire action space is language, and its influence on the outcome is whatever its sentences do to the person's next decision. This is the deployment shape of a growing class of systems — assistants on glasses, on phones, in cars, over shared screens — and it is a different capability from both of the ones our benchmarks measure well.</p>
+<p>It is not video understanding, because a correct description of what is happening is not the product; the product is a decision about whether to speak at all, when, and in what words, and the same true sentence is worth a saved dish at one moment and an interruption at another. It is not embodied control, because the model does not act: it has to work through a person who has their own plan, their own beliefs about what they just did, their own tolerance for being told, and their own hands.</p>
+
+<h3 id="i2">2 The decision under test</h3>
+<p>The assistant's decision has four parts, and each is scored by a different consequence.</p>
+<ul>
+  <li><b>Whether to speak.</b> Silence is a legitimate output and often the correct one. A benchmark that only rewards detection is won by a system that never stops talking.</li>
+  <li><b>When to speak.</b> On a mistake with a commitment point, the same words are a prevention before it and a repair request after it. Timing is not a tie-breaker; it is the difference between two different interventions.</li>
+  <li><b>What to say.</b> Advice has to be executable by <i>this</i> person in <i>this</i> state — an instruction whose first action cannot be started is a turn of their attention spent for nothing.</li>
+  <li><b>To whom.</b> The same sentence lands differently on a novice who wants to be walked through and an expert who resents narration. Adaptation is part of the capability, not a nicety.</li>
+</ul>
+<p>The costs are asymmetric and run in both directions: a missed mistake loses the task, while an unnecessary interruption costs the person time, working memory and eventually their willingness to listen. Human-factors research has treated interruption as an expected-utility decision for decades, and the alarm literature is unambiguous that sensitivity without precision produces disuse rather than safety. An assistant that narrates every suspicion is not cautious; it is one that will be ignored at the moment it is finally right. Any evaluation that cannot charge for interruption or credit restraint is measuring half the problem.</p>
+
+<h3 id="i3">3 What a benchmark for this must provide</h3>
+<p>Three requirements follow, and they are the specification our engines are built against.</p>
+
+<h4>3.1 Multi-step tasks of real-world complexity</h4>
+<p>Assistance only becomes measurable across a plan that has structure to get wrong. The task must have: several subgoals with genuine dependencies (so an ordering can be violated and a prerequisite forgotten); concurrency (something on the heat while the person is elsewhere, so attention has to be divided); a horizon long enough for memory to matter (questions about what happened forty steps ago); and consequences that differ in kind — some slips waste time, others destroy the outcome, and at least some must be irreversible so that lateness has a price. A single-step task has none of this: there is no window in which an intervention is early rather than late.</p>
+
+<h4>3.2 An action space a person can be talked to in</h4>
+<p>This is the requirement that separates the setting from robot learning, and it is easy to underrate. If the environment's action space is <code>move_forward(0.1 m)</code> or a pixel coordinate, then guidance has to be issued as motor commands, grounding becomes coordinate regression, and the interaction stops resembling the thing we are trying to evaluate. What is needed is a <i>human</i> action space: composite verbs that a person would use out loud — <i>go to the kitchen</i>, <i>pick up the potato</i>, <i>turn left</i>, <i>tap the switch near the top</i> — each of which the engine expands into whatever primitive sequence its simulator requires. Two properties follow, and both are load-bearing:</p>
+<ul>
+  <li><b>Advice and action share a vocabulary.</b> The assistant can say the thing the person can do, so a suggestion is convertible into behaviour without a translation layer that would itself have to be evaluated.</li>
+  <li><b>Reference becomes a first-class problem.</b> Because the person acts on named things rather than on coordinates, <i>which one</i> is a real question in a world with duplicates, and the engine needs an explicit grounding rule — resolve, refuse, or bind-and-disclose — whose choice is itself a design decision (&sect;II.2.8).</li>
+</ul>
+
+<h4>3.3 A user who behaves like a user</h4>
+<p>The person must do three things a scripted actor cannot.</p>
+<ul>
+  <li><b>Act and communicate realistically.</b> Perform the task through the same action space, in silence most of the time — a real person does not narrate every tap — and speak to ask, object, report a snag or announce a change.</li>
+  <li><b>Make the mistakes and the legitimate deviations.</b> Without slips there is nothing to catch; without announced, entitled plan changes there is nothing to refrain from catching, and restraint cannot be scored. Both must be schedulable, not incidental.</li>
+  <li><b>Vary.</b> Skill, trust and interaction preference change what good assistance is. If a benchmark has one user, a model tuned to that user wins by fitting a fixture.</li>
+</ul>
+<h3 id="i4">4 Why current evaluation cannot deliver it</h3>
+
+<h4>4.1 Recorded-video proactive assistance</h4>
+<p>Egocentric procedural corpora and the proactive-assistance benchmarks built on them are the closest prior work and supply what simulation cannot: real people, real hands, real perceptual difficulty, and increasingly careful annotation of when a model should speak — correct silence, early versus late response, mistake detection over long streams. We adopt their vocabulary and their problem statement.</p>
+<p>Their evaluation is nevertheless <b>open-loop by construction</b>, and the consequences are specific rather than philosophical. On a fixed recording:</p>
+<ul>
+  <li><b>Prevention is unobservable.</b> The pan burns on the schedule the camera recorded. "That is the wrong ingredient" is equally true the tick before it goes in and the tick after, but only in a reactive world are those two different interventions.</li>
+  <li><b>Timing degrades into label agreement.</b> A warning two seconds late scores like one two seconds early, because there is no consequence that either one changes.</li>
+  <li><b>Interruption is free.</b> The recorded person's clock does not run, so speech over a busy pair of hands costs nothing and a talkative system is never penalised for the time it took.</li>
+  <li><b>Restraint is unscored.</b> There is no way to be <i>wrong</i> about a deviation the person had every right to make, because the recording contains no notion of entitlement, only of annotation.</li>
+  <li><b>Persuasion is absent.</b> The person cannot be convinced, cannot refuse, cannot argue, and cannot ask a question the assistant must answer to be useful.</li>
+</ul>
+
+<h4>4.2 Interactive and embodied-agent benchmarks</h4>
+<p>Embodied benchmarks restore a reactive world, and dialogue variants add a partner to talk to. But they allocate agency the other way: the evaluated model plans and acts, and the mistakes under study are its own execution failures. The question they answer is whether an agent can complete a task; ours is whether a model can improve <i>another actor's</i> trajectory by speaking, with no action channel at all. That is not a harder or easier version of the same test — the observable is different (someone else's behaviour), the failure modes are different (unheeded, mistimed, unexecutable advice), and the skill is different (being believed).</p>
+
+<h4>4.3 Benchmarks with language-model users</h4>
+<p>Tool-use and customer-service benchmarks with simulated users established that a language model can hold up an interactive rollout, and some give the user tools of its own. The gap we care about is what the user model is allowed to decide. If it decides <i>what to do</i>, it also decides whether the benchmark's stimulus occurs: a cooperative simulator rarely commits a ruinous mistake, and the same episode can be easy or hard depending on how the user model happened to behave. Reported sensitivity of benchmark scores to the choice of user model is the symptom; the cause is that the instrument and the subject are the same component.</p>
+
+<h4>4.4 Human studies</h4>
+<p>A study with real people is the ground truth this line of work eventually needs, and it cannot serve as the development instrument: it is expensive per episode, it cannot be replayed, it cannot schedule a specific mistake at a specific point of task progress, and — decisively — it cannot produce the counterfactual, because the same person cannot do the same task twice for the first time.</p>
+
+<h3 id="i5">5 The problem this creates: the user must be simulated, and a language model alone is not a controlled instrument</h3>
+<p>Closing the loop forces the person into the benchmark, and the obvious implementation — one language model that decides both the user's words and the user's actions — fails in ways we observed directly and repeatedly:</p>
+<ul>
+  <li><b>It declines the error.</b> Told in character to make a mistake, a model often simply does the task correctly. Under the prompt-only paradigm on <span class="ck">CookSim</span>, a compliant novice following the assistant's clean guidance never enacted a wrong placement at all, and the episode recorded an assistant success that was really an absent stimulus.</li>
+  <li><b>It repairs before the assistant can act.</b> A self-corrected slip makes prevention and non-occurrence indistinguishable, which destroys exactly the quantity the setting exists to measure.</li>
+  <li><b>It complies inconsistently.</b> The same correction is accepted in one episode and rejected in the next, so a model's score partly measures which draws it received.</li>
+  <li><b>It says one thing and does another.</b> Across one <span class="vh">VHSim</span> corpus, 35 of 61 turns whose utterance accepted a correction carried no matching plan update — the words agreed while the hands continued.</li>
+  <li><b>Persona drift.</b> Behaviour attributed to a persona often survives the persona being changed, so "adaptation to the user" cannot be read off the transcript.</li>
+</ul>
+<p>Any of these turns a comparison between assistants into a comparison between the episodes they happened to get.</p>
+
+<h3 id="i6">6 The design choice: factor the person into a body and a voice</h3>
+<p>We split the simulated person along the line that separates what must be controlled from what benefits from generation.</p>
+<div class="def">
+  <div class="dt">The contract</div>
+  The <b>engine</b> owns the body: the world state, the task, the executor that carries out or refuses commands, the schedule of events, the injected mistake, the takeover that makes it happen, and every ground truth. The <b>language model</b> owns the voice: what the person says, what they ask, whether an argument convinces them, and — whenever no benchmark event is live — which of the remaining subgoals to pursue next. The <b>assistant</b> observes a rendering and the public conversation, speaks, and has no channel to the engine at all. Only spoken sentences cross between the two agents.
+</div>
+<p>What that buys, concretely:</p>
+<ul>
+  <li><b>The stimulus is the benchmark's.</b> Every assistant faces the same certified mistake at the same point of task progress, whatever route the person took to get there — including a route the assistant talked them into.</li>
+  <li><b>Prevention becomes an event.</b> The engine knows the tick the deviation starts, the tick it becomes identifiable on screen, and the tick its consequence commits, so a correct flag before commitment that the person accepts is a <i>different, recorded outcome</i> from the same flag afterwards.</li>
+  <li><b>Cost becomes chargeable.</b> The person's clock runs while the two talk, so an utterance landing mid-action costs ticks the task needed.</li>
+  <li><b>Restraint becomes scoreable.</b> Because the schedule also contains entitled deviations and questions, objecting to a legitimate change enters the same false-alarm denominator as any other wrong flag.</li>
+  <li><b>Attribution becomes clean.</b> While a mistake is live the person never repairs it unprompted, and a silent-assistant control over the same episodes produces no spontaneous repairs at all, so everything above that floor is attributable to speech.</li>
+  <li><b>Most numbers stop being judgements.</b> Outcome, timing, detection, false alarms, answer truth and the time cost of speech are lookups in the engine trace, not ratings of a transcript.</li>
+  <li><b>Simulator drift is bounded rather than argued about.</b> Swapping the model in the voice can move persuasion and outcomes; it cannot move the burn clock, the identifiability tick, the truth of a question or whether an advised action was executable.</li>
+</ul>
+
+<h3 id="i7">7 What we build around the contract</h3>
+<ul>
+  <li><b>Programmable task complexity.</b> Suites are generated from the task graph and certified automatically, so difficulty scales along explicit axes — number of injected mistakes, share of them that are ruinous, question families and their content hardness, the point in the plan where an event lands — rather than by authoring episodes one at a time.</li>
+  <li><b>A human-level action space with an explicit grounding rule.</b> Composite verbs expanded by the engine into primitives, and a resolver with full state access that binds a reference to an instance or refuses with a reason the person can quote to the assistant.</li>
+  <li><b>A human-agent harness</b> that delivers realistic behaviour (silence by default, questions, pushback, refusal reporting), controllable error injection (typed, certified, progress-anchored, with a takeover that guarantees occurrence), and a persona space whose axes are enforced mechanically rather than suggested in a prompt.</li>
+  <li><b>Trace-first measurement</b>, with a model judge reserved for the one thing state cannot settle — whether the sentence itself was good — and with its two most abusable items overruled by the engine.</li>
+</ul>
+
+<h3 id="i8">8 Three engines, chosen for what they break</h3>
+<p>One world cannot show which parts of a protocol are general. We built three, each of which removes something the others rely on.</p>
+<div class="tbl">
+<div class="tcap"><b>The three instantiations and what each one stresses.</b> The contract is identical in all three; the world, the action space, the grounding policy and the consequence model are respecified per domain.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>Engine</th><th>World</th><th>What it stresses</th><th>What it removes</th></tr></thead>
+<tbody>
+<tr><td><span class="ck">CookSim</span></td><td>authored grid kitchen, 5 recipes &times; 2 floor plans</td><td>hazards on a clock: doneness, smoke, fire, an irreversible pass; concurrency across stations; a dense event schedule (errors, questions, standing requests, announced deviations in one episode)</td><td>3D geometry and perceptual ambiguity — reference is resolved by refusal, not by sight</td></tr>
+<tr><td><span class="vh">VHSim</span></td><td>rendered VirtualHome apartment, 183 objects over 4 rooms</td><td>egocentric perception under two geometric gates; duplicate objects (9 plates, 7 books, 3 lamps) so <i>which one</i> is real; omissions with no on-camera moment; a slow non-deterministic renderer disciplined by a symbolic twin</td><td>consequence dynamics — nothing burns, spoils or expires, so the hazard family leaves the taxonomy <i>and</i> the scorer</td></tr>
+<tr><td><span class="ss">ScreenSim</span></td><td>deterministic phone: 5 apps, 51+ screens, ~40 transition verbs</td><td>irreversibility without physics (a sent payment, a placed order); semantic grounding by on-screen label; procedural deadlines (an expiring code, a lapsing hold)</td><td>geometry and continuous motion entirely — and omission errors, which a takeover cannot force</td></tr>
+</tbody></table></div>
+</div>
+
+<h3 id="i9">9 Contributions</h3>
+<ol>
+  <li><b>A closed-loop formulation of streaming assistance.</b> The model observes a task it cannot touch, influences it only through language, and is scored on the realised trajectory of the world and the person rather than on agreement with a reference utterance. We give the four properties a valid instance of this setting must have (&sect;II.1).</li>
+  <li><b>A hybrid user simulation.</b> Task behaviour belongs to a deterministic engine, communication to a language model. This is what makes benchmark events reproducible while keeping dialogue open-ended, and it bounds which reported quantities a change of user model can move.</li>
+  <li><b>Progress-anchored, replay-certified event injection with a takeover protocol.</b> Mistakes are typed transforms of the task graph, certified by symbolic replay before rendering, injected on a state key rather than a clock, and forced to occur by a takeover whose release rules make prevention, late repair and stubbornness three distinct recorded outcomes.</li>
+  <li><b>A human-level action space with explicit grounding policies</b>, instantiated three ways, showing that the grounding rule is a design decision with measurable consequences rather than an implementation detail.</li>
+  <li><b>A persona space with mechanical enforcement and behavioural validation</b> — dials that change what the person can do, not just how it talks, validated by contrast probes rather than by inspection.</li>
+  <li><b>Three engines built to one specification</b>, and an explicit account of what ported unchanged and what had to be respecified.</li>
+  <li><b>An evaluation of nine multimodal assistants</b> on <span class="ck">CookSim</span> across 50 episodes and three user profiles (1,344 completed rollouts), with a silent-assistant floor, showing large gains over silence and substantial, specific failures in early intervention, restraint, conversational cost and adaptation — and that ranking by outcome disagrees with ranking by utterance quality.</li>
+</ol>
+
+<h3 id="i10">10 What the experiments show (preview)</h3>
+<ul>
+  <li>Speech is worth a great deal: a silent assistant wins 5% of episodes and finishes 4% inside the time cap; the best assistant reaches 46% and 36%.</li>
+  <li>It is worth much less than it should be: no assistant exceeds 0.64 recall or 0.35 precision on the injected mistakes, and the best prevention-weighted timing is 0.33 — assistants wait until a mistake is unambiguous, which is usually the tick after it commits.</li>
+  <li>Speaking is not free and is not priced by current systems: five of nine assistants talk over the person's hands almost continuously, and the composite efficiency of the most talkative models collapses accordingly.</li>
+  <li>Guidance quality and task outcome order the models differently, and 35% of graded conversation rounds open with an action the person could not begin in the state they were in.</li>
+  <li>The user is part of the measurement: rankings reorder across the three profiles, and the spread between profiles exceeds the spread between several adjacent models.</li>
+  <li>A user-model swap moves what the design says it should move — outcomes and persuasion — and leaves the stimulus and detection almost unchanged.</li>
+</ul>
+
+<h3 id="i11">11 Claims ledger — what we can and cannot say</h3>
+<div class="note">
+For the formal write-up: these are the boundaries. Overstating any of them is the fastest way to lose a reviewer who checks.
+<ul>
+  <li><b>Measured, headline-safe:</b> everything on <span class="ck">CookSim</span> in the sweep — outcomes, detection, timing, restraint, answers, alert timing, conversation cost — with per-assistant <i>n</i> between 134 and 146 after validity gates.</li>
+  <li><b>Measured, secondary:</b> the judged guidance score (1,321 episodes / 49,233 rounds), reported with its inter-judge agreement (r = 0.51; 78.1% on the binary must-item verdict) and carrying no headline claim; the user-model sensitivity slice (24 episodes, two assistants).</li>
+  <li><b>Built and certified, not swept:</b> <span class="vh">VHSim</span> (19 episodes, 13 certified cases, 4 published demonstrations) and <span class="ss">ScreenSim</span> (5 hard tasks, 15 designed episodes). We claim the contract ports; we do not claim assistant results on them.</li>
+  <li><b>Design claim, not measurement:</b> that the body/voice split bounds simulator drift. The slice supports the direction; a full second-user sweep would be needed to calibrate it.</li>
+  <li><b>Not claimed at all:</b> anything about real humans, real kitchens, or the safety of any assistant near either; and any ranking between assistants whose intervals overlap.</li>
+</ul>
+</div>
+<h2 id="p2">Part II · Method</h2>
+
+<h3 id="m1">1 The formal setting</h3>
+<p>An episode is a tick-stepped rollout with three principals and one crossing channel.</p>
+<div class="def">
+  <div class="dt">Episode</div>
+  \( \mathcal{E} = (\mathcal{W},\, \mathcal{T},\, \mathcal{X},\, \mathcal{H}_\pi,\, \mathcal{A},\, \Sigma) \) — a deterministic world \(\mathcal{W}\) over a scene graph; a task \(\mathcal{T}\); a body executor \(\mathcal{X}\) that carries out or refuses the person's commands; a simulated person \(\mathcal{H}_\pi\) with profile \(\pi\); an assistant \(\mathcal{A}\) under test; and an event schedule \(\Sigma\) of errors, questions, requests and announced deviations.
+</div>
+<p>Writing \(s_t\) for world state, \(u_t\) for the person's action, \(o_t\) for what the assistant sees and \(h_t\) for the public dialogue:</p>
+$$s_{t+1} = F(s_t, u_t), \qquad o_t = R(s_t), \qquad a_t = \pi_{\mathcal{A}}(o_{\le t}, h_t), \qquad u_t \sim \pi_{\mathcal{H}}(s_t, h_t, \Sigma).$$
+<p>Three properties define the setting. The assistant has <b>no action interface</b> to \(F\) and <b>no access</b> to \(s_t\): its only path to the outcome is \(h_t\). The person's private state — its move, its queue, its refusals, its thinking — never reaches the assistant. And the schedule \(\Sigma\) is applied by the engine, not chosen by \(\pi_{\mathcal{H}}\), which is the whole point of the factoring.</p>
+
+<h4>1.1 The four requirements a valid instance must satisfy</h4>
+<ul>
+  <li><b>Interactive consequences.</b> The world keeps evolving after a response, so speaking early, speaking late and staying silent can produce different outcomes. Without this there is no counterfactual to measure.</li>
+  <li><b>Controlled evaluation events.</b> Every assistant meets comparable errors, questions and decision points; a designated error occurs <i>unless the assistant prevents it</i>, and its absence never depends on whether a language model followed a prompt.</li>
+  <li><b>Isolated assistant influence.</b> The assistant receives only what the deployment would give it, influences the world only by speaking, and is never shown hidden state, the schedule, or any grading term. This is enforced by an audit of the composed prompt at run start, not by inspection.</li>
+  <li><b>Traceable evaluation.</b> Whatever the world state can settle — whether an error occurred, whether it was prevented, whether an instruction was executable, whether the task succeeded — is computed from the trace rather than judged from language.</li>
+</ul>
+
+<h4>1.2 The episode loop</h4>
+<p>Per tick, in fixed order: (i) <b>injection</b> — if the task-progress anchor of the next scheduled event has been reached, apply it; (ii) <b>execution</b> — the person's queued command advances one tick, the world updates, station timers and outcome predicates are checked immediately (a finished task is sealed before anyone speaks); (iii) <b>render</b>; (iv) <b>assistant turn</b> every \(K\) ticks (\(K=2\) in <span class="ck">CookSim</span> and <span class="vh">VHSim</span>), receiving the freshest frames and replying with a structured record whose text, if non-empty, is spoken; (v) <b>person turn</b> — when spoken to, when idle with an empty queue, when a command was refused, and, while an event is live, on every poll. After the episode: validity gates, then grading from the state dump.</p>
+<p>One detail worth stating because it invalidated an entire earlier corpus: frames are sliced at the <i>current</i> world tick rather than at the scheduled poll boundary. Polled at the boundary after a multi-tick action, the assistant judged a pre-action world — denying an act that had completed a tick earlier and instructing the act just done — and every fresh reader of that corpus independently reported the same symptom.</p>
+
+<h3 id="m2">2 The engine</h3>
+
+<h4 id="m21">2.1 Visual simulation and the observation channels</h4>
+<p>The assistant is a bystander, so it must receive what a bystander could see: a rendering, and nothing behind it. Every engine renders an egocentric view of the activity, and — where the task is spatial — a synchronised overhead view, because a watcher who cannot see the room the person walked out of is being tested on guesswork rather than on assistance.</p>
+<div class="tbl">
+<div class="tcap"><b>Observation channels.</b> The person's channel differs by engine and by profile but never contains anything denied to the assistant that would change the detection problem; both sides are audited for leakage of ids, coordinates and grading vocabulary.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>&nbsp;</th><th>What is rendered</th><th>Assistant receives</th><th>Person receives</th></tr></thead>
+<tbody>
+<tr><td><span class="ck">CookSim</span></td>
+<td>one composite frame per tick, 1042&times;396 px: top-down kitchen (left) and the cook's first-person view (right), same instant; stations draw a cooking progress bar and a smoke indicator, so doneness is readable rather than timed; episodes also saved as 6 fps video</td>
+<td>the last 8 frames every 2 ticks (0.5 Hz poll, 16-tick visual window), the public conversation with ticks, the order and the cook's public plan, station input rules, plating and serving rules, station timings, and the three questionnaire answers of the person</td>
+<td>a text state map — ASCII grid with every object's id and coordinates, its own position, facing and hands — plus body status, queue, recent results with refusal reasons, the order, the plan and the conversation. It never sees pixels</td></tr>
+<tr><td><span class="vh">VHSim</span></td>
+<td>first-person video from the VirtualHome camera; 1 tick = 1 s = 8 frames; a turn renders no frames and is re-snapshotted (see &sect;2.7); composite adds a top-down floor plan with the person as a dot, a heading arrow and a trail</td>
+<td>the last 8 composite frames, one per second; the whole-house map (image + text: rooms, door adjacency graph, every room that still has a device ON); the current-room statemap (image + text: every device and container with live [ON]/[OFF]/[OPEN]/[CLOSED] and position); a one-line body ground truth (holding, room, facing, in view); its own previous output; the conversation</td>
+<td>proprioception (hands, queue, position, heading, current action and its age, last three results with reasons), its own past-actions log (last 40), action feedback, both maps as text (and as images for the high-skill profile), and first-person frames for the high-skill profile only</td></tr>
+<tr><td><span class="ss">ScreenSim</span></td>
+<td>an iOS-style rendering of the visible screen \(\varphi(S)\), redrawn on every transition</td>
+<td>the last \(k=2\) rendered screenshots (tier sv1); tier sv2 adds a relational text map with no coordinates, as a perception ablation. Never the scene graph, affordances, screen keys or any grading signal</td>
+<td>an exact widget map of its current screen, so its hands act on what is really there; that map never reaches the assistant</td></tr>
+</tbody></table></div>
+</div>
+
+<h4 id="m22">2.2 World state is a scene graph, not pixels</h4>
+<p>Every engine keeps the world as a typed graph whose nodes carry identity, class, state and position and whose edges carry the relations the task cares about. The agents observe a <i>rendering</i>; the grader reads the <i>graph</i>. That separation is what makes the evaluation exact and cheap: whether a mistake occurred, whether a repair restored the goal, whether an instruction was executable in that state is never inferred from language.</p>
+<ul>
+  <li><span class="ck">CookSim</span> — an authored grid. Tiles: <code>floor</code>, <code>counter</code>, <code>wall</code>, <code>&lt;ingredient&gt;_source</code> (an infinite crate; ten on-recipe ingredients plus off-recipe distractors on hard maps: lemon, peas, noodles, shrimp, butter, pepper, egg, mushroom, onion, avocado, corn, dough), <code>cutting_board</code> (holds one item, chops in 4 ticks), the cook stations <code>pan</code> / <code>pot</code> / <code>fryer</code> / <code>oven</code> (each with a fixed input set, a capacity and a timer), <code>plate_source</code>, <code>serving</code> (the pass; serving commits the plate to a verdict) and <code>trash</code>. Items carry a state from {raw, chopped, cooked, burnt}; a plate is an <i>ordered</i> list of (item, state); the cook holds at most one thing.</li>
+  <li><span class="vh">VHSim</span> — the simulator's native environment graph, read rather than authored: 183 objects across four rooms (kitchen, living room, two bedrooms; a bathroom the tasks never use). Node categories Furniture, Appliances, Electronics, Food, Lamps, Decor; four read states OPEN / CLOSED / ON / OFF; one property CAN_OPEN as the ground truth for "does this have a door"; three edge relations — ON and INSIDE (the anchor an object rests on or in; an INSIDE edge to a room gives room membership) and HOLDS (the hands). <b>Duplication is the point:</b> nine plates, seven books, three table lamps, two milks. ON and INSIDE are kept strictly separate, because conflating them made a book resting on a bookshelf unreachable.</li>
+  <li><span class="ss">ScreenSim</span> — a world \(W = (S, \varphi, s_0, \tau)\): \(S\) a tree of application state, \(\varphi\) its projection to the visible screen, \(s_0\) a seeded initial state, \(\tau\) a total deterministic transition function. A screen is a named node holding an ordered list of widgets; a widget carries a kind, a human-readable label, an optional value and an affordance. Navigation pushes and pops a screen stack, so every screen has a depth. Scale: 5 applications plus a launcher, 51+ distinct screens on the task plans, 20 widget kinds, ~40 transition verbs.</li>
+</ul>
+<div class="tbl">
+<div class="tcap"><b><span class="ss">ScreenSim</span> widget kinds and verb classes.</b> The functional grouping is what makes the error taxonomy possible: only widgets that write durable state can carry a forceable error, and only irreversible verbs create a deadline.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>Group</th><th>Members</th><th>Role</th></tr></thead>
+<tbody>
+<tr><td>Value controls</td><td>toggle, radio, cc_round, cc_vslider, cc_tile</td><td>write a durable setting when actuated</td></tr>
+<tr><td>Navigating / committing rows</td><td>row, account, tile, listitem</td><td>a tap navigates and may also commit state (selecting a payee) — which is why a wrong-payee tap is a genuine forceable error</td></tr>
+<tr><td>Input &amp; inert</td><td>field, button, section, text, banner, image, icon_button, toolbtn, usagebar, homesearch, cc_media</td><td>text entry, actions, non-interactive structure</td></tr>
+<tr><td>Verbs · navigation</td><td>nav, nav_back, open_app, open_stub_app, to_review, focus</td><td>change the visible screen, no durable write</td></tr>
+<tr><td>Verbs · reversible commit</td><td>toggle, sset_toggle, schoice, saction, loc_mode_set, autolock_set, set_appearance, set_source, set_speed, wifi_connect, cc_toggle, apply_promo, toggle_gift, save_hs_pw</td><td>write application state that can be written back</td></tr>
+<tr><td>Verbs · irreversible commit</td><td>pay, place_order, send_mail, verify_otp, ship</td><td>write to \( \mathrm{IRR} = \{\texttt{bank.history}, \texttt{bank.balance}, \texttt{shop.order}, \texttt{mail.sent}\} \) — cannot be undone in-world</td></tr>
+</tbody></table></div>
+</div>
+
+<h4 id="m23">2.3 Determinism, replay and the symbolic twin</h4>
+<p>Everything downstream — certifying an error before it is rendered, computing the window in which a detection counts, telling a bug from a model failure — requires that the world can be replayed in milliseconds and that two runs of the same command stream agree.</p>
+<ul>
+  <li><span class="ck">CookSim</span> is deterministic given the command stream and fast enough to be its own replayer; the reference tick count of a flawless plan is regenerated deterministically per cell and is the denominator of the efficiency score.</li>
+  <li><span class="ss">ScreenSim</span> is deterministic in one seed: the seed fixes every balance, contact, installed app and default setting, so two runs of the same task face an identical phone and any ablation varies one factor with the rest of the world held fixed. Every task replays to <i>won</i> under a double-replay hash.</li>
+  <li><span class="vh">VHSim</span> cannot replay in its renderer — Unity is tens of minutes per episode and non-deterministic — so the engine runs a <b>symbolic twin</b>: a deterministic state machine over the same scene graph with state \(s = (holding, opened, on, loc, inside, sitting, targets, events)\), every token instance-unique (<code>milk#176</code>, never <code>milk</code>), replaying a plan in milliseconds. Twin and renderer are kept in agreement by four mechanisms rather than by trust:
+    <ul>
+      <li><b>Graph-seeded start</b> — after scene setup the twin is rebuilt from the rendered graph, seeded only with the classes the plan touches (seeding all 183 objects looks more faithful and destroys comparability with a from-empty replay).</li>
+      <li><b>Postcondition verification</b> — after every rendered manipulation the expected graph delta is checked (Open ⇒ OPEN present, Grab ⇒ a HOLDS edge, Put ⇒ an ON/INSIDE edge …). A failed postcondition is an honest refusal, never a silent fork. Walk, Sit, StandUp and Drink have no reliable graph delta and are exempt by design.</li>
+      <li><b>Frame–pose coherence</b> — the newest frame must have been captured from the body's current pose (0.5 m and 25° of yaw, the yaw test 180°-symmetric); on violation a fresh egocentric snapshot is captured for a whole tick.</li>
+      <li><b>Silent no-op detection</b> — a turn that reports success without rotating (Δyaw &lt; 10°, Δpos &lt; 0.2 m), or a door pass that does not move the body (Δpos &lt; 0.5 m), is refused honestly, because success-without-effect poisons both agents' world models.</li>
+    </ul>
+    A canonical semantic serialisation is hashed and every plan is replayed in two fresh processes; the hash sequences must be identical.</li>
+</ul>
+<div class="note"><b>The governing design principle, worth one paragraph in the paper.</b> The dominant failure in this class of system is not incorrectness but <i>silence that looks like data</i>: a wrong choice that reports success, an injection that never fired but was scored, a passing test suite beside a contract the live harness bypasses. Every mechanism above was built by asking <i>what does its failure look like from outside?</i> — and wherever the answer was "like success", an assertion was written on the artefact the agent actually receives, at the call site the harness actually uses. The validity gates, the admissibility ledger, the composed-prompt audit and the two-process determinism test are the concrete forms of that principle.</div>
+
+<h4 id="m24">2.4 Time</h4>
+<ul>
+  <li><span class="ck">CookSim</span>: one tick ≈ 1.2 s of the study app's wall clock (one tile of movement). Walking, picking up, chopping (4 ticks), scooping and serving cost ticks. <b>Listening is free; the cook's own speech costs ticks</b> — it stands still for the length of its sentence (words ÷ 3.15 words/s ÷ 1.2 s per tick, clipped to 1–20 ticks) — which is what makes talkative cooks slow and gives interruption a price in the person's own currency.</li>
+  <li><span class="vh">VHSim</span>: one tick = 1 s of world time = 8 rendered frames; every command pads its frame stream to a whole tick, so tick count is exactly frames/8. Idle ticks freeze the last frame (VirtualHome has no autonomous dynamics, and a frozen frame is the honest analogue of "the world keeps running"). The offline twin prices actions in the same currency — a walk costs 3 units, any other action 1, an idle of \(n\) frames \(n/8\) — which gives the efficiency denominator.</li>
+  <li><span class="ss">ScreenSim</span>: one gesture is one transition; there is no motion model. Deadlines are procedural rather than thermal (a one-time code that expires, a cart hold that lapses, a lockout after repeated wrong PINs).</li>
+</ul>
+<h4 id="m25">2.5 Tasks</h4>
+<div class="def">
+  <div class="dt">Task</div>
+  A task is \( \mathcal{T} = (\iota,\, g,\, \pi_{\mathrm{ref}}) \): an instruction \(\iota\) in the user's own words — the only goal knowledge either agent receives; a goal predicate \(g : S \to \{0,1\}\) decidable on the scene graph; and a reference plan \(\pi_{\mathrm{ref}}\) that replays headlessly to satisfy it. The plan is <b>not</b> the task: several orderings satisfy the same predicate, and grading never consults the plan.
+</div>
+<p><b class="runin">The plan IR and the subgoal DAG.</b> Each reference plan is compiled into typed subgoal nodes, and the dependency DAG over them is derived from <i>data</i> dependencies, never from list position. In <span class="ck">CookSim</span> the node types are <code>prep(X)</code> (fetch, chop if the recipe wants it chopped, load into its station), <code>ignite(X)</code>, <code>fetch_plate</code>, <code>assemble(X)</code> (scoop onto the held plate) and <code>serve</code>; components may be prepared in any order, a component must be prepped before it is lit and lit before it is plated, and an ordered recipe fixes the plating sequence. In <span class="vh">VHSim</span> the grammar is walk-anchored and recoverable — <code>fetch(X[, from C])</code>, <code>deposit(X, T)</code>, <code>switch_on/off(D)</code>, <code>shut(C)</code>/<code>open(C)</code>, <code>posture(S)</code>, <code>inspect(O)</code>, <code>drink(X)</code>, <code>waypoint(O)</code> — segmenting any plan losslessly (recompiling the nodes reproduces the original step list byte-for-byte), with exactly three edge rules: <code>fetch(x)</code> precedes any later deposit or drink of \(x\); <code>deposit(x→C)</code> precedes <code>switch_on(C)</code>; <code>posture(S)</code> precedes the stand that follows it. In <span class="ss">ScreenSim</span> the IR has two node kinds: <b>commit</b> (a node whose final gesture writes durable state) and <b>reach</b> (a required forward navigation to a screen the task must pass through), the latter densifying the axis and anchoring navigation errors.</p>
+<p>The DAG is rendered into <i>both</i> agents' prompts as the true ordering constraints, with the explicit statement that nothing else is ordered and that a different order is not an error. Before that existed, the assistant's schema example taught it to invent orderings and nag the person for tidying in a different sequence.</p>
+<p><b class="runin">Grading a task.</b> <span class="ck">CookSim</span>: the served plate must match the order exactly, respecting order where the recipe is ordered. <span class="vh">VHSim</span>: success is a conjunction of named checkpoints over the log of <i>resolved</i> events \((\text{verb}, \text{cls}, \text{id}, \text{cls}_2, \text{id}_2)\) — the classes and instances the gated controller actually manipulated, never the words the model typed, so grading is invariant to phrasing and <code>cabinet</code> is not one of the eight kitchen cabinets. <span class="ss">ScreenSim</span>: the goal predicate over the state tree.</p>
+
+<div class="tbl">
+<div class="tcap"><b><span class="ck">CookSim</span> task suite.</b> Five recipes form a difficulty ladder; each is run on a medium and a hard floor plan, giving ten cells. "Reference ticks" is a flawless scripted run with no assistant and no errors — the efficiency denominator.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>Tier</th><th>Recipe</th><th>Components (state)</th><th>Order</th><th>Reference plan</th><th class="n">Ticks (med/hard)</th></tr></thead>
+<tbody>
+<tr><td>easy</td><td>Caprese</td><td>tomato (chopped), cheese (raw)</td><td>free</td><td>prep · fetch_plate · assemble ×2 · serve</td><td class="n">43 / 60</td></tr>
+<tr><td>medium</td><td>Cheeseburger</td><td>bun (raw), meat (cooked), cheese (raw)</td><td><b>ordered</b> bun→meat→cheese</td><td>prep · fetch_plate · assemble ×3 · serve</td><td class="n">51 / 85</td></tr>
+<tr><td>hard</td><td>Fish &amp; Chips</td><td>fish (cooked), potato (cooked) ×2</td><td>free</td><td>prep ×3 · ignite ×2 · fetch_plate · assemble ×3 · serve</td><td class="n">151 / 128</td></tr>
+<tr><td>expert</td><td>Steak Frites</td><td>steak (cooked), potato (cooked) ×2</td><td>free</td><td>prep ×3 · ignite ×2 · fetch_plate · assemble ×3 · serve</td><td class="n">166 / 140</td></tr>
+<tr><td>master</td><td>Loaded Burrito</td><td>tortilla (raw), rice (cooked), steak (cooked), tomato (chopped), lettuce (chopped)</td><td><b>ordered</b>, five deep</td><td>prep ×4 · ignite ×2 · fetch_plate · assemble ×5 · serve</td><td class="n">171 / 237</td></tr>
+</tbody></table></div>
+</div>
+<p><b class="runin">Maps.</b> Medium maps are procedurally generated 6×6–7×7 rings, one open room, stations and sources along the walls, every needed station type present and often duplicated (two pans, two boards) — which is what makes referring expressions ambiguous. Hard maps are 9×9 mazes with interior walls, longer paths, triplicated stations and <b>off-recipe distractor sources</b> (a lemon crate in a fish-and-chips kitchen), which is what makes "add a foreign ingredient" errors and "is there even a pot here?" traps possible. Path length, station counts and distractor count are recorded per cell.</p>
+<p><b class="runin">Cook-station physics (the consequence model).</b> A lit station with a full load moves <i>cooking → cooked</i> at <code>cook_time</code> (fryer 14, pan 15, pot 20, oven 28 ticks); a cooked item sits safely for a <code>smoke_grace</code> of 25 ticks, then the station <b>smokes</b>; after a further <code>burn_time</code> (fryer 45, others 60) the food is burnt and the station is on fire, irrecoverably; a fire left for <code>fire_time</code> (30 ticks) loses the kitchen. A done item therefore burns 70 ticks (fryer) or 85 ticks (others) after it is ready, and there is no "turn off" — the only way to stop a smoking station is to scoop the food out. A served plate is committed at the pass and a wrong plate is rejected outright. Episode outcomes: <b>won</b>, <b>wrong_serve</b>, <b>burned</b>, <b>timeout</b> (budget 500 ticks + 200 per additional scheduled sub-case).</p>
+
+<div class="tbl">
+<div class="tcap"><b><span class="vh">VHSim</span> task suite:</b> nine families in easy and hard variants plus one long-horizon routine = 19 episodes, all in VirtualHome scene 2. A hard episode's reference plan traverses ≥ 3 rooms; two are hard by distance instead. † marks instance-graded episodes, where the definite article binds a specific instance.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>Family</th><th>Easy</th><th>Hard</th></tr></thead>
+<tbody>
+<tr><td>Retrieve &amp; relocate</td><td>plate from one kitchen table to another</td><td>book → living-room coffee table (3 rooms)</td></tr>
+<tr><td>Appliance operation</td><td>plate into the dishwasher, close, switch on</td><td>milk† from fridge → microwave†, switch on</td></tr>
+<tr><td>Power toggle</td><td>TV on, sit, stand, TV off</td><td>table lamp + stove + TV on (3 rooms)</td></tr>
+<tr><td>Posture &amp; activity</td><td>sit on the sofa, stand up</td><td>bed, chair, sofa with a stand between each</td></tr>
+<tr><td>Assemble / set table</td><td>plate + fork onto another kitchen table</td><td>book + plate onto the coffee table</td></tr>
+<tr><td>Container → container</td><td>milk† fridge → microwave†</td><td>milk† fridge → bedroom cabinet†</td></tr>
+<tr><td>Search &amp; inspect</td><td>find the TV and go to it (2 rooms)</td><td>find TV, table lamp, fridge, computer</td></tr>
+<tr><td>State-tidy</td><td>close everything left open in the kitchen</td><td>all lights off (2 distinct lamps), TV off, fridge closed</td></tr>
+<tr><td>Drink</td><td>milk† from the fridge, drink it†</td><td>get a juice and drink it</td></tr>
+<tr><td>Routine (hard only)</td><td>—</td><td>lamp off · book to coffee table · milk† into microwave · switch on · plate to coffee table</td></tr>
+</tbody></table></div>
+</div>
+<p><b class="runin">Instance grounding and scene preparation (<span class="vh">VHSim</span>).</b> Because the scene ships duplicates, "put <i>a</i> plate in the dishwasher" and "put <i>the</i> plate in the dishwasher" must not score identically. Episodes whose instruction uses the definite article declare a target as {class: anchor} (e.g. <code>milk: fridge</code>), resolved once after setup to the unique instance of that class in that anchor and surviving the object being moved. <b>The asymmetry is deliberate: grading consults the target, command resolution does not</b> — the agent's commands still resolve to the nearest visible instance, so acting on the wrong copy is a genuine error the grader catches. Multi-instance goals count distinct instance ids, so flipping one lamp twice cannot satisfy "all lights off". Eight episodes run an off-camera setup pass so the recorded task is genuine rather than pre-satisfied (stow the counter milk into the fridge; open the fridge, dishwasher and microwave for tidy-easy; darken all lamps then relight exactly two for tidy-hard; return the avatar to the kitchen so every plan walk is a real traversal).</p>
+
+<div class="tbl">
+<div class="tcap"><b><span class="ss">ScreenSim</span> task suite:</b> five hard long-horizon tasks. "reach/commit" are subgoal-node counts. Only the transaction crosses an irreversible boundary; its instruction plants a decoy ("two Alexes") that becomes the signature wrong-payee error.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>Task</th><th>Family</th><th class="n">Gestures</th><th class="n">reach</th><th class="n">commit</th><th class="n">Irrev.</th><th>What it asks</th></tr></thead>
+<tbody>
+<tr><td>lost_phone_lockdown</td><td>security</td><td class="n">15</td><td class="n">5</td><td class="n">2</td><td class="n">—</td><td>turn on Advanced Data Protection and Stolen Device Protection</td></tr>
+<tr><td>app_privacy_quarantine</td><td>privacy</td><td class="n">18</td><td class="n">6</td><td class="n">3</td><td class="n">—</td><td>cut one app off from location, tracking and background refresh, leaving others alone</td></tr>
+<tr><td>parent_phone_readability</td><td>accessibility</td><td class="n">9</td><td class="n">3</td><td class="n">5</td><td class="n">—</td><td>bigger/bolder text, clearer buttons, less motion</td></tr>
+<tr><td>lock_screen_lockdown</td><td>privacy</td><td class="n">8</td><td class="n">2</td><td class="n">4</td><td class="n">—</td><td>block Control Center, Today View, Wallet and call-back from the lock screen</td></tr>
+<tr><td>rent_share_standard</td><td>transaction</td><td class="n">15</td><td class="n">2</td><td class="n">7</td><td class="n">yes</td><td>pay the right one of two Alexes, exact amount, free speed, from balance, with a note</td></tr>
+</tbody></table></div>
+</div>
+<p>Beyond the evaluation subset the engine defines a curated library of long-horizon tasks across seven families (settings, privacy, transaction, communication, troubleshoot, security, accessibility) and <b>229 auto-generated tasks derived from a mirrored device manual</b>, each with a machine-verified state-diff goal and a citation to the article it came from — the corpus that supports difficulty and coverage ablations.</p>
+
+<h4 id="m26">2.6 The progress key: tracking task progress as partial state</h4>
+<p>Two people reach the same situation by different routes, so an event cannot be scheduled on a step index or a clock without decoupling it from the task. Each engine defines a <b>progress key</b>: a projection of world state that records task progress identically under every legal ordering.</p>
+<ul>
+  <li><span class="ck">CookSim</span>: the plate's contents (ordered), whether the plate is in hand, and prep-phase progress (number of chops and ignitions). A plate-phase anchor keys on the plate alone, because an early raw serve removes an ignition for good and later anchors must stay reachable.</li>
+  <li><span class="vh">VHSim</span>: \( \kappa(s) = (holding,\ \{(o,d) \in loc : o \in \mathrm{KEEP}\},\ opened,\ on) \) over the object classes the clean and deviated plans touch, with <b>position and elapsed time dropped by construction</b> — they are irrelevant to whether a deviation can start here. It is computed on a deliberately impoverished second view, the <i>plan-effect mirror</i>: four multisets over base names recording only what the plan has changed, because the instance-keyed state also carries static facts a replay never models (the microwave sits on the counter) and decoys sharing a class with the target, which once made live and reference state permanently unequal so that injection never fired at all.</li>
+  <li><span class="ss">ScreenSim</span>: the ordered sequence of committed state-diffs restricted to the paths the reference plan writes. Path-invariant by construction; transient UI state never enters it.</li>
+</ul>
+<p><b>Stated limits</b> (worth putting in the paper, because they bound what the anchor can do): the key is a snapshot, not a history — a redo that restores the same state is invisible to it; it drops position, so purely navigational progress is anchored on movement events instead; and where its names are class-level, <i>which</i> of two lamps is off is recovered only at grading.</p>
+
+<h4 id="m27">2.7 The action space</h4>
+<p>The person acts through composite verbs a person would use out loud, each expanded by the engine into the primitives its simulator needs. Advice and action therefore share a vocabulary.</p>
+<div class="tbl">
+<div class="tcap"><b>The three action spaces.</b> Every verb is a composite; every command reports one of a small set of statuses; every refusal names the obstacle actually present.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>&nbsp;</th><th><span class="ck">CookSim</span></th><th><span class="vh">VHSim</span></th><th><span class="ss">ScreenSim</span></th></tr></thead>
+<tbody>
+<tr><td>Vocabulary</td>
+<td><code>go to &lt;place&gt;</code>, <code>pick up</code>, <code>put down</code>, <code>scoop</code>, <code>chop</code>, <code>turn on</code>, <code>trash</code>, <code>serve</code> (+ <code>idle N</code> for scripted waits)</td>
+<td>moving/looking (no target needed): <code>turn left|right [n]</code> 30° each, <code>turn around</code>, <code>go straight</code> ~1 m (≤12 per command), <code>look down|up</code> (pitch 0/14/28° below level), <code>go through the nearest door</code>; acting (target must be visible): <code>turn to X</code>, <code>go to X</code>, <code>pick up</code>, <code>open</code>, <code>close</code>, <code>switch on|off</code>, <code>drink</code>, <code>sit on</code>, <code>put X on|in Y</code>, <code>stand up</code></td>
+<td><code>tap &lt;label&gt;</code>, <code>swipe up|down</code>, <code>type "&lt;text&gt;"</code>, <code>press back</code>, <code>press home</code></td></tr>
+<tr><td>Composition</td><td>a command is a multi-tick station action; pathing is automatic, no turn or step primitive; no command bundles a task step — <code>assemble(cheese)</code> is two commands, so advice must be converted by the cook</td><td>a command expands into a route and an arm action; the parser accepts natural variants (grab/take/pick up, into/inside/onto) and treats <i>nearest/closest/the</i> as optional; an unparsed input returns an explicit failure, never a silent nearest-guess</td><td>one gesture is one transition of \(\tau\); there is no motion model</td></tr>
+<tr><td>Constants</td><td>chop 4 ticks; station timers as in §2.5; speech costs the speaker ticks</td><td>turn 30°; step 1.0 m, ≤12 per command; approach stop and reach both 1.5 m (1.0 m is nearly unsatisfiable — the first-person camera drops objects below its field under 1–2 m); view pitches 0/14/28°; camera 80° vertical, 48° horizontal half-field, identical for gate and render</td><td>—</td></tr>
+<tr><td>Gates</td><td>reachability and station state (a raw item cannot be plated; a full pan refuses)</td><td>two geometric gates: <b>visibility</b> (walk to X / go to X) and <b>distance</b> (manipulation: visible and within 1.5 m)</td><td>one <b>affordance gate</b>: the widget must be present, visible and interactive on the current screen</td></tr>
+<tr><td>Lifecycle</td><td>queued commands advance a tick at a time; results with reasons are returned to the person</td><td>asynchronous with four statuses: IN PROGRESS ("do not re-issue, do not claim it is done"), FINISHED, REJECTED ("a rejection is information: say what you tried and what the house told you, then do something different"), and engine-generated <i>orphan-skipped</i> for manipulations queued behind a refused approach</td><td>executed or refused with a reason; state unchanged on refusal</td></tr>
+</tbody></table></div>
+</div>
+<p><b class="runin">Refusals are authored, not generic.</b> Each verb's refusal names the obstacle actually present — "the fridge is closed — open it first"; "both my hands are full — I need to put something down before I can open the microwave"; "the X is 3.2 m away — too far to reach; I need to go to it first"; "that isn't a place I can find"; "the food isn't cooked yet". Two feedback mechanisms exist because the naive loop starved the agent of information: <b>progressive hints</b> (from the third consecutive refusal on the same object class the message stops repeating and teaches technique — "the tv is in the livingroom and you are in the kitchen; get through a door toward the livingroom first" — with counters reset on a room change or a success, because a hint about a different place is misinformation), and <b>physics recovery</b> (a body wedged in a door frame is a soft-lock: the engine detects the no-op turn, walks the body to a nearby sizeable object, reports honestly that the turn did not happen, and leaves the next choice to the agent).</p>
+<p><b class="runin">Zero-frame actions.</b> VirtualHome renders no frames for a turn. Before this was handled, idle ticks repeated the last frame, so after a turn both agents kept seeing the pre-turn world — the person said "still can't see it, I'll keep turning" about a microwave it was facing, and the assistant replied "you are not turning — you are completely still", a faithful report of a stale picture. Success is now taken from the controller's result rather than from frame count; a fresh egocentric snapshot is captured for a whole tick; and for turns the capture camera is swept through the rotation arc (3–8 intermediate frames, about one per 24°) so the first-person view animates rather than jumping.</p>
+
+<h4 id="m28">2.8 The grounding rule</h4>
+<p>Because the person acts on <i>named</i> things, reference resolution is a first-class mechanism: an engine-side module with full state access maps a phrase to an instance, or refuses with a reason the person hears and can quote to the assistant. The policy is a design decision with measurable consequences, and the three engines deliberately differ.</p>
+<ul>
+  <li><span class="ck">CookSim</span> — <b>refuse and name candidates.</b> Places are named by kind with optional qualifiers: by contents ("the pan with the steak"), by state ("the empty cutting board"), by position ("the fryer in the bottom-right"), by identity ("board 2") or by coordinate. An ungroundable or ambiguous phrase is refused with a reason. Ambiguity is bounced back to the speaker.</li>
+  <li><span class="vh">VHSim</span> — <b>nearest visible instance, disclosed.</b> Every bare reference resolves to the nearest <i>visible</i> instance by ground-plane distance, exact class match preferred with suffix fallback (<code>table → kitchentable</code>, but <code>book ≠ bookshelf</code>, <code>tv ≠ tvstand</code>) after synonym canonicalisation (<code>television → tv</code>, <code>couch → sofa</code>, <code>lamp → tablelamp</code>). <code>sit on</code> uses distance to the nearest bounding-box face, because standing beside a 2.4 m sofa you are touching it yet more than 1.5 m from its centre. This is the right policy precisely when the wrong-instance choice <i>is</i> the error under study: an ambiguous bare class is never nudged toward the task's target, so reaching for the wrong copy stands in the record for the assistant to catch. Both agents are told the rule verbatim ("where you stand and which way you face decides which object you act on"), and every binding is logged with its instance and reason.</li>
+  <li><span class="ss">ScreenSim</span> — <b>visible label, lightly fuzzy-matched.</b> Grounding is semantic, not spatial: the benchmark tests reference to on-screen entities, not coordinate regression, and the assistant is likewise required to refer to controls by their words ("the switch near the top"), which is audited.</li>
+</ul>
+<p><b class="runin">Three details that are load-bearing.</b> (i) <b>Gate order</b>: perception runs before instance resolution and before the twin's precondition check, or the twin judges the wrong instance; the gate returns the instance it saw and the command binds to exactly that one, because binding to the graph-nearest could pick an occluded copy behind a wall. (ii) <b>Exemptions</b>: <code>put</code>, <code>put in</code> and <code>drink</code> resolve their object from the hand and are exempt from the sight test but not the holding test — you can feel what you carry without looking at it. (iii) <b>Scripted vs typed</b>: a scripted reference plan does not pass through the gates (a person following their own routine in their own house), while agent-typed commands — the person's re-plans and the assistant's converted guidance — always do; and a scripted plan pins its instance for the whole episode whereas an agent-typed command is nearest-resolved every time. What no engine permits is a guess that reports success and leaves no trace.</p>
+<p><b class="runin">Visibility geometry (<span class="vh">VHSim</span>).</b> "In view" is computed from geometry rather than from the simulator's own flaky query: an object is visible if a wall-free line of sight reaches any of five sampled footprint points (centre + four corners) within the camera's true 48° horizontal half-field. A sight line may cross room boundaries only through a door aperture (0.85 m radius), so an object in the next room is visible through an open door and one two rooms away when the line threads both doorways. An occluder must be larger than the target in all three dimensions and closer, so a small object never hides a large one; beyond 4 m an object also needs angular size ≥ 0.06 to count as recognisable. The gate camera and the rendered frames are by construction the same eye — a split once let the model see objects the gate then refused, and the two argued about it.</p>
+
+<h4 id="m29">2.9 Programmable task complexity</h4>
+<p>Difficulty is a set of knobs on a generator, not an authoring effort, and every generated instance is certified before it is used.</p>
+<ul>
+  <li><span class="ck">CookSim</span> scales the <b>number and severity of injected errors</b> with recipe tier (2 on easy and medium, 3 on hard, 4 on expert and master, at least half of them ruinous), draws questions from ten families with a <b>content-hardness filter</b> on every candidate (§3.8), places a standing request on every hot-recipe episode whose errors leave the ignition in place, and puts an announced deviation in 18 of 50 episodes. Every error instance is a replay-verified (cell, type, parameters) triple drawn from an inventory of 483.</li>
+  <li><span class="vh">VHSim</span> treats <b>timing as a first-class axis</b>: every case is re-anchored at every legal position of the clean plan and all are dry-replayed, so the same error class injected at a different point is a different test. The offline suite runs 256 such checks in seconds with no renderer and no model, and locks every class-level fix in as a regression lint — six of the twelve engine fixes in the first sweep were found this way rather than by running episodes.</li>
+  <li><span class="ss">ScreenSim</span> derives tasks <b>from a mirrored device manual</b>, each with a machine-verified state-diff goal and a citation, giving several hundred candidates from which a hard evaluation subset is drawn, and mixes three event types per episode (an error, an announced deviation, a spot-check question) across 15 designed episodes over the 5 tasks.</li>
+</ul>
+<h3 id="m3">3 The human agent</h3>
+
+<h4 id="m31">3.1 What must be controlled, and what must not</h4>
+<p>The simulated person has two coupled components. A <b>behavioural process</b> maintains the task plan and issues commands to the engine; a <b>communication process</b> — the language model — produces what the person says and how it responds to advice under a profile. During ordinary execution the person proceeds through any ordering the task constraints allow, and the harness never touches its queue. During a scheduled event the engine constrains the behavioural trajectory so that the event is realised independently of the communication model. Everything in this section follows from that division.</p>
+
+<h4 id="m32">3.2 The harness interface</h4>
+<p><b class="runin">What the person receives each turn.</b> Its public goal and subgoal list and its own public profile; <b>proprioception</b> — what is in its hands (framed as the sense of touch, always true), its queue (or an explicit warning that an empty queue means "saying it aloud does not move your body"), position and heading, the current command with its age in ticks, the last few results with any refusal reason, and what is queued next; its own past-actions log (its only memory — no fact-check on its work, no verdict); action feedback attached to the act (<i>you DID …</i>, <i>you TRIED … but it was REJECTED — &lt;why&gt;</i>, <i>SKIPPED … — &lt;why&gt;</i>, and a notice when one of its own planned steps failed to parse and was dropped, so there are no silent drops); the world map appropriate to its channel; the conversation; and its persona card.</p>
+<p><b class="runin">The reply schema.</b> Each turn it returns a structured record:</p>
+<pre>{
+  "utterance":   "one natural sentence, or an empty string to stay silent",
+  "move":        "accept | reject | question_correctness | ask_why |
+                  ask_for_more_guidance | ask_for_less_interruption | answer",
+  "close_conversation": true | false,
+  "plan_update": { "op": "drop | append | replace",
+                   "actions": ["exact engine commands"] },
+  "engine_call": [ optional thinking calls, see below ]
+}</pre>
+<p><b>Only <code>utterance</code> crosses to the assistant.</b> The move, the queue, the refusals and the thinking are private — this is what keeps the assistant an adviser rather than a controller. Two further rules make the utterance and the behaviour one event:</p>
+<ul>
+  <li><b>Provenance.</b> A low-skill person may only queue steps that were actually named to it or returned by a thinking call; a guessed command is dropped and does nothing. This is how skill is enforced mechanically rather than by asking a model to act unskilled.</li>
+  <li><b>Words must match actions.</b> Verbatim from the prompt: "If you say you are going to do something, put the matching commands in <code>actions</code> on that SAME turn … saying 'you're right, I'll fix it' with <code>op='drop'</code> changes nothing in the world, and the supervisor will keep seeing the mistake uncorrected." A commitment detector scans the utterance; an <code>accept</code> or a spoken commitment paired with an empty plan update earns exactly one re-ask with an explicit nudge, and never a fabricated action on the person's behalf. The re-ask and its outcome are counted (in one <span class="vh">VHSim</span> corpus, 35 of 61 accepting turns arrived with no action).</li>
+</ul>
+<p><b class="runin">Thinking skills.</b> Skill is also an <i>information</i> dial. A capable person may call <code>resolve_subgoal</code> (turn a named subgoal into exact ordered commands, answered from the live world — e.g. which container the milk is in) and <code>expand_action</code> (the full command block a step belongs to); <span class="ck">CookSim</span> adds <code>park_plate</code> (find the nearest empty counter). Calls cost no world time, are invisible to the assistant, and are capped (five per turn, after which a reply is forced). The governing principle: <i>queue what you know; resolve only what you would otherwise have to guess.</i> A low-skill person's call is answered "you can't work that out for yourself — ask the supervisor for the concrete step", and <code>resolve_subgoal</code> refuses to decide where to deposit something or to hand over a whole repair plan, because those are the assistant's decisions.</p>
+<p><b class="runin">When the person speaks.</b> It is given a turn when the assistant spoke; when it is idle with an empty queue; when a command was refused or it is stuck; and, while an event is live, on every poll — so it can queue the tasked actions even when the assistant is silent. It is never starved of turns, which matters because <b>silence is a real output</b>: the profiles that stay quiet do so by choice, and a person that narrated every action would turn the transcript into a play-by-play no real record would contain.</p>
+
+<h4 id="m33">3.3 The persona space</h4>
+<p>The value of an intervention depends on who receives it, so the person is drawn from a small space of profiles whose axes are <b>enforced by the harness</b>, not suggested in a prompt. Two kinds of axis are distinguished throughout: <b>private</b> axes change what the person can do and never reach the assistant; <b>public</b> axes are a short pre-task questionnaire shown to the assistant verbatim — so a preference the assistant was told about is a preference it is then scored against.</p>
+<div class="tbl">
+<div class="tcap"><b>The persona spaces.</b> Each engine instantiates contrasting corners rather than a population model. In <span class="ck">CookSim</span> the three questionnaire answers double as the weights of the interaction-cost score.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>&nbsp;</th><th>Private axes (mechanically enforced)</th><th>Shown to the assistant</th><th>Instantiated</th></tr></thead>
+<tbody>
+<tr><td><span class="ck">CookSim</span></td>
+<td><b>skill</b> low/medium/high — low cannot call the resolution skills and must be told concrete steps; medium may resolve and expand; high may also plan steps nobody named. <b>trust</b> low/medium/high — how much evidence a claim needs</td>
+<td>three questionnaire answers: <b>Q1 speed</b> ("How much do you care about solving the task fast?" 1 safe first · 2 so-so · 3 as fast as possible with a lot of parallelism); <b>Q2 alerting</b> (1 flag only when confident · 2 medium · 3 spot all possible mistakes aggressively); <b>Q3 interruption</b> (1 step by step · 2 medium · 3 don't interrupt unless necessary)</td>
+<td>average person (med·med·2·2·2) · compliant learner (low skill, high trust, 1·3·1) · skeptical pro (high skill, low trust, 2·1·3). A balanced nine-persona roster exists for sensitivity studies</td></tr>
+<tr><td><span class="vh">VHSim</span></td>
+<td><b>task solvability</b> — low disables the thinking skills; creative switches the channel to images and allows self-planning. <b>information acceptance</b> — low truncates an assistant's suggestion to its first three actions, the rest recorded as dropped-by-acceptance. <b>interaction preference</b></td>
+<td>the persona name, the full card, an ability brief telling the assistant how to address this person ("needs the CONCRETE next action named, one at a time" vs "name the GOAL or the error — do not dictate steps it can derive"), and the two public dials</td>
+<td>novice_stepwise (low solvability, high acceptance) · creative_uninterruptible (creative, low acceptance, silence by default)</td></tr>
+<tr><td><span class="ss">ScreenSim</span></td>
+<td><b>fluency</b> (novice/average/expert); <b>rebuttal budget</b> — how many times it pushes back on a correct flag before accepting; <b>confirm-irreversible</b> — whether a permanent action forces a check-in</td>
+<td>a three-line questionnaire, verbatim, and nothing else: skill and trust must be inferred from behaviour</td>
+<td>guided_novice (0 rebuttals, confirms) · brisk_expert (1 rebuttal, no confirm) · distracted_average</td></tr>
+</tbody></table></div>
+</div>
+<p><b class="runin">How the cards are written.</b> The card names each axis, gives its level, shows the questionnaire item and the answer given (or "nobody asked you this — it is simply who you are" for a private axis), and then states the level as a <b>disposition</b> — a first instinct, a habit, a threshold — never as a rule. Example (trust = low): <i>"You are cautious about the assistant's claims about what happened in your work, especially when they do not match your own memory. Your first instinct in that mismatch is to question what it actually saw and compare the claim with the state of the kitchen before changing course. Vague assertions do not carry much weight for you, but specific, checkable observations can change your mind."</i> The card is both the first block of the person's context and the last thing before generation (the <i>persona-card-last</i> rule: per-turn instructions placed after it flatten every persona).</p>
+<p><b class="runin">Validating the persona (contrast probes).</b> The same start state and the same assistant line are played to two people whose full cards differ in exactly one axis, the others held at medium; one behavioural variable per family is read from the record — turns until accepting a correct correction; resistance to a false alarm; objecting to a hedged flag; word count when interrupted mid-walk; asking for the next step when idle; acting versus asking on an underspecified instruction; lighting a free station before prepping. A pair <b>agrees</b> when the difference has the sign the axis predicts and is <b>separated</b> when the two differed at all. With Gemini 3.7 Flash as the person, the adopted disposition bank agrees on 69% of 42 pairs (74% separate). An earlier rule-based bank reached 88% <i>by scripting the reaction</i> ("reject the first claim"), and was retired: a persona told what to do guarantees contrast without modelling anyone. The two weak families are probe-design limits — every persona contradicts a plainly false claim about its own hands, and the speed probe fires while the queue is committed.</p>
+<p><b class="runin">Evaluating the person itself.</b> The human agent is a component with its own quality axes, measured by short probes from engine-reached states (at most 3 turns and 40 ticks, so a probe costs 3–6 model calls): <b>A · competence</b> — can it do the task alone (win rate over the cells); <b>B · persona fidelity</b> — the contrast probes above; <b>C · instruction following</b> — given a <i>correct</i> suggestion in plain spatial language, does it produce and execute the right commands, graded on a target predicate over the world after K ticks against the shortest oracle sequence; <b>D · contract honesty</b> — under a baseless objection do its words match the hands the engine has committed (D1), and is a correct evidenced flag accepted <i>and then acted on</i> (D2). This is how the cook model was chosen: on the same 51 probes, the model used in the sweep scores C = 0.83, D = 0.75 at 1.7 s per turn, against a stronger but five-times-slower model at C = 0.84, D = 1.00, while two open-weight candidates (0.10 / 0.10 on C) were unusable as people at all.</p>
+
+<h4 id="m34">3.4 Simulating a mistake</h4>
+<p>A scheduled error is a <b>typed transform of the task graph</b>, never a scripted scene, and two rules govern the whole set.</p>
+<ul>
+  <li><b>Realisation must be physical.</b> A repetition whose second execution the engine would refuse is invisible, so a toggle is redone as an <i>inverting</i> second press (the tidied lamp is back on) and a deposit as a visible double state change.</li>
+  <li><b>An omission must be an absence.</b> A forgotten step means the person never goes there: the transform drops the subgoal's whole closure, walk included, and the detection window re-anchors on the successor subgoal the person does instead. (The earlier "walk up to it and fail to act" realisation was retired as unrealistic.) A corollary: an omission of the last subgoal has no successor and is a legitimately non-viable case, recorded as such rather than faked.</li>
+</ul>
+<div class="tbl">
+<div class="tcap"><b><span class="ck">CookSim</span> error taxonomy.</b> Ten types generated by eight transforms over the plan IR (skip, insert, swap, repeat, truncate-and-serve, replace, permute-prep, forget-rest). <i>Ruinous</i> = the committed form loses the dish by itself. The released suite instantiates nine of them; <code>misidentify_assemble</code> is graded under <code>add_foreign</code>.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>Type</th><th>What the cook is made to do</th><th>Committed outcome</th><th>Class</th></tr></thead>
+<tbody>
+<tr><td>mis_prep</td><td>preps the wrong ingredient at the right station</td><td>wrong_serve</td><td>ruinous</td></tr>
+<tr><td>misidentify_assemble</td><td>scoops an on-recipe item into the wrong slot</td><td>wrong_serve</td><td>ruinous</td></tr>
+<tr><td>add_foreign</td><td>scoops an off-recipe item onto the plate (needs a distractor source)</td><td>wrong_serve</td><td>ruinous</td></tr>
+<tr><td>serve_raw</td><td>plates a component raw, skipping prep and cooking</td><td>wrong_serve</td><td>ruinous</td></tr>
+<tr><td>wrong_order</td><td>swaps two plating steps (ordered recipes only)</td><td>wrong_serve</td><td>ruinous</td></tr>
+<tr><td>omit_subgoal / premature serve</td><td>skips a component, or walks to the pass early</td><td>wrong_serve</td><td>ruinous</td></tr>
+<tr><td>repeat_step</td><td>plates a component twice</td><td>wrong_serve</td><td>ruinous</td></tr>
+<tr><td>leave_unattended</td><td>walks a busywork tour while food is on a lit station</td><td>burned</td><td>ruinous under the tight clock</td></tr>
+<tr><td>search</td><td>visits 2–3 wrong counters before the right one</td><td>won</td><td>time-only</td></tr>
+<tr><td>forget_next_step</td><td>drops the rest of the plan and stands idle until released</td><td>timeout</td><td>time-only</td></tr>
+</tbody></table></div>
+</div>
+<div class="tbl">
+<div class="tcap"><b><span class="vh">VHSim</span> error taxonomy:</b> seven labels, re-categorised so that each has a unique observable signature in the video channel; timing and scope are parameters of a class, never separate classes. Both agents are shown these definitions verbatim.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>Label</th><th>Definition shown to the agents</th><th>Transform</th><th>Outcome</th></tr></thead>
+<tbody>
+<tr><td>wrong_object</td><td>the object in hand is a look-alike of the required one (juice instead of milk)</td><td>replace the whole fetch subgoal as one unit and substitute the belief into every later command</td><td>silent fail</td></tr>
+<tr><td>wrong_placement</td><td>the right object ends up in the wrong place</td><td>replace the deposit node, then truncate — the error commits at the placement</td><td>silent fail</td></tr>
+<tr><td>navigation_inefficiency</td><td>extra movement with zero state change, then the plan resumes intact</td><td>insert a detour (multi-room) or loiter (same-room) node</td><td>success, waste only</td></tr>
+<tr><td>skipped_step</td><td>a required step is omitted and the rest runs in order with the omission's visible consequences</td><td>omit the subgoal and its whole closure</td><td>silent fail</td></tr>
+<tr><td>repetition</td><td>an already-completed subgoal is executed a second time</td><td>insert a duplicate node; a toggle inverts, a deposit unloads and reloads</td><td>end state undone</td></tr>
+<tr><td>stall</td><td>they stop moving mid-task — stationary, nothing happening</td><td>insert a stall node, or truncate the tail and stall</td><td>success / stalled</td></tr>
+<tr><td>missing_step</td><td>a goal covering several identical objects is left half done (one lamp off, its twin still lit)</td><td>omit one instance's subgoal entirely</td><td>half-done pair</td></tr>
+</tbody></table></div>
+</div>
+<p><b class="runin">Twins (<span class="vh">VHSim</span>).</b> Two labels are <i>twins</i> when the deviation is indistinguishable between them in the frames at or before the decisive moment; an in-window twin name is credited as a detection and a pre-window twin as a prevention, because "an assistant that reads the deviation right under a defensible label has detected it, in the score and in the world". The relation is deliberately asymmetric: skipped_step ↔ {navigation_inefficiency, missing_step}; repetition → navigation_inefficiency; navigation_inefficiency ↔ {stall, skipped_step}; wrong_placement → wrong_object; wrong_object has no credited alias, because the look-alike in hand is decided at the grab and visible in frame.</p>
+<p><b class="runin">What was cut, and why (<span class="vh">VHSim</span>).</b> Classes indistinguishable in video were discarded at re-categorisation: failing to find a visible object, confusing a location, a wrong container, skipping a prerequisite as its own class, and wrong order (sequencing is invisible; what a watcher sees is the skipped prerequisite). Hesitate and forget merged into <code>stall(duration)</code>; repeat-twice into <code>repetition(gap)</code>. The safety family still exists in the transform library, but the world has no consequence dynamics, so "left the stove on" is visually identical to "turned the stove on" — the hazard family is therefore absent from the graded taxonomy <i>and</i> from the scorer, since a safety gate for an outcome the engine cannot generate would be a permanent zero that looks like a result.</p>
+<div class="tbl">
+<div class="tcap"><b><span class="ss">ScreenSim</span> error taxonomy:</b> only <b>forceable</b> families are admitted — those the engine can realise by substituting a single gesture at the anchor, a positive wrong action rather than an absence.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>Family</th><th>Definition</th><th>Example from the suite</th></tr></thead>
+<tbody>
+<tr><td>wrong_value</td><td>the committing gesture selects a sibling option of the same control — right control, wrong value</td><td>pay Alex Kim instead of Alex Chen; choose the wrong protection level</td></tr>
+<tr><td>wrong_target</td><td>the gesture actuates a different control on the same screen — a foreign write</td><td>toggle Notification Center instead of Today View on the lock screen</td></tr>
+<tr><td>wrong_page</td><td>at a required navigation the person takes a plausible wrong turn and lands on the wrong screen</td><td>open Control Center settings while looking for an app's privacy page</td></tr>
+</tbody></table></div>
+</div>
+<p><b>Omissions are excluded by design</b> in <span class="ss">ScreenSim</span>, and the reason generalises: the takeover can force a positive wrong action but cannot force an absence — the engine can suppress a control only once the person is already on the screen, so a free person who wanders off simply never produces the mistake, yielding an unscoreable run rather than the designed error. Restricting to forceable families is what makes injection guaranteed and grading honest. (<span class="ck">CookSim</span> and <span class="vh">VHSim</span> can force omissions because they own the whole command queue, not one gesture.)</p>
+<p><b class="runin">Detection channels.</b> Each transform declares how it can be caught: <b>action_only</b> (pure physics — a watcher catches it only by watching), <b>language_optional</b> (the error has a moment of doubt at its trigger boundary; with <code>ask=True</code> the person pauses and asks, and a correct timely answer averts the error through a recorded undo recipe — reinsert / cancel-insert / restore-tail — while silence lets it happen), and <b>language_only</b> (an announced, legal change; flagging it is a false positive).</p>
+<h4 id="m35">3.5 Certification: no event reaches an assistant unless it is well-posed</h4>
+<p>Every candidate event is dry-replayed in the symbolic engine before a frame is rendered, and the verdict is <b>published in a ledger</b> rather than implied by a passing test suite.</p>
+<ul>
+  <li><span class="vh">VHSim</span> runs six checks per (case × timing): <b>T1</b> a deviation exists and is distinguishable from ordinary execution; <b>T2</b> the trigger is reachable (the live world's replay of the clean prefix equals the reference); <b>T3</b> the deviated continuation is executable from the trigger state; <b>T4</b> the window's identifying step occurs in the deviated plan; <b>T5</b> the error actually breaks the required predicate (waste classes legitimately still complete); <b>T6</b> every referenced subgoal exists. Currently <b>19 of 29 timings are admitted</b>; the ten rejections are three trailing omissions (no successor to anchor on), five illegal anchors (the first deviated command is refused there — "the microwave is closed", "hands empty") and two no-real-errors (the required predicate already holds after the deviated plan). Episode-level invariants run alongside: a pinned target must be reachable from setup; the final-state predicate must be false before the plan and true after (no vacuous goal); <b>decoy immunity</b> — completing the task with a non-target instance must not satisfy it; and the final-state predicate must agree with the graded checkpoints.</li>
+  <li><span class="ss">ScreenSim</span> admits a candidate only if the transformed plan runs without refusals (the wrong gesture is actually available); it does not still satisfy the goal (the mistake genuinely matters); the deviation is the sole difference from the reference outcome (no confound); a validated recovery exists (a gesture sequence that, appended, restores the goal — for a wrong navigating row this may require a step back to the picker); and the anchor does not collapse to \(t_0\) unless it is genuinely the first committed choice.</li>
+  <li><span class="ck">CookSim</span> verifies every (cell, type, parameters) triple by replay into an inventory of 483 instances, and additionally enforces suite-level construction rules and a per-episode timeline audit (§3.6).</li>
+</ul>
+<p>Certification also fixes the two ticks the whole evaluation hangs on: the <b>observability point</b> (when a correct flag first becomes possible) and the <b>outcome point</b> (when the consequence lands).</p>
+
+<h4 id="m36">3.6 Injection control: where the event lands</h4>
+<p>An error is injected when the world reaches the <b>anchor state</b> — never at a tick offset, never on a command index alone. Let \(P\) be the clean plan, \(P'\) the deviated plan, \(m\) the length of their longest common prefix and \(\kappa\) the progress key. The reference anchor is the key after a headless replay of the prefix, and injection fires at the first live tick where</p>
+$$\kappa(\text{live}) = \kappa\big(\mathrm{replay}(P_{1..m})\big) \ \wedge\ \text{the queue has physically dispensed } P_{1..m}.$$
+<p>The second conjunct exists because walks are symbolically inert: a common-prefix walk leaves \(\kappa\) unchanged, so without it the trigger fired before that walk ran and the takeover then dropped it, stranding the person away from the target. When \(m = 0\) the deviation replaces the first command and the trigger is the start state.</p>
+<ul>
+  <li><b>Order-invariance.</b> Because \(\kappa\) is invariant to legal reordering, the anchor is reached however the person sequenced the prefix's independent subgoals — including a route the assistant talked them into.</li>
+  <li><b>Timing as a controlled variable.</b> The same case can be re-anchored at every legal position, so <i>when</i> the mistake arrives is an axis of the suite rather than a fixed property of the case.</li>
+  <li><b>Honest non-occurrence.</b> A person who front-loads a subgoal outside the prefix can push the world off the anchor. That is not forced: after a trigger deadline (320 ticks in <span class="vh">VHSim</span>) the injection is recorded as <i>skipped</i>, every later flag grades as such, and the run leaves the detection denominator — it is never scored as a miss.</li>
+  <li><b>Composition.</b> Transforms compose in order under one priority rule: an earlier error owns the plan, and a later error whose anchor it removed is skipped <i>with record</i>. Composition never aborts a build — every intended injection leaves a record whether or not it fired, so the ledger can tell "not injected" from "injected and missed". Dependency closure is enforced by the engine's preconditions rather than repaired by hand: omitting a fetch makes the later put refuse empty-handed, and that refusal is the modelled consequence.</li>
+</ul>
+<p><b class="runin">Suite-level construction and audit (<span class="ck">CookSim</span>).</b> Within an episode: distinct error types; distinct anchors in plate-monotone order; a premature serve is always last; a mid-recipe omission never on an order-free dish (indistinguishable from a premature serve); at most one time-only error in a row; on hot recipes at least one ruinous error anchored while a station is lit, so the assistant must hold two threads at once; questions sharing an anchor with an error are asked first; nothing scheduled after a premature serve. Three <b>audit conditions</b> are hard constraints, and the published per-episode timeline audit builds with zero flags: no two errors share an anchor; an error other than the walk-away itself must end ≥ 10 ticks before anything on the heat at its anchor would burn; an error's replay may not run more than 60 ticks past the next sub-case's anchor.</p>
+
+<h4 id="m37">3.7 The mind–action conflict and the soft–hard takeover</h4>
+<p>Asking a language model to make a mistake does not reliably produce one; taking its body silently produces a person whose hands and mouth disagree. The engine resolves the conflict explicitly with three paradigms:</p>
+<div class="tbl">
+<div class="tablewrap"><table>
+<thead><tr><th>Paradigm</th><th>Queue taken over</th><th>Person told</th><th>Consequence</th></tr></thead>
+<tbody>
+<tr><td>soft</td><td>no</td><td>yes, in character</td><td>prompt-only: the error manifests only if the person voluntarily enacts it. Retained solely for the "can the assistant talk them out of it" experiment</td></tr>
+<tr><td>hard</td><td>yes, covertly</td><td>no</td><td>the queue is silently replaced; the person can read as a puppet</td></tr>
+<tr><td><b>combo</b> (default)</td><td>yes</td><td>yes</td><td>the body is committed <i>and</i> the person is told, so its dialogue stays in character while its hands are already moving</td></tr>
+</tbody></table></div>
+</div>
+<p>Combo exists because pure soft does not force active errors: a compliant novice following clean guidance simply never enacts a wrong placement, while omission errors comply easily and masked the gap. The instruction the person receives says exactly this — <i>your persona governs how you TALK; this task governs what you DO</i>; movement needed to reach each step is allowed and expected; and the one exception is genuine persuasion: <i>if the assistant genuinely convinces you the mistake is real — with evidence that meets your persona's standards — you may truly accept; the moment you are genuinely convinced this task dissolves and you are free to fix things as yourself.</i> The person is told never to reveal the task, and its own plan updates are <b>forced to drop</b> while the takeover holds — with the override <i>recorded and reported to the person in its action feedback</i>, because a person that is not told narrates the trip it is not taking.</p>
+<p><b class="runin">Release rules — the takeover ends on the world, not on a label.</b></p>
+<ul>
+  <li><b>Prevention</b> — a flag whose verdict is in the single <i>Correct</i> set arrives inside the window and the person genuinely accepts <i>before any non-navigation deviated command executes</i>: the error is cancelled, the clean plan restored, and the sub-case scored as prevented.</li>
+  <li><b>Convinced after commitment</b> — acceptance once the deviation has physically happened releases control immediately, because keeping it would manufacture "the mouth says sorry while the hands keep sinning" transcripts. The repair is now the assistant's problem.</li>
+  <li><b>Maximum hold</b> — the deviated block finishes, or the consequence lands, with the person never convinced. For an insertion this is the wrong action executing; for an omission the continuation completing; for a stall the person having actually idled.</li>
+  <li><b>Irreversible last-chance beat</b> (<span class="ss">ScreenSim</span>) — before a commit that cannot be undone the engine inserts a hold, so that a late but correct intervention still has somewhere to land.</li>
+</ul>
+<p>Because the same <i>Correct</i> set is imported by the release gate and by every scorer, "an assistant that names the error correctly" means one thing in the world and in the table. The defect this rule fixes is concrete: an in-window twin name once scored as a wrong name and never armed the gate — two sets, one for grading and one for the world.</p>
+<p><b class="runin">Compliance is logged, never enforced.</b> Whether the tasked sequence was actually performed is a per-run fact, matched as a subsequence of completed commands after injection (the person may interleave), compared on the display text the agents themselves saw. A run whose injection fired but whose person silently declined is <b>recorded and excluded</b>, not scored as a miss.</p>
+<p><b class="runin">The silent floor.</b> While an error is live the person never repairs it unprompted, and a control condition in which the assistant never speaks produces <b>zero spontaneous repairs</b> across all forced errors. That is what makes the assistant's intervention the only path to a repaired outcome, and it is why every results table carries the silent floor beside it.</p>
+
+<h4 id="m38">3.8 The events that are not mistakes</h4>
+<p>Half of a benchmark of this kind must be "nothing is wrong", or silence wins. Three kinds of non-error event are scheduled.</p>
+<ul>
+  <li><b>Announced deviations / legitimate intents.</b> The person announces a change it is entitled to make: in <span class="ck">CookSim</span> a <i>plan change</i> ("I want to modify the original recipe: add fresh lettuce on top before serving" — the goal itself extends the moment it is announced, so the extra item is what the order now asks for) or a <i>side quest</i> (a kitchen tour, or chopping something nobody ordered, while the hands are free); in <span class="vh">VHSim</span> two legal reorders of the tidy chore, each validated against the task's real dependency DAG at run time, plus announced goal changes under which the success criterion moves; in <span class="ss">ScreenSim</span> an <i>intent</i> family that looks exactly like a wrong-value error and is not. Any flag raised against a live intent is a false alarm; the assistant's job is to update its model and say nothing.</li>
+  <li><b>Clean runs.</b> Episodes with nothing injected at all, where the only correct behaviour is to stay quiet (and, in <span class="vh">VHSim</span>, to answer the exit probe, without which the episode is not scorable — the silent stub must not top the leaderboard).</li>
+  <li><b>Questions and standing requests</b>, asked through the person's mouth at anchors, with ground truth computed from the trace at the moment of asking <i>and</i> of answering (an answer true at either moment is correct, because the world moves).</li>
+</ul>
+<div class="tbl">
+<div class="tcap"><b><span class="ck">CookSim</span> question families.</b> Chosen from the cells where streaming-video QA benchmarks report the largest human–model gaps. Q10 is a request rather than a question and is graded by <i>when</i> the assistant speaks.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>Family</th><th>Question form</th><th>Ground truth</th></tr></thead>
+<tbody>
+<tr><td>Q1 order</td><td>did I do A before or after B?</td><td>first-finish ticks in the action log; <i>neither</i> / <i>only one</i> are valid answers</td></tr>
+<tr><td>Q2 counting</td><td>how many times have I gone to a …?</td><td>count of completed matching commands; distinct targets also</td></tr>
+<tr><td>Q3 duration</td><td>how long has X been on? which has been on longest? is anything past done?</td><td>station timers</td></tr>
+<tr><td>Q4 never-happened</td><td>did I already put the cheese on? is there even a pot here?</td><td>empty event set / absent station — <b>retired from scoring</b> after the sweep (§5)</td></tr>
+<tr><td>Q5 absence</td><td>what still has to go on this plate? how many boards are free?</td><td>recipe minus plate; board states</td></tr>
+<tr><td>Q6 re-ask</td><td>the same question later, and what changed</td><td>current truth versus the stored earlier truth</td></tr>
+<tr><td>Q7 multi-hop</td><td>the thing I plated right after the rice — is it done?</td><td>plate history → referent → its state</td></tr>
+<tr><td>Q8 assistant memory</td><td>what did you tell me about the fryer earlier?</td><td>the assistant's own last line mentioning it</td></tr>
+<tr><td>Q9 anticipation</td><td>what's my next step? which burns first? how long until X is ready?</td><td>plan position; station timers</td></tr>
+<tr><td>Q10 proactive alert</td><td>give me a shout the moment the X is done</td><td>graded by <i>when</i> the assistant speaks against the item's ready window</td></tr>
+</tbody></table></div>
+</div>
+<p><b class="runin">Content hardness.</b> A hard family with an easy instance is an easy question, so every candidate (question, anchor) pair is scored on the replayed trace and rejected unless it is hard: memory questions are asked after ≥ 35% of the plan <i>and</i> after the episode's first forced error; an order question never asks about a pair the recipe fixes, its events must be ≥ 8 ticks apart with the later one ≥ 25 ticks ago; counts must be ≥ 2 spread over ≥ 30 ticks; duration comparisons need two lit stations ≥ 6 ticks apart; traps must be plausible; absence questions need ≥ 1 item on and ≥ 2 to go; multi-hop needs ≥ 3 items plated and a referent ≥ 15 ticks old; anticipation needs a real margin. <b>At least 30% of truths are negative</b> ("no", "neither", "nothing"), so the modal answer is never a strategy. In the released suite the mean hardness score is 1.16 where 0.8 just passes, and memory questions sit at 61–100% of the plan.</p>
+
+<h3 id="m4">4 The assistant under test</h3>
+<p>The assistant is the only component we do not build. It receives a rendering and the public conversation, it speaks, and it keeps whatever memory it can carry in its own output.</p>
+<ul>
+  <li><b>What it receives</b> (<span class="ck">CookSim</span>, every 2 ticks): the current tick; its own previous output — its only memory; the full communication history with ticks; the person's latest sentence; and the last 8 frames. Its system prompt carries the order, the person's public plan, the station input rules, the plating and serving rules, the station timings, and the three questionnaire answers — nothing else about the person. In <span class="vh">VHSim</span> it additionally receives the two maps and a one-line body ground truth (holding, room, facing, in view), a deliberate "few precision-critical facts" tier: the benchmark measures error detection, not the assistant's self-localisation from first-person video, so grounding where the person is removes scaffolding noise without touching the detection problem.</li>
+  <li><b>What it outputs.</b> A structured record: <code>text</code> (what it says; empty to stay silent); an optional <code>flag</code> naming exactly one error from the fixed vocabulary; its own progress tracking (<code>cook_progress</code> / <code>human_progress</code>: subgoals completed with evidence, current hypotheses, remaining); a bounded memory field (<span class="vh">VHSim</span>: <code>key_moments</code>, ≤ 10 timestamped strings, with overflow evictions counted and reported as a property of the model); and, in <span class="ck">CookSim</span>, <code>goal_change</code>, its record of an announced recipe change. <b>Only <code>text</code> reaches the person.</b> The flag is read by the engine for verdicting and for the release rule and is never shown to the person; it has no other effect on the world and does not substitute for saying something the person can act on.</li>
+  <li><b>What it is never shown.</b> Instance ids and coordinates; the private persona dials (the term <code>task_solvability</code> itself is forbidden in its prompt); the grading machinery (verdicts, windows, twin tables, injection, takeover, engine revision); the person's private channel; the engine's refusal messages (only the person sees those, and a quoted refusal is ground truth that outranks the assistant's reading of the frames); and the inside of closed containers.</li>
+  <li><b>The perceptual contract</b>, stated to it verbatim: the inside of a closed container is invisible in every frame; identical copies exist, so a milk on the counter is not evidence the deposited milk came back out; an action IN PROGRESS has no outcome yet; and once it has conceded a disputed reading, that claim is dead unless new evidence arrives.</li>
+  <li><b>Restraint and register</b>, also verbatim: do not repeat a message said within the last few ticks; only step in when very confident; when the person is standing still they may be listening, thinking or moving somewhere unseen; if something is actively going wrong the fix instruction comes first, before the explanation; doing independent subgoals in an unexpected order is not an error and must never be flagged. Under an egocentric action space it is additionally told to <b>name destinations, not micro-steer</b> ("go switch off the TV in the living room", never "turn left, go straight"), because it cannot see the person's exact heading and micro-managing rotation from a first-person frame reliably walks them into walls.</li>
+  <li><b>Prompt audit.</b> Assertions are made on the composed prompt the assistant actually receives, per condition, at run start — not on templates — and any violation aborts the run before it spends its budget. Absent: instance-id tokens, coordinate pairs, and the grading vocabulary. Present: the shared persona profile. A companion measure applies the same patterns to <i>spoken</i> text from both speakers across the episode and reports leaked tokens per speaker.</li>
+  <li><b>Observation tiers.</b> Each engine defines tiers for ablation — <span class="ck">CookSim</span> frames-only (the benchmark setting) versus text state map versus map-plus-readout (upper-bound controls, not part of the benchmark); <span class="vh">VHSim</span> basic versus a body-truth tier, crossed with high-level (oracle navigation) versus mid-level (gated) action spaces; <span class="ss">ScreenSim</span> sv1 (frames only) versus sv2 (frames plus a relational text map).</li>
+</ul>
+<h3 id="m5">5 Measurement</h3>
+<p>Three groups, reported separately rather than folded into one number. Formulas and the full instrument live on the <a href="metrics.html">metrics page</a>; what follows is what the method section needs to state.</p>
+
+<h4>5.1 Verdicts: one definition of a correct detection</h4>
+<p>Let the deviation start at tick \(d\) and the window open at \(\ell\), the tick at which the identifying step completes — both <b>recorded live in the graded episode</b>, never taken as constants from a faster reference replay, because walk durations vary between runs. A flag naming label \(n\) at tick \(t\) against injected error \(e\) is verdicted:</p>
+<div class="tbl"><div class="tablewrap"><table>
+<thead><tr><th>Verdict</th><th>Condition</th><th>Counts as</th></tr></thead>
+<tbody>
+<tr><td>valid</td><td>\(n = e\) and \(t \ge \ell\)</td><td>detection</td></tr>
+<tr><td>valid_alias / alias_in_window</td><td>\(n \in \mathrm{twins}(e)\) and \(t \ge \ell\)</td><td>detection</td></tr>
+<tr><td>early_correct</td><td>\(n = e\) and \(d \le t &lt; \ell\)</td><td>prevention-armed</td></tr>
+<tr><td>early_alias</td><td>\(n \in \mathrm{twins}(e)\) and \(d - 2 \le t &lt; \ell\)</td><td>prevention-armed</td></tr>
+<tr><td>late</td><td>the right error named after it committed</td><td><b>miss</b> — neither true positive nor false alarm; its cost is already charged in the timing score</td></tr>
+<tr><td>wrong_name</td><td>a taxonomy label that is neither \(e\) nor a credited twin</td><td>false alarm</td></tr>
+<tr><td>intent_false_alarm</td><td>an objection to a live announced deviation</td><td>false alarm</td></tr>
+<tr><td>fp_preinjection / fp_skipped / fp_clean</td><td>flagged before injection, in a skipped run, or in a clean episode where the claim is not true</td><td>false alarm</td></tr>
+<tr><td>neutral_true / true_observation</td><td>a true remark about something that is not an injected error</td><td>neutral — neither credited nor charged</td></tr>
+<tr><td>invalid_label</td><td>not one of the taxonomy's labels</td><td>false alarm</td></tr>
+</tbody></table></div></div>
+<p>From these, exactly one <i>Correct</i> set is defined and <b>imported</b> by the release gate, every scorer and every page builder, never re-listed: \( \mathrm{ARMS\_DETECTION} = \{valid, valid\_alias\} \), \( \mathrm{ARMS\_PREVENTION} = \{early\_correct, early\_alias\} \), \( \mathrm{CORRECT} = \) their union. A test greps every consumer for hand-listed verdict tuples (and found one missing <code>valid_alias</code>). The world-truth predicate behind <i>neutral_true</i> is deliberately conservative and reads only the action log.</p>
+
+<h4>5.2 The three measurement groups</h4>
+<ol>
+  <li><b>Task outcome.</b> Whether the goal predicate holds; whether it held within a task-dependent cap; and which consequence landed otherwise. In <span class="ck">CookSim</span>, <b>in-time success</b> is 1 only if the pass accepted the dish <i>and</i> the episode finished within \(2(T_{\mathrm{ref}} + \alpha)\), where \(\alpha\) is the episode's <b>allowance</b> — the summed gap between each error's anchor and the tick it becomes identifiable (median 52 ticks, range 12–92). There is no partial credit: a rejected serve is 0 whatever is on the plate.</li>
+  <li><b>Intervention quality.</b> Precision, recall and \(F_1\) over the injected errors, with a late flag counted as a miss and repeated flags for one error counted once; a timing score \(DT\) paying 1 for a prevention, 0.5 for a correct flag before commitment and 0 otherwise; answer accuracy against engine truth with a per-family rubric; and alert timing scored by <i>when</i> the assistant speaks against the item's ready window (1 at the moment it is done, decaying to 0 at the end of the window, 0 if early, late or never).</li>
+  <li><b>Interaction quality and cost.</b> <b>Conversation efficiency</b> charges speech that lands while the person's hands are busy — \(CC = 1 - \mathrm{clip}_{[0,1]}\!\big(\sum \tau(u) / T\big)\) over utterances overlapping a running action — and is combined with total-time efficiency using <i>this person's own questionnaire weights</i>: \(E = (a\,TT + c\,CC)/(a+c)\), defined only over episodes won in time. Alongside it, a per-round judgement of whether the line was truthful, sensible, specific, helpful, well-timed, listening, honest about uncertainty, safe, consistent and economical: fifteen items in ten categories, five of them <b>must-items</b> that zero the round, with the two most abusable — is a claim about the world true, and could the advised action be started in that state — <b>decided by the engine rather than the judge</b>. A round scores the weighted share of applicable items passed; an episode is the mean over rounds.</li>
+</ol>
+<p><b class="runin">Who judges, and how far to trust it.</b> The judge is always from a different model family than the assistant under test, at flash tier (a pro-tier judge is unaffordable at tens of thousands of calls). Reliability is reported with the score rather than assumed: on a 39.3% double-graded sample (519 of 1,321 episodes, 19,027 rounds), the two judge families correlate at \(r = 0.51\), differ by 0.216 on average on \([0,1]\), agree within 0.25 on 75.6% of rounds and agree on the binary must-item verdict on 78.1%. This is why the judged score carries no headline claim and why differences below ≈0.05 should not be read.</p>
+
+<h4>5.3 Validity gates: a run that measured nothing is not a zero</h4>
+<p>Gates run before scoring, and a failed gate yields <b>not measured</b>, never zero. Across the engines they are: engine-revision stamp present (and results filtered on it, so "newest settings only" is checkable rather than archaeological); composed-prompt audit passed at run start; <b>injection fired</b>; <b>error committed</b> (the tasked sequence was actually performed); <b>verdict reachable</b> (the window was anchored); frame integrity (a black first frame aborts as degraded; a first walk shorter than six frames is rejected as a teleport); postcondition verification on every live manipulation; restraint scorability (a restraint episode counts only if the assistant answered the exit probe); and, in <span class="ss">ScreenSim</span>, the six named void conditions — slip not conducted, injection never fired, error had no effect, run stalled, no verdict reached, interface/frame integrity. <b>The void rate is itself reported as a fidelity statistic</b>, because the honest denominator is part of the result.</p>
+<p>Every rate is reported with its denominator first: <i>measurable</i> ⊆ <i>performed</i> ⊆ all error episodes; restraint rates over <i>scorable</i> episodes only.</p>
+
+<h4>5.4 Baseline brackets</h4>
+<p>Results are read between engineered brackets so a score has meaning on an absolute scale: the <b>silent floor</b> (an assistant that never speaks — every error lands, no restraint cost; it must not top the board), the <b>oracle ceiling</b> (an assistant that flags the injected error the moment it is observable — proving the takeover releases and a correct flag is credited), the <b>assistant-only</b> bracket (a scripted, deterministic person, so every contender faces an identical world), and the <b>full simulation</b> (both agents free), which is the headline setting.</p>
+<p><b class="runin">One retirement worth reporting.</b> The never-happened question family (Q4) was retired from scoring after the sweep: it ran at 0.90 mean accuracy against 0.49 for the other families pooled, with three of nine assistants above 0.94 — the question announced its own answer. Its instances remain in the traces and are not counted, leaving 88 of the suite's 100 questions scored. This is the kind of thing a programmable generator makes visible and fixable.</p>
+
+<h3 id="m6">6 What ports, and what is respecified</h3>
+<div class="tbl">
+<div class="tcap"><b>Invariance across the three engines.</b> The upper block is the contract; the lower block is what each domain must define for itself.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>&nbsp;</th><th><span class="ck">CookSim</span></th><th><span class="vh">VHSim</span></th><th><span class="ss">ScreenSim</span></th></tr></thead>
+<tbody>
+<tr><td colspan="4"><b>Identical across engines:</b> channel isolation (only sentences cross; the assistant has no engine channel and cannot act) · progress-anchored injection on a partial-state key · typed transforms certified by symbolic replay before rendering · takeover with the three release rules · the single imported <i>Correct</i> verdict set · scheduled non-error events for restraint · the silent floor · trace-first metric definitions · validity gates that void rather than zero · a composed-prompt audit</td></tr>
+<tr><td>World</td><td>authored grid kitchen</td><td>native 3D scene graph, 183 objects</td><td>phone state machine, 5 apps, 51+ screens</td></tr>
+<tr><td>Observation</td><td>top-down ∥ egocentric composite, 1 frame/tick</td><td>egocentric ∥ floor plan, 1 frame/s, plus two state maps</td><td>rendered screen, last 2 frames</td></tr>
+<tr><td>Action space</td><td>place-level commands, automatic pathing</td><td>egocentric mid-level verbs behind two geometric gates</td><td>gesture on a labelled widget</td></tr>
+<tr><td>Grounding policy</td><td>refuse and name candidates</td><td>nearest visible instance, disclosed</td><td>visible label, fuzzy-matched; off-screen refused</td></tr>
+<tr><td>Consequence model</td><td>burn clock and an irreversible pass</td><td>none — hazard family removed from taxonomy and scorer</td><td>irreversible commits and procedural deadlines</td></tr>
+<tr><td>Error families</td><td>10 defined, 9 instantiated, 7 ruinous</td><td>7 labels with a credited twin relation</td><td>3 forceable; omissions excluded by design</td></tr>
+<tr><td>Task specification</td><td>recipe DAG + plate order</td><td>instruction + late-bound plan + checkpoints over the resolved event log</td><td>instruction + goal predicate over the state tree + seed</td></tr>
+<tr><td>Evaluated here</td><td>1,350 scheduled rollouts, 1,344 completed</td><td>19 episodes, 13 certified cases, 4 published demonstrations; sweep not run</td><td>5 tasks, 15 designed episodes; sweep not run</td></tr>
+</tbody></table></div>
+</div>
+
+<h3 id="m7">7 Limits of the instrument</h3>
+<ul>
+  <li><b>The person is a language model.</b> Every number is conditional on that user model. We validate the profiles by contrast probes rather than against human data, and we report the sensitivity slice rather than assuming invariance.</li>
+  <li><b>The judged score is a model's opinion</b>, calibrated only against itself; hence the engine overrides, the cross-family judging, the published agreement statistics, and its exclusion from headline claims.</li>
+  <li><b>The physics is an instrument, not a neutral substrate.</b> <span class="ck">CookSim</span>'s tight clock was chosen because the relaxed one made an entire error family decorative — under the relaxed preset an uncaught walk-away burns nothing; under the tight one it destroys the dish in 95% of uncaught cases while prevention keeps it safe in 97%. A more forgiving kitchen would raise every success rate and lower the value of speaking early.</li>
+  <li><b>Some behaviours are deliberately not fixed</b>, because they are signal: assistant fabrications that latency cannot explain, sycophantic reversals under pushback, and the person's long silences (it is given a turn every poll; the silence is its own in-persona choice). One run in which every engine step was lawful and the assistant talked the person into undoing a finished task is kept as the sharpest exhibit of ungrounded guidance.</li>
+  <li><b>One run per cell</b> in the current sweep, so adjacent ranks inside the confidence intervals are not separated.</li>
+  <li><b>Two engines are certified but not swept.</b> We claim the contract ports; we do not report assistant results on them.</li>
+</ul>
+
+<h2 id="p3">Part III · Fact appendix</h2>
+<p>Everything a formal write-up may need to quote, in one place. All values are recomputed from the engines or the sweep.</p>
+<h4>Physics and time (<span class="ck">CookSim</span>, tight preset)</h4>
+<ul>
+  <li>cook_time: fryer 14 · pan 15 · pot 20 · oven 28 ticks. smoke_grace 25. burn_time: fryer 45 · others 60. fire_time 30. Ruin lands 70 ticks (fryer) or 85 ticks (others) after an item is done.</li>
+  <li>Retired relaxed preset: burn window 480, fire 120 (kept for the human study app).</li>
+  <li>Calibration: a flawless plan never leaves a cooked item on heat longer than 37 ticks; a prevented walk-away keeps the cook away a median 14 ticks (3% exceed 70); an uncaught one a median 133 (95% exceed 70). Under the tight preset the silent floor fell from 33% won to 26% on the old suite and to 4–5% in time on suite v3.</li>
+  <li>One tick ≈ 1.2 s of the study app's clock; speech costs words ÷ 3.15 words/s ÷ 1.2 s, clipped to 1–20 ticks; chopping 4 ticks; episode budget 500 ticks + 200 per additional scheduled sub-case.</li>
+  <li>Frame: one 1042×396 composite per tick; assistant polled every 2 ticks with the last 8 frames.</li>
+</ul>
+<h4>Suite v3 composition (<span class="ck">CookSim</span>)</h4>
+<ul>
+  <li>50 episodes = 5 recipes × 2 maps × 5. Errors per episode: 2 (easy, medium), 3 (hard), 4 (expert, master), ≥ half ruinous.</li>
+  <li>Totals: <b>150 errors</b> (108 ruinous) — add_foreign 24, search 27, leave_unattended 21, mis_prep 17, omit 16, forget 17, wrong_order 12, serve_raw 11, repeat 9; <b>100 questions</b> (12–13 per family across Q1–Q5, Q7–Q9; Q6 rare by construction); <b>32 proactive requests</b>; <b>18 intent episodes</b> (8 plan changes, 10 side quests). 483-instance replay-verified inventory; 12 instances reused because two cells have fewer distinct anchors than slots. Mean question hardness 1.16 (0.8 passes).</li>
+  <li>Reference ticks per cell: 43–237. Allowance median 52 ticks (12–92).</li>
+</ul>
+<h4>Sweep (<span class="ck">CookSim</span>)</h4>
+<ul>
+  <li>9 assistants × 3 personas × 50 episodes = <b>1,350 scheduled</b>, <b>1,344 completed</b>, 134–146 scored per assistant after validity gates; the silent floor contributes its own episodes on every persona. Frames setting only; tight pace; one run per cell. Cook model: Gemini 3.7 Flash in every episode.</li>
+  <li>Assistants: Gemini 3.1 Pro, Gemini 3.7 Flash, Gemini 3.1 Flash Live, GPT-5.5, GPT-5.4 mini, GPT-realtime 2.1, Qwen3.8-27B, MiniCPM-o 4.5, Muse Glimmer 30B; plus a silent assistant on every persona × episode.</li>
+  <li>Judged guidance: 1,321 episodes, 49,233 rounds; must-item failure shares T1 45.1% (false claim), H1 35.3% (unstartable action), L2 21.3% (overrides an announced deviation or a stop request), SF1 10.1% (unsafe), T2 7.8% (invented object or rule).</li>
+  <li>User-model sensitivity slice: 12 cases × 2 assistants = 24 episodes with a different model in the person's voice; of 41 errors that fired in both runs, all 41 carried the same label and 40 the same identifiability window; pooled \(F_1\) 0.32 vs 0.30, in-time success 0.54 vs 0.33, \(DT\) 0.34 vs 0.20.</li>
+</ul>
+<h4><span class="vh">VHSim</span></h4>
+<ul>
+  <li>VirtualHome scene 2: 183 objects, 4 rooms; duplicates 9 plates, 7 books, 3 table lamps, 2 milks (surplus milk deleted on milk-target episodes). Two operable lamps in two different bedrooms; one wall fixture and both wall lightswitches are engine-unreachable.</li>
+  <li>19 episodes (9 families × easy/hard + 1 routine); 13 certified cases over 3 episodes (4 restraint + 9 error) spanning all 7 labels; admissibility 19 of 29 timings admitted (3 trailing omissions, 5 illegal anchors, 2 no-real-error).</li>
+  <li>Affordance matrix: 3,198 state × verb × object cells — 0 generic refusals, 0 silent no-ops, 1,066 honest announced no-ops; a live matrix against the renderer scored 19/19 on the appliance family and 12/13 on tidy.</li>
+  <li>Offline suites: 256 timing checks, ≈1.6k verdict-machine checks, ≈22.7k transform-space checks. Trigger deadline 320 ticks; episode cap 300 ticks (45-tick stuck detector under the high-level space, 60 under mid-level); wall-clock budget 3,000 s.</li>
+  <li>Published demonstration: 4 step-in episodes (2 error types × 2 personas), all won, 38–91 ticks. A full sweep would be 13 cases × 2 personas × 2 settings = 40 cells (32 error, 8 restraint).</li>
+</ul>
+<h4><span class="ss">ScreenSim</span></h4>
+<ul>
+  <li>5 apps + launcher, 51+ screens, 20 widget kinds, ~40 verbs; \( \mathrm{IRR} = \{\texttt{bank.history}, \texttt{bank.balance}, \texttt{shop.order}, \texttt{mail.sent}\} \).</li>
+  <li>5 hard tasks (8–18 gestures); 15 designed episodes (3 per task), each mixing an injected error, an announced deviation and a spot-check question; 16 curated long-horizon tasks and 229 manual-derived auto-generated tasks with machine-verified state-diff goals.</li>
+  <li>Task pressure in the curated corpus: an SMS code that expires 30 s after it is requested; a cart hold that lapses after 40 s; a lockout after three wrong PINs; a payment that cannot be recalled.</li>
+  <li>3 forceable error families; 2 benign families (intent, clean); omissions (skip_step, early_commit) excluded by design. Observation tiers sv1/sv2. Personas: guided_novice, brisk_expert, distracted_average.</li>
+</ul>
+
+<footer>
+Source document for the introduction and method. Written from the two engine handoff specifications, the CookSim engine specification and the completed suite-v3 sweep; every number is recomputed from the engines or the trace. Companion pages: <a href="metrics.html">the metrics reference</a>, <a href="suite_v3_results.html">suite v3 results</a>, <a href="paper_spec.html">the CookSim engine specification</a>.
+</footer>
+</main>
+</div>
