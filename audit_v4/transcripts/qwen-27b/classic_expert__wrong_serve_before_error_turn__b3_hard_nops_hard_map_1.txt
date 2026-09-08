@@ -1,0 +1,125 @@
+EPISODE tmp/assist_bench_v4/frames/classic_expert/qwen-27b/b3_hard_nops_hard_map_1.json
+case b3_hard_nops_hard_map_1 | cook persona pv2_classic_expert | assistant qwen-27b | outcome wrong_serve at tick 151 | pace tight | engine 4d15175f2d
+eval: score=0.6822
+
+PLANNED SUB-CASES (in the order the composite arms them; one at a time):
+  [0] ERROR serve_raw (fn serve_raw, kwargs {'component': 'fish'}; anchored at clean tick 68, window [72, 104], ruinous=True)
+  [1] INTENT side_quest: wander the kitchen (trash, a crate, the pass, the plates) instead of working (after 20 clean commands)
+  [2] QUESTION ready_in:fish: "How long until the fish is ready?" (after 22 clean commands)
+  [3] PROACTIVE REQUEST about potato (after 24 clean commands): Give me a shout the moment the potato is done, would you?
+  [4] QUESTION count:visit(fryer): "How many times have I walked over to a fryer so far?" (after 26 clean commands)
+  [5] ERROR add_foreign (fn misidentify_assemble, kwargs {'component': 'fish', 'wrong': 'lemon'}; anchored at clean tick 102, window [121, 153], ruinous=True)
+  [6] ERROR forget_next_step (fn forget_next_step, kwargs {'after': 'assemble(potato)'}; anchored at clean tick 119, window [127, 159], ruinous=False)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_hard_nops_hard_map_1_serve_raw: injected_at=0 released_at=75 reason=max_hold_plate_committed skipped=None archived_at=75 | flags: [] | convinced=False prevented=False
+  b3_hard_nops_hard_map_1_i_side_quest_20: injected_at=110 released_at=134 reason=intent_completed skipped=None archived_at=134
+  b3_hard_nops_hard_map_1_q_ready_in_22: injected_at=135 released_at=None reason=None skipped=None archived_at=151 | asked t135 answered tNone: None | live grade no_answer
+  b3_hard_nops_hard_map_1_p_ready_potato_24: NEVER REACHED (the episode ended before the composite got to it)
+  b3_hard_nops_hard_map_1_q_count_26: NEVER REACHED (the episode ended before the composite got to it)
+  b3_hard_nops_hard_map_1_add_foreign: NEVER REACHED (the episode ended before the composite got to it)
+  b3_hard_nops_hard_map_1_forget_next_step: NEVER REACHED (the episode ended before the composite got to it)
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+=== INJECTED sub b3_hard_nops_hard_map_1_serve_raw (error/serve_raw) ===
+  ACTION t0: go to the potato source [done] (cook read this feedback at t77)
+COOK t0 [move=answer close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t2: pick up [done] (cook read this feedback at t77)
+  ACTION t6: go to the empty cutting board [done] (cook read this feedback at t77)
+  ACTION t8: put down [done] (cook read this feedback at t77)
+  (assistant call issued t0, took 10.584s = 9 ticks)
+ASSISTANT t9 [flag=None]: (silent)
+  ACTION t13: chop [done] (cook read this feedback at t77)
+  ACTION t15: pick up [done] (cook read this feedback at t77)
+  (assistant call issued t10, took 9.423s = 8 ticks)
+ASSISTANT t18 [flag=None]: (silent)
+  ACTION t21: go to the empty fryer [done] (cook read this feedback at t77)
+  ACTION t23: put down [done] (cook read this feedback at t77)
+  (assistant call issued t18, took 9.307s = 8 ticks)
+ASSISTANT t26 [flag=None]: (silent)
+  ACTION t31: go to the potato source [done] (cook read this feedback at t77)
+  ACTION t33: pick up [done] (cook read this feedback at t77)
+  (assistant call issued t26, took 8.846s = 8 ticks)
+ASSISTANT t34 [flag=None]: (silent)
+  ACTION t37: go to the empty cutting board [done] (cook read this feedback at t77)
+  ACTION t39: put down [done] (cook read this feedback at t77)
+  (assistant call issued t34, took 8.234s = 7 ticks)
+ASSISTANT t41 [flag=None]: (silent)
+  ACTION t44: chop [done] (cook read this feedback at t77)
+  ACTION t46: pick up [done] (cook read this feedback at t77)
+  ACTION t52: go to the fryer with the potato [done] (cook read this feedback at t77)
+  (assistant call issued t42, took 11.021s = 10 ticks)
+ASSISTANT t52 [flag=None]: (silent)
+  ACTION t54: put down [done] (cook read this feedback at t77)
+  ACTION t55: go to the fryer with the potato [done] (cook read this feedback at t77)
+  ACTION t57: turn on [done] (cook read this feedback at t77)
+  (assistant call issued t52, took 8.723s = 8 ticks)
+ASSISTANT t60 [flag=None]: (silent)
+  ACTION t65: go to the plates [done] (cook read this feedback at t77)
+  ACTION t67: pick up [done] (cook read this feedback at t77)
+  HEAT [6, 4]: ['potato', 'potato'] COOKED (done)
+  ACTION t73: go to the fish source [done] (cook read this feedback at t77)
+=== RELEASED sub b3_hard_nops_hard_map_1_serve_raw (max_hold_plate_committed) ===
+--- archived sub b3_hard_nops_hard_map_1_serve_raw (injected=True skipped=None) ---
+  ACTION t75: scoop [done] (cook read this feedback at t77)
+  PLATE: +fish (raw)
+  (assistant call issued t60, took 19.583s = 17 ticks)
+ASSISTANT t77 [flag=None]: Fish and one potato are done. Scoop them out before they smoke, then grab a plate and start the second potato in the fryer.
+COOK t77 [move=question_correctness]: That's not right—both potatoes are already done in the central fryer, and the fish hasn't even been cooked yet.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t81: go to the fryer with the potato [done] (cook read this feedback at t90)
+  ACTION t83: scoop [done] (cook read this feedback at t90)
+  PLATE: +potato (cooked)
+  PLATE: +potato (cooked)
+  HEAT [6, 4]: ['potato', 'potato'] removed
+  (assistant call issued t78, took 14.014s = 12 ticks)
+ASSISTANT t90 [flag=None]: You're right, my mistake. The fish is still raw in the crate. Put the plate down on an empty counter, grab the fish, and start it in the fryer. The potatoes are done and waiting.
+COOK t90 [move=reject close]: Actually, I already scooped raw fish onto this plate along with the potatoes, so I have to dump it and remake the whole platter.
+        (plan_update: {"op": "replace", "actions": ["go to the trash", "trash"]})
+  ACTION t91: go to the serving pass [done] (cook read this feedback at t105)
+  ACTION t98: go to the trash [done] (cook read this feedback at t105)
+  ACTION t99: go to the trash [done] (cook read this feedback at t105)
+  ACTION t101: trash [done] (cook read this feedback at t105)
+    [flag verdict] serve_raw -> false_alarm
+  (assistant call issued t90, took 16.808s = 15 ticks)
+ASSISTANT t105 [flag=false_alarm]: Right, that's a serve_raw mistake — raw fish on the plate. Trash the plate, then grab the fish and start it in the fryer. The potatoes are still done and waiting in the fryer, so you'll only need to re-scoop them after the fish is cooked.
+COOK t105 [move=question_correctness close]: No, I already scooped the potatoes out earlier, so the fryers are empty and I have to redo the potatoes from scratch too.
+        (plan_update: {"op": "replace", "actions": ["go to the counter at (3,0)", "put down", "go to fish source 1", "pick up", "go to fryer 1", "put down", "turn on"]})
+  ACTION t108: go to the counter at (3,0) [done] (cook read this feedback at t110)
+=== INJECTED sub b3_hard_nops_hard_map_1_i_side_quest_20 (side_quest/no_error) ===
+  ACTION t110: put down [done] (cook read this feedback at t120)
+COOK t110 [move=answer close]: Give me a second, I'm just setting this down and going to check around the trash, fish crate, pass, and plates first.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t114: go to the trash [done] (cook read this feedback at t120)
+  ACTION t117: go to the fish source [done] (cook read this feedback at t120)
+  (assistant call issued t106, took 15.695s = 14 ticks)
+ASSISTANT t120 [flag=None]: Got it, the fryers are empty. Trash the plate, then chop two potatoes and start them in the fryer, and get the fish going too. Once everything is cooked, scoop fish first, then the potatoes, and serve.
+COOK t120 [move=reject close]: I'm heading over by the pass and the plate stack first, then I'll look at the fryers.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t122: go to the serving pass [done] (cook read this feedback at t135)
+  (assistant call issued t120, took 12.735s = 11 ticks)
+ASSISTANT t131 [flag=None]: (silent)
+  ACTION t133: go to the plates [done] (cook read this feedback at t135)
+=== RELEASED sub b3_hard_nops_hard_map_1_i_side_quest_20 (intent_completed) ===
+--- archived sub b3_hard_nops_hard_map_1_i_side_quest_20 (injected=True skipped=None) ---
+  ACTION t134: go to the fryer with the fish [rejected] (cook read this feedback at t135)
+  ACTION t134: turn on [failed] (cook read this feedback at t135)
+=== INJECTED sub b3_hard_nops_hard_map_1_q_ready_in_22 (qa_probe/no_error) ===
+  ACTION t135: go to the fryer with the potato [rejected] (cook read this feedback at t144)
+  ACTION t135: turn on [failed] (cook read this feedback at t144)
+COOK t135 [move=answer]: How much longer until that fish is done cooking?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t136: go to the plates [done] (cook read this feedback at t144)
+  ACTION t138: pick up [done] (cook read this feedback at t144)
+  ACTION t139: go to the fryer with the fish [rejected] (cook read this feedback at t144)
+  ACTION t139: scoop [orphan-skipped] (cook read this feedback at t144)
+  ACTION t139: go to the fryer with the potato [rejected] (cook read this feedback at t144)
+  ACTION t139: scoop [orphan-skipped] (cook read this feedback at t144)
+  (assistant call issued t132, took 13.923s = 12 ticks)
+ASSISTANT t144 [flag=None]: (silent)
+COOK t144 [move=ask_for_more_guidance]: Can you check roughly how much longer until that fish is ready?
+        (plan_update: {"op": "drop", "actions": []})
+--- archived sub b3_hard_nops_hard_map_1_q_ready_in_22 (injected=True skipped=None) ---
+
+END: outcome wrong_serve at tick 151; failed_at=delivery

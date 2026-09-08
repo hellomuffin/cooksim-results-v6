@@ -1,0 +1,56 @@
+EPISODE tmp/assist_bench_v4/frames/classic_expert/qwen-27b/b3_easy_nops_hard_map_2.json
+case b3_easy_nops_hard_map_2 | cook persona pv2_classic_expert | assistant qwen-27b | outcome won at tick 60 | pace tight | engine 4d15175f2d
+eval: score=0.7639
+
+PLANNED SUB-CASES (in the order the composite arms them; one at a time):
+  [0] QUESTION next_step:plan: "What is my next step?" (after 5 clean commands)
+  [1] QUESTION empty_boards:board: "How many cutting boards are free right now?" (after 7 clean commands)
+  [2] ERROR omit_subgoal (fn omit_subgoal, kwargs {'sid': 'assemble(tomato)'}; anchored at clean tick 38, window [53, 85], ruinous=True)
+  [3] INTENT side_quest: wander the kitchen (trash, a crate, the pass, the plates) instead of working (after 9 clean commands)
+  [4] ERROR forget_next_step (fn forget_next_step, kwargs {'after': 'assemble(cheese)'}; anchored at clean tick 53, window [61, 93], ruinous=False)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_easy_nops_hard_map_2_q_next_step_5: injected_at=31 released_at=47 reason=question_answered skipped=None archived_at=48 | asked t31 answered t47: Good, you've got a plate. Now scoop the chopped tomato onto it first, then the raw cheese, then serve. | live grade ungradable
+  b3_easy_nops_hard_map_2_q_empty_boards_7: injected_at=None released_at=None reason=None skipped=None archived_at=60 | asked tNone answered tNone: None | live grade no_answer
+  b3_easy_nops_hard_map_2_omit_subgoal: NEVER REACHED (the episode ended before the composite got to it)
+  b3_easy_nops_hard_map_2_i_side_quest_9: NEVER REACHED (the episode ended before the composite got to it)
+  b3_easy_nops_hard_map_2_forget_next_step: NEVER REACHED (the episode ended before the composite got to it)
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+  (assistant call issued t0, took 4.738s = 4 ticks)
+ASSISTANT t4 [flag=None]: (silent)
+  (assistant call issued t4, took 5.695s = 5 ticks)
+ASSISTANT t9 [flag=None]: (silent)
+  (assistant call issued t10, took 6.22s = 6 ticks)
+ASSISTANT t16 [flag=None]: (silent)
+  ACTION t19: go to the tomato source [done] (cook read this feedback at t31)
+  ACTION t21: pick up [done] (cook read this feedback at t31)
+  ACTION t23: go to the empty cutting board [done] (cook read this feedback at t31)
+  (assistant call issued t16, took 7.965s = 7 ticks)
+ASSISTANT t23 [flag=None]: (silent)
+  ACTION t25: put down [done] (cook read this feedback at t31)
+  ACTION t30: chop [done] (cook read this feedback at t31)
+  (assistant call issued t24, took 6.356s = 6 ticks)
+ASSISTANT t30 [flag=None]: (silent)
+=== INJECTED sub b3_easy_nops_hard_map_2_q_next_step_5 (qa_probe/no_error) ===
+COOK t31 [move=ask_for_more_guidance]: What's my next step here?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t35: go to the plates [done] (cook read this feedback at t47)
+  ACTION t37: pick up [done] (cook read this feedback at t47)
+  (assistant call issued t30, took 9.416s = 8 ticks)
+ASSISTANT t38 [flag=None]: (silent)
+  ACTION t39: go to the cutting board with the tomato [done] (cook read this feedback at t47)
+  ACTION t41: scoop [done] (cook read this feedback at t47)
+  PLATE: +tomato (chopped)
+=== RELEASED sub b3_easy_nops_hard_map_2_q_next_step_5 (question_answered) ===
+  (assistant call issued t38, took 10.011s = 9 ticks)
+ASSISTANT t47 [flag=None]: Good, you've got a plate. Now scoop the chopped tomato onto it first, then the raw cheese, then serve.
+COOK t47 [move=question_correctness close]: I've already got the chopped tomato on my plate, so I'm heading to get the raw cheese from the bottom crate now.
+        (plan_update: {"op": "drop", "actions": []})
+--- archived sub b3_easy_nops_hard_map_2_q_next_step_5 (injected=True skipped=None) ---
+  PLATE: +cheese (raw)
+  (assistant call issued t48, took 10.253s = 9 ticks)
+ASSISTANT t57 [flag=None]: (silent)
+--- archived sub b3_easy_nops_hard_map_2_q_empty_boards_7 (injected=False skipped=None) ---
+
+END: outcome won at tick 60; failed_at=None

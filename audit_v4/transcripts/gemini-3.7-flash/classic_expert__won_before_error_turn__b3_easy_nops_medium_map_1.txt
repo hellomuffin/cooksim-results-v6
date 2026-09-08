@@ -1,0 +1,112 @@
+EPISODE tmp/assist_bench_v4/frames/classic_expert/gemini-3.7-flash/b3_easy_nops_medium_map_1.json
+case b3_easy_nops_medium_map_1 | cook persona pv2_classic_expert | assistant gemini-3.7-flash | outcome won at tick 79 | pace tight | engine 4d15175f2d
+eval: score=0.6763
+
+PLANNED SUB-CASES (in the order the composite arms them; one at a time):
+  [0] INTENT side_quest: wander the kitchen (trash, a crate, the pass, the plates) instead of working (after 5 clean commands)
+  [1] ERROR add_foreign (fn misidentify_assemble, kwargs {'component': 'tomato', 'wrong': 'cheese'}; anchored at clean tick 24, window [29, 61], ruinous=True)
+  [2] QUESTION assistant_said:plate: "What did you tell me about the plate earlier?" (after 9 clean commands)
+  [3] QUESTION happened:visit(pot): "Have I been over to the pot at any point so far?" (after 9 clean commands)
+  [4] ERROR forget_next_step (fn forget_next_step, kwargs {'after': 'assemble(tomato)'}; anchored at clean tick 31, window [39, 71], ruinous=False)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_easy_nops_medium_map_1_i_side_quest_5: injected_at=18 released_at=35 reason=intent_completed skipped=None archived_at=35
+  b3_easy_nops_medium_map_1_add_foreign: injected_at=36 released_at=42 reason=max_hold_plate_committed skipped=None archived_at=42 | flags: [] | convinced=False prevented=False
+  b3_easy_nops_medium_map_1_q_assistant_said_9: injected_at=66 released_at=71 reason=question_answered skipped=None archived_at=72 | asked t66 answered t71: Plating order is chopped tomato first, then raw cheese. Now scoop the cheese onto the plate. | live grade ungradable
+  b3_easy_nops_medium_map_1_q_happened_9: injected_at=None released_at=None reason=None skipped=None archived_at=79 | asked tNone answered tNone: None | live grade no_answer
+  b3_easy_nops_medium_map_1_forget_next_step: NEVER REACHED (the episode ended before the composite got to it)
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+  ACTION t4: go to the tomato source [done] (cook read this feedback at t18)
+  (assistant call issued t0, took 3.637s = 4 ticks)
+ASSISTANT t4 [flag=None]: (silent)
+  ACTION t6: pick up [done] (cook read this feedback at t18)
+  (assistant call issued t4, took 2.079s = 2 ticks)
+ASSISTANT t6 [flag=None]: (silent)
+  (assistant call issued t6, took 3.249s = 3 ticks)
+ASSISTANT t9 [flag=None]: (silent)
+  ACTION t10: go to the empty cutting board [done] (cook read this feedback at t18)
+  ACTION t12: put down [done] (cook read this feedback at t18)
+  (assistant call issued t10, took 2.658s = 3 ticks)
+ASSISTANT t13 [flag=None]: (silent)
+  (assistant call issued t14, took 2.262s = 2 ticks)
+ASSISTANT t16 [flag=None]: (silent)
+  ACTION t17: chop [done] (cook read this feedback at t18)
+=== INJECTED sub b3_easy_nops_medium_map_1_i_side_quest_5 (side_quest/no_error) ===
+  (assistant call issued t16, took 2.3s = 2 ticks)
+ASSISTANT t18 [flag=None]: (silent)
+COOK t18 [move=answer close]: Give me a second, I'm going to take a quick walk by the trash, tomato crate, and pass before I grab a plate.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t19: go to the trash [done] (cook read this feedback at t36)
+  (assistant call issued t18, took 3.153s = 3 ticks)
+ASSISTANT t21 [flag=None]: (silent)
+  ACTION t23: go to the tomato source [done] (cook read this feedback at t36)
+  (assistant call issued t22, took 2.714s = 3 ticks)
+ASSISTANT t25 [flag=None]: (silent)
+  ACTION t29: go to the serving pass [done] (cook read this feedback at t36)
+  (assistant call issued t26, took 4.396s = 4 ticks)
+ASSISTANT t30 [flag=None]: (silent)
+  (assistant call issued t30, took 2.463s = 3 ticks)
+ASSISTANT t33 [flag=None]: (silent)
+  ACTION t34: go to the plates [done] (cook read this feedback at t36)
+=== RELEASED sub b3_easy_nops_medium_map_1_i_side_quest_5 (intent_completed) ===
+--- archived sub b3_easy_nops_medium_map_1_i_side_quest_5 (injected=True skipped=None) ---
+=== INJECTED sub b3_easy_nops_medium_map_1_add_foreign (error/add_foreign) ===
+  ACTION t36: pick up [done] (cook read this feedback at t45)
+COOK t36 [move=answer close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t34, took 2.811s = 3 ticks)
+ASSISTANT t37 [flag=None]: (silent)
+  ACTION t40: go to the cheese source [done] (cook read this feedback at t45)
+  (assistant call issued t38, took 3.513s = 3 ticks)
+ASSISTANT t41 [flag=None]: (silent)
+=== RELEASED sub b3_easy_nops_medium_map_1_add_foreign (max_hold_plate_committed) ===
+--- archived sub b3_easy_nops_medium_map_1_add_foreign (injected=True skipped=None) ---
+  ACTION t42: scoop [done] (cook read this feedback at t45)
+  PLATE: +cheese (raw)
+  ACTION t43: go to the cheese source [done] (cook read this feedback at t45)
+  ACTION t45: scoop [done] (cook read this feedback at t60)
+  PLATE: +cheese (raw)
+    [flag verdict] wrong_order -> false_alarm
+  (assistant call issued t42, took 2.818s = 3 ticks)
+ASSISTANT t45 [flag=false_alarm]: You plated cheese first, but Caprese requires chopped tomato plated before cheese. Trash the plate, take a clean plate, and scoop the tomato first.
+COOK t45 [move=accept close]: Ah, you're right, I grabbed the cheese out of order—dumping this and grabbing the tomato first.
+        (plan_update: {"op": "replace", "actions": ["go to the trash", "trash", "go to the plates", "pick up", "go to board 2", "scoop", "go to cheese source 2", "scoop", "go to the serving pass", "serve"]})
+  (assistant call issued t46, took 1.906s = 2 ticks)
+ASSISTANT t48 [flag=None]: (silent)
+  (assistant call issued t48, took 2.517s = 3 ticks)
+ASSISTANT t51 [flag=None]: (silent)
+  ACTION t52: go to the trash [done] (cook read this feedback at t60)
+  ACTION t53: go to the trash [done] (cook read this feedback at t60)
+  ACTION t55: trash [done] (cook read this feedback at t60)
+  (assistant call issued t52, took 4.087s = 4 ticks)
+ASSISTANT t56 [flag=None]: (silent)
+  ACTION t59: go to the plates [done] (cook read this feedback at t60)
+  (assistant call issued t56, took 3.19s = 3 ticks)
+ASSISTANT t59 [flag=None]: (silent)
+COOK t60 [move=accept close]: 
+        (plan_update: {"op": "append", "actions": ["go to board 2", "scoop", "go to cheese source 2", "scoop", "go to the serving pass", "serve"]})
+  ACTION t64: go to board 2 [done] (cook read this feedback at t66)
+  (assistant call issued t60, took 3.922s = 4 ticks)
+ASSISTANT t64 [flag=None]: (silent)
+=== INJECTED sub b3_easy_nops_medium_map_1_q_assistant_said_9 (qa_probe/no_error) ===
+  ACTION t66: scoop [done] (cook read this feedback at t71)
+  PLATE: +tomato (chopped)
+COOK t66 [move=ask_for_more_guidance]: Wait a second, what was it you told me about the plate earlier?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t64, took 2.497s = 3 ticks)
+ASSISTANT t67 [flag=None]: (silent)
+  ACTION t68: go to the cheese source [done] (cook read this feedback at t71)
+  ACTION t70: scoop [done] (cook read this feedback at t71)
+  PLATE: +cheese (raw)
+=== RELEASED sub b3_easy_nops_medium_map_1_q_assistant_said_9 (question_answered) ===
+  (assistant call issued t68, took 2.953s = 3 ticks)
+ASSISTANT t71 [flag=None]: Plating order is chopped tomato first, then raw cheese. Now scoop the cheese onto the plate.
+COOK t71 [move=accept close]: I've got the chopped tomato and raw cheese on the plate already, so I'm just taking it to the pass now.
+        (plan_update: {"op": "drop", "actions": []})
+--- archived sub b3_easy_nops_medium_map_1_q_assistant_said_9 (injected=True skipped=None) ---
+  (assistant call issued t72, took 2.591s = 3 ticks)
+ASSISTANT t75 [flag=None]: (silent)
+--- archived sub b3_easy_nops_medium_map_1_q_happened_9 (injected=False skipped=None) ---
+
+END: outcome won at tick 79; failed_at=None

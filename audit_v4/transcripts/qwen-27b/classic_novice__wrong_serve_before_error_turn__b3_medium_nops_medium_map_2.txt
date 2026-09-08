@@ -1,0 +1,58 @@
+EPISODE tmp/assist_bench_v4/frames/classic_novice/qwen-27b/b3_medium_nops_medium_map_2.json
+case b3_medium_nops_medium_map_2 | cook persona pv2_classic_novice | assistant qwen-27b | outcome wrong_serve at tick 45 | pace tight | engine 4d15175f2d
+eval: score=0.6155
+
+PLANNED SUB-CASES (in the order the composite arms them; one at a time):
+  [0] ERROR mis_prep (fn mis_prep, kwargs {'component': 'meat', 'wrong': 'lettuce'}; anchored at clean tick 0, window [8, 40], ruinous=True)
+  [1] QUESTION past_done:heat: "Is anything on the heat already done and just sitting there?" (after 5 clean commands)
+  [2] ERROR wrong_order (fn wrong_order, kwargs {'a': 'meat', 'b': 'cheese'}; anchored at clean tick 27, window [41, 73], ruinous=True)
+  [3] QUESTION order:prep(meat)|assemble(cheese): "Did I chop the meat before or after I put the cheese on the plate?" (after 11 clean commands)
+  [4] INTENT plan_change: add an extra helping of cheese on top before serving (after 13 clean commands)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_medium_nops_medium_map_2_mis_prep: injected_at=0 released_at=15 reason=max_hold_deviated_block_executed skipped=None archived_at=15 | flags: [] | convinced=False prevented=False
+  b3_medium_nops_medium_map_2_q_past_done_5: injected_at=None released_at=None reason=None skipped=None archived_at=45 | asked tNone answered tNone: None | live grade no_answer
+  b3_medium_nops_medium_map_2_wrong_order: NEVER REACHED (the episode ended before the composite got to it)
+  b3_medium_nops_medium_map_2_q_order_11: NEVER REACHED (the episode ended before the composite got to it)
+  b3_medium_nops_medium_map_2_i_plan_change_13: NEVER REACHED (the episode ended before the composite got to it)
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+=== INJECTED sub b3_medium_nops_medium_map_2_mis_prep (error/mis_prep) ===
+COOK t0 [move=answer close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t2: go to the lettuce source [done] (cook read this feedback at t7)
+  ACTION t4: pick up [done] (cook read this feedback at t7)
+  ACTION t7: go to the cutting board [done] (cook read this feedback at t17)
+  (assistant call issued t0, took 7.79s = 7 ticks)
+ASSISTANT t7 [flag=None]: Got it — cheeseburger: raw bun, cooked meat, raw cheese, plated in that order. I'll watch the meat so it doesn't burn. Take your time, safe first.
+COOK t7 [move=answer]: Sounds good, I'm heading over to the cutting board by the top wall to chop this lettuce first.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t9: put down [done] (cook read this feedback at t17)
+  ACTION t14: chop [done] (cook read this feedback at t17)
+=== RELEASED sub b3_medium_nops_medium_map_2_mis_prep (max_hold_deviated_block_executed) ===
+--- archived sub b3_medium_nops_medium_map_2_mis_prep (injected=True skipped=None) ---
+    [flag verdict] mis_prep -> false_alarm
+  (assistant call issued t8, took 10.574s = 9 ticks)
+ASSISTANT t17 [flag=false_alarm]: Hold on — lettuce isn't in this cheeseburger (bun, meat, cheese only). Chopping it would be wasted time. Drop the lettuce and head to the pan to start the meat cooking, that's the long pole.
+COOK t17 [move=ask_for_more_guidance]: Oh, good catch! Which pan should I use to start cooking the meat?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t19: go to the plates [done] (cook read this feedback at t27)
+  ACTION t21: pick up [done] (cook read this feedback at t27)
+  ACTION t24: go to the bun source [done] (cook read this feedback at t27)
+  ACTION t26: scoop [done] (cook read this feedback at t27)
+  PLATE: +bun (raw)
+  ACTION t27: go to the pan with the meat [rejected] (cook read this feedback at t38)
+  ACTION t27: scoop [orphan-skipped] (cook read this feedback at t38)
+  (assistant call issued t18, took 10.294s = 9 ticks)
+ASSISTANT t27 [flag=None]: Use the pan in the middle of the kitchen — the one with the red meat already sitting in it. Just turn it on and let it cook; I'll keep an eye on the progress bar so it doesn't smoke.
+COOK t27 [move=question_correctness]: Wait, I'm looking at that middle pan and it looks completely empty to me, so should I go grab raw meat from the crate first, and what should I do with this plate?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t36: go to the cheese source [done] (cook read this feedback at t38)
+  PLATE: +cheese (raw)
+  (assistant call issued t28, took 11.543s = 10 ticks)
+ASSISTANT t38 [flag=None]: You're right, that middle pan is empty — my mistake. Keep the plate you're holding (you've already put the bun on it, which is the correct first layer). Now go to the meat crate by the bottom-right wall, pick up a raw meat, carry it to the middle pan, and turn the pan on to start cooking. Don't set the plate down yet — just hold it while you do this.
+COOK t38 [move=question_correctness]: Wait, my hands are holding the plate so I can't grab raw meat, and I already put cheese on top of the bun—should I trash this plate or park it somewhere?
+        (plan_update: {"op": "drop", "actions": []})
+--- archived sub b3_medium_nops_medium_map_2_q_past_done_5 (injected=False skipped=None) ---
+
+END: outcome wrong_serve at tick 45; failed_at=delivery

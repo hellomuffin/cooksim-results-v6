@@ -1,0 +1,56 @@
+EPISODE tmp/assist_bench_v4/frames/classic_novice/museglimmer/b3_medium_nops_medium_map_3.json
+case b3_medium_nops_medium_map_3 | cook persona pv2_classic_novice | assistant museglimmer | outcome wrong_serve at tick 48 | pace tight | engine 4d15175f2d
+eval: score=0.6085
+
+PLANNED SUB-CASES (in the order the composite arms them; one at a time):
+  [0] ERROR mis_prep (fn mis_prep, kwargs {'component': 'meat', 'wrong': 'cheese'}; anchored at clean tick 0, window [11, 43], ruinous=True)
+  [1] QUESTION past_done:heat: "Is anything on the heat already done and just sitting there?" (after 5 clean commands)
+  [2] ERROR leave_unattended (fn leave_unattended, kwargs {'component': 'meat', 'loops': 3}; anchored at clean tick 27, window [61, 110], ruinous=True)
+  [3] QUESTION happened:visit(pot): "Have I been over to the pot at any point so far?" (after 11 clean commands)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_medium_nops_medium_map_3_mis_prep: injected_at=0 released_at=18 reason=max_hold_deviated_block_executed skipped=None archived_at=18 | flags: [] | convinced=False prevented=False
+  b3_medium_nops_medium_map_3_q_past_done_5: injected_at=None released_at=None reason=None skipped=None archived_at=48 | asked tNone answered tNone: None | live grade no_answer
+  b3_medium_nops_medium_map_3_leave_unattended: NEVER REACHED (the episode ended before the composite got to it)
+  b3_medium_nops_medium_map_3_q_happened_11: NEVER REACHED (the episode ended before the composite got to it)
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+=== INJECTED sub b3_medium_nops_medium_map_3_mis_prep (error/mis_prep) ===
+COOK t0 [move=answer close]: I'm just heading over to grab some cheese from the bottom crate to chop it up first.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t3: go to the cheese source [done] (cook read this feedback at t4)
+  (assistant call issued t0, took 4.057s = 4 ticks)
+ASSISTANT t4 [flag=None]: Cheese for this burger is raw, so don't chop it. The order on the plate must be bun first, then meat, then cheese. First get a clean plate from the plate stack, then grab a raw bun, then start cooking the meat in the pan. Leave the cheese unchopped.
+COOK t4 [move=ask_for_more_guidance]: Oh, I was just about to grab some cheese to chop it up on the board, but which pan should I use to cook the meat first?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t5: pick up [done] (cook read this feedback at t7)
+  (assistant call issued t4, took 3.413s = 3 ticks)
+ASSISTANT t7 [flag=None]: You're at the cheese crate by the right wall, and you were about to chop cheese. Don't chop cheese — it stays raw for the burger. You also don't need cheese yet. First get a clean plate from the plate stack on the left wall, then grab a raw bun, and start cooking the meat in the pan. For the meat, use any pan — the pan on the left side of the kitchen or the pan on the right side of the kitchen both work; the left pan is empty right now. Don't chop the cheese and don't cook it.
+COOK t7 [move=ask_for_more_guidance]: Wait, the plate stack is over on the right, but right now I'm already walking up to the cutting board with this cheese—should I just set it down here first?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t10: go to the cutting board [done] (cook read this feedback at t47)
+  (assistant call issued t8, took 2.372s = 2 ticks)
+ASSISTANT t10 [flag=None]: (silent)
+  ACTION t12: put down [done] (cook read this feedback at t47)
+  ACTION t17: chop [done] (cook read this feedback at t47)
+=== RELEASED sub b3_medium_nops_medium_map_3_mis_prep (max_hold_deviated_block_executed) ===
+--- archived sub b3_medium_nops_medium_map_3_mis_prep (injected=True skipped=None) ---
+  ACTION t22: go to the plates [done] (cook read this feedback at t47)
+  ACTION t24: pick up [done] (cook read this feedback at t47)
+  ACTION t27: go to the bun source [done] (cook read this feedback at t47)
+  ACTION t29: scoop [done] (cook read this feedback at t47)
+  PLATE: +bun (raw)
+  ACTION t30: go to the pan with the meat [rejected] (cook read this feedback at t47)
+  ACTION t30: scoop [orphan-skipped] (cook read this feedback at t47)
+  ACTION t39: go to the cheese source [done] (cook read this feedback at t47)
+  ACTION t41: scoop [done] (cook read this feedback at t47)
+  PLATE: +cheese (raw)
+  ACTION t46: go to the serving pass [done] (cook read this feedback at t47)
+    [flag verdict] mis_prep -> false_alarm
+  (assistant call issued t10, took 43.974s = 37 ticks)
+ASSISTANT t47 [flag=false_alarm]: Stop with the cheese. Cheese stays raw for this burger, so don’t chop it and don’t bring it to a cutting board. You’ve got a piece sitting on the counter by the cheese crate – leave it there. First step is a clean plate: go to the plate stack on the left wall, pick up a plate, and hold it. After that grab a raw bun from the bun crate and then start cooking the meat in a pan – the left pan is empty. Do not chop or cook the cheese.
+COOK t47 [move=ask_for_more_guidance]: I tried to get meat from the pan earlier but there wasn't any cooking, so right now I just have a bun and cheese on this plate—what should I do with it?
+        (plan_update: {"op": "drop", "actions": []})
+--- archived sub b3_medium_nops_medium_map_3_q_past_done_5 (injected=False skipped=None) ---
+
+END: outcome wrong_serve at tick 48; failed_at=delivery

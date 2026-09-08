@@ -1,0 +1,70 @@
+EPISODE tmp/assist_bench_v4/frames/classic_novice/qwen-27b/b3_medium_nops_medium_map_4.json
+case b3_medium_nops_medium_map_4 | cook persona pv2_classic_novice | assistant qwen-27b | outcome won at tick 52 | pace tight | engine 4d15175f2d
+eval: score=0.7509
+
+PLANNED SUB-CASES (in the order the composite arms them; one at a time):
+  [0] QUESTION past_done:heat: "Is anything on the heat already done and just sitting there?" (after 5 clean commands)
+  [1] QUESTION ready_in:meat: "How long until the meat is ready?" (after 5 clean commands)
+  [2] PROACTIVE REQUEST about meat (after 5 clean commands): Give me a shout the moment the meat is done, would you?
+  [3] ERROR leave_unattended (fn leave_unattended, kwargs {'component': 'meat', 'loops': 2}; anchored at clean tick 27, window [61, 110], ruinous=True)
+  [4] ERROR forget_next_step (fn forget_next_step, kwargs {'after': 'assemble(meat)'}; anchored at clean tick 40, window [48, 80], ruinous=False)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_medium_nops_medium_map_4_q_past_done_5: injected_at=12 released_at=15 reason=question_answered skipped=None archived_at=16 | asked t12 answered t15: Good — meat's on the pan now. I'll keep an eye on that progress bar so it doesn't smoke. Next you'll want a plate, then the raw bun on first. | live grade ungradable
+  b3_medium_nops_medium_map_4_q_ready_in_5: injected_at=17 released_at=24 reason=question_answered skipped=None archived_at=25 | asked t17 answered t24: No — the only thing on the heat is the meat in the pan, and its bar isn't full yet, so nothing's finished or smoking. Keep it there and go grab a plate; the bun | live grade ungradable
+  b3_medium_nops_medium_map_4_p_ready_meat_5: injected_at=None released_at=None reason=None skipped=None archived_at=52 | asked tNone answered tNone: None | live grade no_answer
+  b3_medium_nops_medium_map_4_leave_unattended: NEVER REACHED (the episode ended before the composite got to it)
+  b3_medium_nops_medium_map_4_forget_next_step: NEVER REACHED (the episode ended before the composite got to it)
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+  ACTION t3: go to the meat source [done] (cook read this feedback at t8)
+  ACTION t5: pick up [done] (cook read this feedback at t8)
+  ACTION t7: go to the empty pan [done] (cook read this feedback at t8)
+  (assistant call issued t0, took 8.452s = 8 ticks)
+ASSISTANT t8 [flag=None]: Got it — cheeseburger: raw bun, cooked meat, raw cheese, plated in that order. I'll watch the meat so it doesn't burn. Take your time, safe first.
+COOK t8 [move=accept close]: Sounds good, putting the meat on the heat now.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t9: put down [done] (cook read this feedback at t12)
+  ACTION t11: turn on [done] (cook read this feedback at t12)
+=== INJECTED sub b3_medium_nops_medium_map_4_q_past_done_5 (qa_probe/no_error) ===
+COOK t12 [move=ask_for_more_guidance]: Hey, is there anything on the heat that's already finished cooking and just sitting there?
+        (plan_update: {"op": "drop", "actions": []})
+=== RELEASED sub b3_medium_nops_medium_map_4_q_past_done_5 (question_answered) ===
+  (assistant call issued t8, took 8.331s = 7 ticks)
+ASSISTANT t15 [flag=None]: Good — meat's on the pan now. I'll keep an eye on that progress bar so it doesn't smoke. Next you'll want a plate, then the raw bun on first.
+COOK t15 [move=ask_for_more_guidance]: Wait, is there anything sitting on the heat that's already finished cooking right now?
+        (plan_update: {"op": "drop", "actions": []})
+--- archived sub b3_medium_nops_medium_map_4_q_past_done_5 (injected=True skipped=None) ---
+=== INJECTED sub b3_medium_nops_medium_map_4_q_ready_in_5 (qa_probe/no_error) ===
+COOK t17 [move=ask_for_more_guidance]: About how much longer do you think the meat needs on the heat before it's ready?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t19: go to the plates [done] (cook read this feedback at t24)
+  ACTION t20: go to the plates [done] (cook read this feedback at t24)
+  ACTION t22: pick up [done] (cook read this feedback at t24)
+=== RELEASED sub b3_medium_nops_medium_map_4_q_ready_in_5 (question_answered) ===
+  (assistant call issued t16, took 9.403s = 8 ticks)
+ASSISTANT t24 [flag=None]: No — the only thing on the heat is the meat in the pan, and its bar isn't full yet, so nothing's finished or smoking. Keep it there and go grab a plate; the bun goes on first.
+COOK t24 [move=ask_for_more_guidance]: How long until the meat is ready?
+        (plan_update: {"op": "drop", "actions": []})
+--- archived sub b3_medium_nops_medium_map_4_q_ready_in_5 (injected=True skipped=None) ---
+  ACTION t25: go to the bun source [done] (cook read this feedback at t32)
+  HEAT [0, 3]: ['meat'] COOKED (done)
+  ACTION t27: scoop [done] (cook read this feedback at t32)
+  PLATE: +bun (raw)
+  (assistant call issued t24, took 8.686s = 8 ticks)
+ASSISTANT t32 [flag=None]: The meat's bar is still filling — give it a few more ticks, it's not done yet. You've got the plate now, so head to the bun crate and scoop the raw bun on first while the meat finishes.
+COOK t32 [move=accept close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t38: go to the pan with the meat [done] (cook read this feedback at t44)
+  ACTION t40: scoop [done] (cook read this feedback at t44)
+  PLATE: +meat (cooked)
+  HEAT [0, 3]: ['meat'] removed
+  ACTION t43: go to the cheese source [done] (cook read this feedback at t44)
+  (assistant call issued t32, took 13.879s = 12 ticks)
+ASSISTANT t44 [flag=None]: Bun's on the plate — good. Now head to the pan with the meat and check its progress bar; once it's full, scoop the cooked meat on next.
+COOK t44 [move=accept close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  PLATE: +cheese (raw)
+--- archived sub b3_medium_nops_medium_map_4_p_ready_meat_5 (injected=False skipped=None) ---
+
+END: outcome won at tick 52; failed_at=None

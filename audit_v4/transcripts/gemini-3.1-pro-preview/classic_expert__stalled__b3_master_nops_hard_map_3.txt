@@ -1,0 +1,65 @@
+EPISODE tmp/assist_bench_v4/frames/classic_expert/gemini-3.1-pro-preview/b3_master_nops_hard_map_3.json
+case b3_master_nops_hard_map_3 | cook persona pv2_classic_expert | assistant gemini-3.1-pro-preview | outcome timeout at tick 109 | pace tight | engine 4d15175f2d
+eval: score=0.806
+
+PLANNED SUB-CASES (in the order the composite arms them; one at a time):
+  [0] ERROR mis_prep (fn mis_prep, kwargs {'component': 'rice', 'wrong': 'steak'}; anchored at clean tick 0, window [19, 51], ruinous=True)
+  [1] QUESTION ready_in:steak: "How long until the steak is ready?" (after 26 clean commands)
+  [2] PROACTIVE REQUEST about steak (after 26 clean commands): Give me a shout the moment the steak is done, would you?
+  [3] ERROR wrong_order (fn wrong_order, kwargs {'a': 'rice', 'b': 'lettuce'}; anchored at clean tick 176, window [204, 236], ruinous=True)
+  [4] ERROR add_foreign (fn misidentify_assemble, kwargs {'component': 'tomato', 'wrong': 'meat'}; anchored at clean tick 200, window [223, 255], ruinous=True)
+  [5] QUESTION after_ref:tortilla: "The thing I put on right after the tortilla — what is it, and is it done?" (after 38 clean commands)
+  [6] ERROR forget_next_step (fn forget_next_step, kwargs {'after': 'assemble(lettuce)'}; anchored at clean tick 221, window [229, 261], ruinous=False)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_master_nops_hard_map_3_mis_prep: injected_at=0 released_at=44 reason=None skipped=None archived_at=45 | flags: [(44, 'repeat_step', 'alias_in_window')] | convinced=True prevented=False
+  b3_master_nops_hard_map_3_q_ready_in_26: injected_at=None released_at=None reason=None skipped=None archived_at=109 | asked tNone answered tNone: None | live grade no_answer
+  b3_master_nops_hard_map_3_p_ready_steak_26: NEVER REACHED (the episode ended before the composite got to it)
+  b3_master_nops_hard_map_3_wrong_order: NEVER REACHED (the episode ended before the composite got to it)
+  b3_master_nops_hard_map_3_add_foreign: NEVER REACHED (the episode ended before the composite got to it)
+  b3_master_nops_hard_map_3_q_after_ref_38: NEVER REACHED (the episode ended before the composite got to it)
+  b3_master_nops_hard_map_3_forget_next_step: NEVER REACHED (the episode ended before the composite got to it)
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+=== INJECTED sub b3_master_nops_hard_map_3_mis_prep (error/mis_prep) ===
+COOK t0 [move=answer close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t6: go to the steak source [done] (cook read this feedback at t44)
+  (assistant call issued t0, took 6.195s = 6 ticks)
+ASSISTANT t6 [flag=None]: (silent)
+  ACTION t8: pick up [done] (cook read this feedback at t44)
+  (assistant call issued t6, took 12.372s = 11 ticks)
+ASSISTANT t17 [flag=None]: (silent)
+  ACTION t18: go to the cutting board [done] (cook read this feedback at t44)
+  ACTION t20: put down [done] (cook read this feedback at t44)
+  ACTION t25: chop [done] (cook read this feedback at t44)
+  ACTION t30: go to the steak source [done] (cook read this feedback at t44)
+  (assistant call issued t18, took 14.745s = 13 ticks)
+ASSISTANT t31 [flag=None]: (silent)
+  ACTION t32: pick up [done] (cook read this feedback at t44)
+  ACTION t36: go to the empty cutting board [done] (cook read this feedback at t44)
+  ACTION t38: put down [done] (cook read this feedback at t44)
+  ACTION t43: chop [done] (cook read this feedback at t44)
+=== RELEASED sub b3_master_nops_hard_map_3_mis_prep (None) ===
+    [flag verdict] repeat_step -> alias_in_window
+  (assistant call issued t32, took 13.766s = 12 ticks)
+ASSISTANT t44 [flag=alias_in_window]: You already chopped the steak! It's on the cutting board. You don't need to grab more raw steak.
+COOK t44 [move=accept close]: Ah, looking at the cutting board now, you're right, it's already prepped.
+        (plan_update: {"op": "drop", "actions": []})
+--- archived sub b3_master_nops_hard_map_3_mis_prep (injected=True skipped=None) ---
+  ACTION t45: pick up [done] (cook read this feedback at t63)
+  (assistant call issued t44, took 12.289s = 11 ticks)
+ASSISTANT t55 [flag=None]: (silent)
+  ACTION t56: go to the empty pan [done] (cook read this feedback at t63)
+  ACTION t58: put down [done] (cook read this feedback at t63)
+    [flag verdict] mis_prep -> false_alarm
+  (assistant call issued t56, took 7.268s = 7 ticks)
+ASSISTANT t63 [flag=false_alarm]: You just put raw steak into the pan! Steak needs to be chopped before it can be cooked. Grab the chopped steak from the cutting board instead.
+COOK t63 [move=accept close]: Good catch, I see raw steak sitting in the pan and the chopped piece over on the board—I'll grab the chopped one and use the bottom pan instead.
+        (plan_update: {"op": "replace", "actions": ["go to board 3", "pick up", "go to pan 2", "put down", "turn on", "go to the rice source", "pick up", "go to the empty pot", "put down", "turn on", "go to the tomato source", "pick up", "go to the empty cutting board", "put down", "chop", "go to the lettuce source", "pi)
+  (assistant call issued t64, took 11.211s = 10 ticks)
+ASSISTANT t74 [flag=None]: (silent)
+  ~~ IDLE t77-t108 (31 ticks, pos (4, 7) holding {"kind": "ingredient", "name": "steak", "state": "chopped"}) ~~
+--- archived sub b3_master_nops_hard_map_3_q_ready_in_26 (injected=False skipped=None) ---
+
+END: outcome timeout at tick 109; failed_at=delivery

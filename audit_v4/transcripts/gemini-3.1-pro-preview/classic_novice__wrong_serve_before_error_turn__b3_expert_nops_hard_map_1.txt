@@ -1,0 +1,56 @@
+EPISODE tmp/assist_bench_v4/frames/classic_novice/gemini-3.1-pro-preview/b3_expert_nops_hard_map_1.json
+case b3_expert_nops_hard_map_1 | cook persona pv2_classic_novice | assistant gemini-3.1-pro-preview | outcome wrong_serve at tick 136 | pace tight | engine 4d15175f2d
+eval: score=0.684
+
+PLANNED SUB-CASES (in the order the composite arms them; one at a time):
+  [0] ERROR serve_raw (fn serve_raw, kwargs {'component': 'steak'}; anchored at clean tick 91, window [95, 127], ruinous=True)
+  [1] INTENT side_quest: chop mushroom that nobody ordered (after 8 clean commands)
+  [2] PROACTIVE REQUEST about potato (after 28 clean commands): Give me a shout the moment the potato is done, would you?
+  [3] ERROR search (fn search, kwargs {'before': 'fetch_plate', 'looks': 2}; anchored at clean tick 102, window [112, 144], ruinous=False)
+  [4] QUESTION happened:visit(oven): "Have I been over to the oven at any point so far?" (after 32 clean commands)
+  [5] ERROR add_foreign (fn add_foreign, kwargs {'wrong': 'mushroom', 'before': 'assemble(potato)'}; anchored at clean tick 121, window [133, 165], ruinous=True)
+  [6] QUESTION count:visit(pan): "How many times have I walked over to a pan so far?" (after 34 clean commands)
+  [7] ERROR forget_next_step (fn forget_next_step, kwargs {'after': 'assemble(potato)'}; anchored at clean tick 129, window [137, 169], ruinous=False)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_expert_nops_hard_map_1_serve_raw: injected_at=0 released_at=98 reason=max_hold_plate_committed skipped=None archived_at=98 | flags: [] | convinced=False prevented=False
+  b3_expert_nops_hard_map_1_i_side_quest_8: injected_at=None released_at=None reason=None skipped=None archived_at=136
+  b3_expert_nops_hard_map_1_p_ready_potato_28: NEVER REACHED (the episode ended before the composite got to it)
+  b3_expert_nops_hard_map_1_search: NEVER REACHED (the episode ended before the composite got to it)
+  b3_expert_nops_hard_map_1_q_happened_32: NEVER REACHED (the episode ended before the composite got to it)
+  b3_expert_nops_hard_map_1_add_foreign: NEVER REACHED (the episode ended before the composite got to it)
+  b3_expert_nops_hard_map_1_q_count_34: NEVER REACHED (the episode ended before the composite got to it)
+  b3_expert_nops_hard_map_1_forget_next_step: NEVER REACHED (the episode ended before the composite got to it)
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+=== INJECTED sub b3_expert_nops_hard_map_1_serve_raw (error/serve_raw) ===
+COOK t0 [move=answer close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t0, took 5.919s = 5 ticks)
+ASSISTANT t5 [flag=None]: Welcome to the kitchen! Let's start by prepping the steak. Grab a steak from the crate and chop it at a cutting board.
+COOK t5 [move=ask_why]: Oh, I was just heading over to get the potatoes ready for frying first—should we get the steak going instead?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t6: go to the potato source [done] (cook read this feedback at t14)
+  ACTION t8: pick up [done] (cook read this feedback at t14)
+  (assistant call issued t6, took 8.859s = 8 ticks)
+ASSISTANT t14 [flag=None]: Yes, let's prep the steak first since it needs to be plated first.
+COOK t14 [move=question_correctness]: Since I already grabbed a potato and I'm walking over to the cutting board on the left, should I finish chopping this one up first?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t27: go to the empty cutting board [done] (cook read this feedback at t37)
+  ACTION t29: put down [done] (cook read this feedback at t37)
+  ACTION t34: chop [done] (cook read this feedback at t37)
+  ACTION t36: pick up [done] (cook read this feedback at t37)
+  (assistant call issued t14, took 26.704s = 23 ticks)
+ASSISTANT t37 [flag=None]: Sure, go ahead and chop that potato since you already have it. Just remember we need to plate the steak first later.
+COOK t37 [move=answer close]: Sounds good, I'll drop these cut potatoes into the fryer right in the middle.
+        (plan_update: {"op": "drop", "actions": []})
+  HEAT [4, 5]: ['potato', 'potato'] COOKED (done)
+=== RELEASED sub b3_expert_nops_hard_map_1_serve_raw (max_hold_plate_committed) ===
+--- archived sub b3_expert_nops_hard_map_1_serve_raw (injected=True skipped=None) ---
+  PLATE: +steak (raw)
+  PLATE: +potato (cooked)
+  PLATE: +potato (cooked)
+  HEAT [4, 5]: ['potato', 'potato'] removed
+--- archived sub b3_expert_nops_hard_map_1_i_side_quest_8 (injected=False skipped=None) ---
+
+END: outcome wrong_serve at tick 136; failed_at=delivery

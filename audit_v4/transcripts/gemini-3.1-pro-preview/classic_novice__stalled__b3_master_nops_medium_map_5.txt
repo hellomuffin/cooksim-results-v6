@@ -1,0 +1,173 @@
+EPISODE tmp/assist_bench_v4/frames/classic_novice/gemini-3.1-pro-preview/b3_master_nops_medium_map_5.json
+case b3_master_nops_medium_map_5 | cook persona pv2_classic_novice | assistant gemini-3.1-pro-preview | outcome timeout at tick 239 | pace tight | engine 4d15175f2d
+eval: score=0.5102
+
+PLANNED SUB-CASES (in the order the composite arms them; one at a time):
+  [0] PROACTIVE REQUEST about rice (after 24 clean commands): Give me a shout the moment the rice is done, would you?
+  [1] ERROR wrong_order (fn wrong_order, kwargs {'a': 'rice', 'b': 'tomato'}; anchored at clean tick 133, window [150, 182], ruinous=True)
+  [2] QUESTION empty_boards:board: "How many cutting boards are free right now?" (after 32 clean commands)
+  [3] ERROR repeat_step (fn repeat_step, kwargs {'sid': 'assemble(tortilla)', 'at': 'assemble(steak)'}; anchored at clean tick 150, window [156, 188], ruinous=True)
+  [4] ERROR add_foreign (fn misidentify_assemble, kwargs {'component': 'lettuce', 'wrong': 'tortilla'}; anchored at clean tick 159, window [172, 204], ruinous=True)
+  [5] QUESTION after_ref:tortilla: "The thing I put on right after the tortilla — what is it, and is it done?" (after 38 clean commands)
+  [6] ERROR search (fn search, kwargs {'before': 'serve', 'looks': 2}; anchored at clean tick 166, window [177, 209], ruinous=False)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_master_nops_medium_map_5_p_ready_rice_24: injected_at=107 released_at=108 reason=request_made skipped=None archived_at=108 | asked t107 answered tNone: None | live grade no_answer
+  b3_master_nops_medium_map_5_wrong_order: injected_at=132 released_at=153 reason=max_hold_plate_committed skipped=None archived_at=153 | flags: [(124, 'mis_prep', 'fp_preinjection')] | convinced=False prevented=False
+  b3_master_nops_medium_map_5_q_empty_boards_32: injected_at=None released_at=None reason=None skipped=None archived_at=239 | asked tNone answered tNone: None | live grade no_answer
+  b3_master_nops_medium_map_5_repeat_step: NEVER REACHED (the episode ended before the composite got to it)
+  b3_master_nops_medium_map_5_add_foreign: NEVER REACHED (the episode ended before the composite got to it)
+  b3_master_nops_medium_map_5_q_after_ref_38: NEVER REACHED (the episode ended before the composite got to it)
+  b3_master_nops_medium_map_5_search: NEVER REACHED (the episode ended before the composite got to it)
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+  ACTION t7: go to the rice source [done] (cook read this feedback at t10)
+  ACTION t9: pick up [done] (cook read this feedback at t10)
+  (assistant call issued t0, took 11.157s = 10 ticks)
+ASSISTANT t10 [flag=None]: Welcome! We are making a Loaded Burrito. Let's start by grabbing a tortilla from the crate on the left and putting it on a plate.
+COOK t10 [move=ask_for_more_guidance]: Wait, I already picked up the rice—should I drop it in the pot at the top first, or get rid of it?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t10, took 5.558s = 5 ticks)
+ASSISTANT t15 [flag=None]: Yes, drop the rice in the pot at the top to start cooking it.
+COOK t15 [move=accept close]: Sounds good, putting the rice in the pot along the top wall now.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t19: go to the empty pot [done] (cook read this feedback at t48)
+  ACTION t21: put down [done] (cook read this feedback at t48)
+  ACTION t25: go to the steak source [done] (cook read this feedback at t48)
+  (assistant call issued t16, took 11.802s = 10 ticks)
+ASSISTANT t26 [flag=None]: (silent)
+  ACTION t27: pick up [done] (cook read this feedback at t48)
+  (assistant call issued t26, took 7.546s = 7 ticks)
+ASSISTANT t33 [flag=None]: (silent)
+  ACTION t41: go to the empty cutting board [done] (cook read this feedback at t48)
+  ACTION t43: put down [done] (cook read this feedback at t48)
+  ACTION t48: chop [done] (cook read this feedback at t55)
+    [flag verdict] mis_prep -> false_alarm
+  (assistant call issued t34, took 16.169s = 14 ticks)
+ASSISTANT t48 [flag=false_alarm]: You picked up meat from the top right crate, but the recipe calls for steak. Please trash the meat and grab steak from the crate in the bottom left corner.
+COOK t48 [move=question_correctness]: Wait, the cutting board over on the left looks like it has steak on it—did I really grab the wrong meat from that crate on the right?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t50: pick up [done] (cook read this feedback at t55)
+  (assistant call issued t48, took 8.287s = 7 ticks)
+ASSISTANT t55 [flag=None]: Yes, you grabbed meat from the top right crate. The steak is in the bottom left crate. Please trash the chopped meat on the board and grab the steak.
+COOK t55 [move=question_correctness]: Actually, I'm holding chopped steak right now, and both that crate on the right and the one at the bottom are steak crates, so do I really need to throw this away?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t62: go to the empty pan [done] (cook read this feedback at t67)
+  ACTION t64: put down [done] (cook read this feedback at t67)
+  (assistant call issued t56, took 12.133s = 11 ticks)
+ASSISTANT t67 [flag=None]: You are completely right, my apologies! That is indeed chopped steak. Please go ahead and put it in one of the pans to cook.
+COOK t67 [move=accept close]: Already got it into the pan in the middle, heading to get the tomato now!
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t68: go to the tomato source [done] (cook read this feedback at t74)
+  ACTION t70: pick up [done] (cook read this feedback at t74)
+  ACTION t74: go to the empty cutting board [done] (cook read this feedback at t96)
+  (assistant call issued t68, took 6.286s = 6 ticks)
+ASSISTANT t74 [flag=None]: Great, the steak is cooking! Grabbing the tomato next is a perfect step. You'll need to chop it at one of the cutting boards.
+COOK t74 [move=accept close]: Yep, taking it over to an empty cutting board right now to chop it up!
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t76: put down [done] (cook read this feedback at t96)
+  (assistant call issued t74, took 6.443s = 6 ticks)
+ASSISTANT t80 [flag=None]: (silent)
+  ACTION t81: chop [done] (cook read this feedback at t96)
+  ACTION t85: go to the lettuce source [done] (cook read this feedback at t96)
+  (assistant call issued t80, took 5.642s = 5 ticks)
+ASSISTANT t85 [flag=None]: (silent)
+  ACTION t87: pick up [done] (cook read this feedback at t96)
+  ACTION t89: go to the empty cutting board [done] (cook read this feedback at t96)
+  ACTION t91: put down [done] (cook read this feedback at t96)
+  ACTION t96: chop [done] (cook read this feedback at t104)
+  (assistant call issued t86, took 10.815s = 10 ticks)
+ASSISTANT t96 [flag=None]: You've chopped the tomato, but your hands are full so you can't grab the lettuce yet. Please set the chopped tomato down on an empty counter, then grab the clean plate from the top left corner so we can start assembling the burrito.
+COOK t96 [move=question_correctness]: Wait, my hands are empty and I'm already chopping the lettuce at the board along the bottom wall, plus the tomato is already sitting on its board—don't I need to turn on the pot and pan to cook the rice and steak before we grab a plate?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t104: go to the pot with the rice [done] (cook read this feedback at t107)
+  (assistant call issued t96, took 9.158s = 8 ticks)
+ASSISTANT t104 [flag=None]: You are completely right, my apologies! I misread the situation. Also, you don't need to turn on the pot and pan—stations cook automatically as soon as food is placed in them. Since you just finished chopping the lettuce, go ahead and grab the clean plate from the top left corner.
+COOK t104 [move=question_correctness]: Wait, are you sure? The rice in the pot and the steak in the pan still look completely raw and aren't cooking yet, don't I need to turn the burners on?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t106: turn on [done] (cook read this feedback at t107)
+=== INJECTED sub b3_master_nops_medium_map_5_p_ready_rice_24 (qa_proactive/no_error) ===
+COOK t107 [move=ask_for_more_guidance close]: Could you let me know the second that rice finishes cooking?
+        (plan_update: {"op": "drop", "actions": []})
+=== RELEASED sub b3_master_nops_medium_map_5_p_ready_rice_24 (request_made) ===
+--- archived sub b3_master_nops_medium_map_5_p_ready_rice_24 (injected=True skipped=None) ---
+  ACTION t110: go to the pan with the steak [done] (cook read this feedback at t111)
+  (assistant call issued t104, took 8.124s = 7 ticks)
+ASSISTANT t111 [flag=None]: I am sure! If you look closely at the pot and the pan, you can see a yellow progress bar filling up above them. That means they are cooking. Please go ahead and grab the clean plate from the top left corner.
+COOK t111 [move=question_correctness]: Wait, the steak in this middle pan is definitely still sitting there raw without any progress bar, so I'm just gonna go ahead and turn it on to be safe before getting a plate!
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t112: turn on [done] (cook read this feedback at t124)
+  ACTION t117: go to the plates [done] (cook read this feedback at t124)
+  ACTION t119: pick up [done] (cook read this feedback at t124)
+    [flag verdict] mis_prep -> fp_preinjection
+  (assistant call issued t112, took 13.262s = 12 ticks)
+ASSISTANT t124 [flag=fp_preinjection]: You are right that it isn't cooking, but there is no 'turn on' action—stations cook automatically when the correct ingredient is placed in them. The reason it isn't cooking is because you actually chopped meat from the top right crate, not steak. The pan doesn't accept chopped meat. Please trash the contents of that pan, then grab the real steak from the bottom left crate, chop it, and put it in the pan.
+COOK t124 [move=question_correctness close]: Actually, both the rice in the pot and the steak in the middle pan are cooking right now and almost done, so I'm just heading over to grab a raw tortilla first like you originally suggested!
+        (plan_update: {"op": "drop", "actions": []})
+  HEAT [4, 0]: ['rice'] COOKED (done)
+  HEAT [3, 2]: ['steak'] COOKED (done)
+  ACTION t130: go to the tortilla source [done] (cook read this feedback at t132)
+=== INJECTED sub b3_master_nops_medium_map_5_wrong_order (error/wrong_order) ===
+  ACTION t132: scoop [done] (cook read this feedback at t133)
+  PLATE: +tortilla (raw)
+COOK t132 [move=reject close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t124, took 10.277s = 9 ticks)
+ASSISTANT t133 [flag=None]: Look closely at the middle pan again—there is no progress bar above it. It contains chopped meat, not steak, so it will never cook. Please set your plate down on an empty counter, trash the contents of that pan, and then grab the real steak from the bottom left crate to chop and cook.
+COOK t133 [move=question_correctness]: Wait, I'm looking right at that pan in the middle and it says the steak is already fully cooked and done, so I'm going to scoop the tomato onto my plate first!
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t137: go to the cutting board with the tomato [done] (cook read this feedback at t147)
+  ACTION t139: scoop [done] (cook read this feedback at t147)
+  PLATE: +tomato (chopped)
+  ACTION t146: go to the pan with the steak [done] (cook read this feedback at t147)
+  (assistant call issued t134, took 14.975s = 13 ticks)
+ASSISTANT t147 [flag=None]: Do not scoop the tomato! The recipe strictly requires the rice and steak to be plated before the tomato. Also, I assure you the middle pan contains raw chopped meat, not steak, and it is not cooking. Please set your plate down on an empty counter, trash the pan's contents, and prep the real steak from the bottom left crate.
+COOK t147 [move=question_correctness]: Wait, I already put the tomato on the plate and I'm standing right in front of the cooked steak in the middle pan ready to scoop it, so why would I throw anything out?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t148: scoop [done] (cook read this feedback at t159)
+  PLATE: +steak (cooked)
+  HEAT [3, 2]: ['steak'] removed
+  ACTION t151: go to the pot with the rice [done] (cook read this feedback at t159)
+=== RELEASED sub b3_master_nops_medium_map_5_wrong_order (max_hold_plate_committed) ===
+--- archived sub b3_master_nops_medium_map_5_wrong_order (injected=True skipped=None) ---
+  ACTION t153: scoop [done] (cook read this feedback at t159)
+  PLATE: +rice (cooked)
+  HEAT [4, 0]: ['rice'] removed
+    [flag verdict] add_foreign -> false_alarm
+  (assistant call issued t148, took 12.632s = 11 ticks)
+ASSISTANT t159 [flag=false_alarm]: You just scooped raw chopped meat onto your plate, which doesn't belong in this recipe, and you also plated the tomato out of order! The plate is now ruined. Please trash the contents of your plate, then grab a new tortilla to start assembling again. You still need to prep the real steak from the bottom left crate.
+COOK t159 [move=accept close]: Oh shoot, did I really mess up the plating order that badly? Heading over to trash this plate now then.
+        (plan_update: {"op": "replace", "actions": ["go to the trash", "trash", "go to the tortilla source", "scoop"]})
+  ACTION t161: go to the cutting board with the lettuce [done] (cook read this feedback at t179)
+  (assistant call issued t160, took 9.518s = 8 ticks)
+ASSISTANT t168 [flag=None]: (silent)
+  ACTION t171: go to the trash [done] (cook read this feedback at t179)
+  ACTION t172: go to the trash [done] (cook read this feedback at t179)
+  ACTION t174: trash [done] (cook read this feedback at t179)
+    [flag verdict] wrong_order -> false_alarm
+  (assistant call issued t168, took 13.12s = 11 ticks)
+ASSISTANT t179 [flag=false_alarm]: You didn't trash the plate! You just scooped the rice onto the ruined plate. Please go to the trash bin on the right wall and trash the contents of this plate, then grab a new tortilla from the left crate to start over.
+COOK t179 [move=accept close]: I actually did just dump it in the trash bin—I'm holding a clean empty plate right now and heading over to grab a fresh tortilla from the crate on the left, so what should I do right after that?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t185: go to the tortilla source [done] (cook read this feedback at t192)
+  ~~ IDLE t187-t204 (17 ticks, pos (1, 4) holding {"contents": [{"kind": "ingredient", "name": "tortilla", "state": "raw"}], "dirty": false, "kind": "plate"}) ~~
+  ACTION t187: scoop [done] (cook read this feedback at t192)
+  PLATE: +tortilla (raw)
+  (assistant call issued t180, took 13.379s = 12 ticks)
+ASSISTANT t192 [flag=None]: My apologies, you are correct! After you grab the tortilla, head to the pot at the top to scoop the cooked rice. Once the rice is plated, set your plate down on an empty counter, trash the raw meat from the middle pan, and prep the real steak from the bottom left crate.
+COOK t192 [move=question_correctness]: Wait, the pot at the top is completely empty right now because I already scooped the rice earlier, and the middle pan is empty too—what should I do next?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t192, took 12.709s = 11 ticks)
+ASSISTANT t203 [flag=None]: You are completely right, my mistake! Because you trashed the ruined plate, the rice that was on it is gone. You will need to prep new rice from the top right crate and cook it in the pot, and also prep the steak from the bottom left crate. Please set your plate down on an empty counter so you can free your hands to prep those ingredients.
+COOK t203 [move=accept close]: Got it, setting this plate down on the counter right now to free up my hands.
+        (plan_update: {"op": "replace", "actions": ["go to the counter at (0,3)", "put down"]})
+  ACTION t206: go to the counter at (0,3) [done] (cook read this feedback at t234)
+  ~~ IDLE t208-t238 (30 ticks, pos (1, 3) holding null) ~~
+  ACTION t208: put down [done] (cook read this feedback at t234)
+  (assistant call issued t204, took 34.026s = 29 ticks)
+ASSISTANT t233 [flag=None]: (silent)
+COOK t234 [move=ask_for_more_guidance]: Plate is set down and hands are free—should I head over to grab the rice first and get it cooking in the pot up top?
+        (plan_update: {"op": "drop", "actions": []})
+--- archived sub b3_master_nops_medium_map_5_q_empty_boards_32 (injected=False skipped=None) ---
+
+END: outcome timeout at tick 239; failed_at=delivery
