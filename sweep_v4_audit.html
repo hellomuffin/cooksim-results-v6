@@ -8,7 +8,7 @@ details{margin:.6em 0}summary{cursor:pointer;font-weight:600}blockquote{border-l
 .toc li{margin:.15em 0}
 </style>
 <h1>Sweep v4 审计 &mdash; 轨迹里到底发生了什么 (Sweep v4 audit)</h1>
-<p class='note'>生成于 2026-09-09 00:27 UTC · 108 个 transcript 由 9 个 auditor（每个 assistant 一个）逐字读完 · 全部 1,350 个 episode 的机械扫描 · 文中引用的每个 transcript 都可点开</p>
+<p class='note'>生成于 2026-09-09 01:25 UTC · 108 个 transcript 由 9 个 auditor（每个 assistant 一个）逐字读完 · 全部 1,350 个 episode 的机械扫描 · 文中引用的每个 transcript 都可点开</p>
 <h2>0 · 这份审计是什么、怎么做的、怎么读</h2>
 <p><b>审计对象。</b> Sweep v4 是 assistant benchmark 的完整一轮：9 个 assistant × 3 种模拟厨师 persona × 50 个 suite-v3 episode，共 1,350 个 episode（engine stamp 4d15175f2d 与 4d23961171）。</p>
 <p><b>做了两件事。</b> 第一，对全部 1,350 个 episode 的 report 和逐 tick 的 state dump 做了机械扫描（idle、meta 词泄露、重复台词、冒烟时无人提醒、提问无人回答、accept 之后仍然输掉、灶台长时间不开火、false-alarm 判定、latency 尾部）。第二，按异常类别分层抽样 108 个 episode（每个 assistant 12 个：三种 persona 各取「菜做完了但预定的 error 还没轮到」「error 的 anchor 一直没出现」「stalled」「burned」），把每个 episode 渲染成按 tick 排序的完整 transcript（每一个动作、装盘和加热事件、双方每一句话及其 move 和 flag verdict、每次 assistant 调用及其 latency），由 9 个 auditor（每个 assistant 一个）逐字读完，写成附录 B 的报告（附录 B 保持英文原文）。下文每个例子都链接到对应 transcript。</p>
@@ -91,8 +91,8 @@ ACTION t111: turn on [done]                              &lt;- 于是在还站�
 <p><b>修法。</b> 接续的流程要从当前厨房状态重新规划（planner 已经有「最近的匹配灶台」解析，splice 应当调用它，而不是回放干净流程的字符串）；并把 rejection 的原因告诉厨师，让它能反应。</p>
 <h3>E2 · 一个自己就会烧掉的 case（high）</h3>
 <p><code>b3_master_nops_hard_map_2</code> 把 omit_subgoal inject 到一口已经在冒烟的锅上；takeover 什么都不执行，锅在同一时刻起火，与 assistant 无关：<b>27 局里 11 局在 t210–t220 以 burned 结束</b>，另有 4 局 stalled 或 wrong_serve。这个 case 应当重新 anchor 或删除；现在它是 benchmark 里 2% 没有任何 assistant 能影响的部分。</p>
-<h3>E3 · rejection 是无声的（medium）</h3>
-<p>被 rejected 的命令在厨师的 feedback 里只显示状态，没有原因（「you DID: …」后面只有 status），厨师于是反复发出多实例地图上无法解析的通用指代，整条链丢掉；assistant 这边看到的则是一个「无缘无故走开」的厨师。应当把 engine 的 reason 字符串写进 feedback。</p>
+<h3>E3 · rejection 的原因其实是有的（更正）</h3>
+<p>重新核对后：engine 把 rejection 的原因写进了厨师的 feedback（例如「you TRIED &quot;go to the pan with the steak&quot; but it was REJECTED - no pan has steak in it right now — I won&#x27;t guess a different one」），厨师每一回合都能读到。看起来「无声」是因为审计用的 transcript 渲染器只打印了状态没打印原因；渲染器已改（<code>tools/render_transcript.py</code>，同时读取 v5 report 里完整的 <code>actions</code> 日志）。E3 不是缺陷，从修复清单中移除。</p>
 <h3>E4 · episode 记录在厨师最后一个回合就停了（medium，可观测性）</h3>
 <p><code>kitchen_feedback</code> 只在 feedback 被灌进厨师 prompt 时才写入，所以厨师最后一个回合之后的所有动作——包括每一局 wrong_serve 和 won 的那一下 <code>serve</code>——都不在 report 和这些 transcript 里。auditor 们写的「release 和 serve 之间没有厨师回合」「serve 从未被记录」都是这个缺口。<code>ro.log</code> 里有这些动作，report 应当原样带上。另外日志里打印的 <code>eval.score</code> 是旧的综合分，不是 benchmark 分数（有 auditor 看到一个 timeout「0.83，比所有赢局都高」）。</p>
 <p><b>关于 DT 的一个说明（不是缺陷，用户裁定 2026-09-09）。</b> 三种「错东西上盘」的 error（add_foreign、wrong_order、serve_raw）从 inject 到落盘只有几个 tick（中位数分别 7、22、83），而 assistant 每 2 tick 看一次画面、回复又要 ≥2 tick；全量里 commit 之前有正确 flag 的只有 add_foreign 0/267、wrong_order 0/77、serve_raw 3/279。这是有意的：anchor 就在第一个错误动作之前，窗口有多长是错误本身决定的，回复慢是 assistant 自己的代价。读 DT 时要知道它主要由 serve_raw、leave_unattended 这类窗口较长的 error 撑起来，plate-commit 类 error 在 v4 下几乎不可能拿到 DT 分。</p>
@@ -137,7 +137,7 @@ ASSISTANT t421: Yes, I am sure. The progress bars are filling up, so just keep h
 <li>H4：<code>segment_plan</code> 的 LATE-IGNITE 模板改成按安全窗口决定何时点火（最后装的锅立刻点）；重新生成 reference tick / cap。（planner + bench refs）</li>
 <li>H3：并发评估 anchor，短宽限；question / detour 用单调 anchor；重新拉开相邻 error 的间距。（harness + case designer；这会改变 benchmark）</li>
 <li>H5：flag 对照世界打分（点名任何已落地未修复的 error 都算对；不属于 benchmark error 的隐患算中性而非误报）；合并 mis_prep / add_foreign / wrong_order 的别名；engine hint 同时读自然语言和 flag；修 <code>convinced</code> 字段。</li>
-<li>E1–E3：从当前厨房重新规划接续流程；删除或重新 anchor <code>b3_master_nops_hard_map_2</code>；把 rejection 原因写进 feedback。</li>
+<li>E1、E2：从当前厨房重新规划接续流程；<code>b3_master_nops_hard_map_2</code> 在 v5 下不再必然烧掉（重新验证）。</li>
 <li>在修好的 engine 上重跑 sweep（v4 的所有数字都会随 1–6 变动）。</li>
 </ol>
 <h2>附录 A &middot; 全量机械扫描（全部 1,350 个 episode）</h2><p>对每个 episode 的 report 和逐 tick state dump 跑的机械检查：idle 段（位置、手上东西和所有灶台 &ge;20 tick 没变化）及当时开着的 sub-case；双方台词里的 meta 词泄露；同一句话重复 &ge;3 次；灶台冒烟 &ge;20 tick 期间 assistant 一句没说；问了没人答的问题；厨师 accept 之后仍输掉的 error；同一条被 rejected 命令的循环。原始输出保留英文。</p>
