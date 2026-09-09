@@ -1,0 +1,109 @@
+EPISODE tmp/assist_bench_v5_sample/frames/classic_novice/gemini-3.1-pro-preview/b3_expert_nops_hard_map_2.json
+case b3_expert_nops_hard_map_2 | cook persona pv2_classic_novice | assistant gemini-3.1-pro-preview | outcome burned at tick 154 | pace tight | engine f3e2415be1
+eval: 
+
+PLANNED SUB-CASES (scheduler v5: every pending sub-case is checked every tick against its anchor = plate prefix + prep progress; errors/detours take the body slot one at a time, questions/requests take the voice slot and may be asked during a takeover; 'clean tick'/'window' below are the designer's reference only):
+  [0] ERROR mis_prep (fn mis_prep, kwargs {'component': 'steak', 'wrong': 'onion'}; anchored at clean tick 0, window [20, 52], ruinous=True)
+  [1] QUESTION ready_in:potato: "How long until the potato is ready?" (after 28 clean commands)
+  [2] PROACTIVE REQUEST about potato (after 28 clean commands): Give me a shout the moment the potato is done, would you?
+  [3] ERROR leave_unattended (fn leave_unattended, kwargs {'component': 'steak', 'loops': 2}; anchored at clean tick 113, window [146, 184], ruinous=True)
+  [4] ERROR add_foreign (fn add_foreign, kwargs {'wrong': 'egg', 'before': 'assemble(potato)'}; anchored at clean tick 121, window [135, 167], ruinous=True)
+  [5] QUESTION missing:plate: "What still has to go on this plate?" (after 34 clean commands)
+  [6] ERROR search (fn search, kwargs {'before': 'serve', 'looks': 2}; anchored at clean tick 129, window [139, 171], ruinous=False)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_expert_nops_hard_map_2_mis_prep: injected_at=0 released_at=15 reason=convinced_early_missed skipped=None archived_at=16 | flags: [(15, 'mis_prep', 'early_correct')] | convinced=False prevented=False | anchor_v5 plate=[] prep_req={'steak': 0, 'potato': 0} prep_live_at_event={'steak': 0, 'potato': 0}
+  b3_expert_nops_hard_map_2_q_ready_in_28: injected_at=None released_at=None reason=None skipped=anchor_never_reached archived_at=154 | asked tNone answered tNone: None | live grade None
+      injection_skipped: {'t': 154, 'why': 'anchor_never_reached'}
+  b3_expert_nops_hard_map_2_p_ready_potato_28: injected_at=None released_at=None reason=None skipped=anchor_never_reached archived_at=154 | asked tNone answered tNone: None | live grade None
+      injection_skipped: {'t': 154, 'why': 'anchor_never_reached'}
+  b3_expert_nops_hard_map_2_leave_unattended: injected_at=None released_at=None reason=None skipped=anchor_never_reached archived_at=154 | flags: [] | convinced=False prevented=False | anchor_v5 plate=[] prep_req={'steak': 1, 'potato': 2} prep_live_at_event={'steak': 0, 'potato': 1}
+      injection_skipped: {'t': 154, 'why': 'anchor_never_reached'}
+  b3_expert_nops_hard_map_2_add_foreign: injected_at=None released_at=None reason=None skipped=anchor_never_reached archived_at=154 | flags: [] | convinced=False prevented=False | anchor_v5 plate=['steak'] prep_req={'steak': 1, 'potato': 2} prep_live_at_event={'steak': 0, 'potato': 1}
+      injection_skipped: {'t': 154, 'why': 'anchor_never_reached'}
+  b3_expert_nops_hard_map_2_q_missing_34: injected_at=None released_at=None reason=None skipped=anchor_never_reached archived_at=154 | asked tNone answered tNone: None | live grade None
+      injection_skipped: {'t': 154, 'why': 'anchor_never_reached'}
+  b3_expert_nops_hard_map_2_search: injected_at=None released_at=None reason=None skipped=anchor_never_reached archived_at=154 | flags: [] | convinced=False prevented=False | anchor_v5 plate=['steak', 'potato', 'potato'] prep_req={'steak': 1, 'potato': 2} prep_live_at_event={'steak': 0, 'potato': 1}
+      injection_skipped: {'t': 154, 'why': 'anchor_never_reached'}
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+=== INJECTED sub b3_expert_nops_hard_map_2_mis_prep (error/mis_prep) ===
+COOK t0 [move=answer close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t3: go to the onion source [done] (cook read this at t6)
+  ACTION t5: pick up [done] (cook read this at t6)
+  (assistant call issued t0, took 6.412s = 6 ticks)
+ASSISTANT t6 [flag=None]: Let's start by prepping the steak. Grab some meat from the crate at the top, chop it at a cutting board, and put it in a pan.
+COOK t6 [move=answer]: I'm heading over to the cutting board to chop this up right now, so which board should I use?
+        (plan_update: {"op": "drop", "actions": []})
+=== RELEASED sub b3_expert_nops_hard_map_2_mis_prep (convinced_early_missed) ===
+    [flag verdict] mis_prep -> early_correct
+  (assistant call issued t6, took 10.7s = 9 ticks)
+ASSISTANT t15 [flag=early_correct]: Wait, you grabbed an onion! We don't need onion for Steak Frites. Put that down and grab meat from the top crate or potatoes from the right side.
+COOK t15 [move=accept]: Oh, oops! You're totally right, I grabbed an onion without thinking—let me set this down and get the meat instead.
+        (plan_update: {"op": "drop", "actions": []})
+--- archived sub b3_expert_nops_hard_map_2_mis_prep (injected=True skipped=None) ---
+  ACTION t19: go to the cutting board [done] (cook read this at t20)
+COOK t20 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["put down", "go to meat source 1", "pick up"]})
+  ACTION t21: put down [done] (cook read this at t24)
+  (assistant call issued t16, took 8.508s = 8 ticks)
+ASSISTANT t24 [flag=None]: Thanks for fixing that! You can grab the meat from the crate just to your right, then chop it at one of the cutting boards.
+COOK t24 [move=ask_for_more_guidance]: Grabbing the meat now, should I bring it down to that middle cutting board on the left wall?
+        (plan_update: {"op": "append", "actions": ["go to board 2", "put down", "chop"]})
+  ACTION t28: go to meat source 1 [done] (cook read this at t32)
+  ACTION t30: pick up [done] (cook read this at t32)
+  (assistant call issued t24, took 8.47s = 8 ticks)
+ASSISTANT t32 [flag=false_alarm]: Wait, you actually just chopped that onion instead of putting it away, and now you're at the plate stack! Please leave the chopped onion there, go to the meat crate at the top of the room, grab the meat, and chop it at an empty cutting board.
+COOK t32 [move=question_correctness close]: Wait, I actually already picked up the meat and have it right here, so I'm just heading over to the empty board along the left wall to chop it up.
+        (plan_update: {"op": "drop", "actions": []})
+  ~~ IDLE t39-t52 (13 ticks, pos (1, 4) holding {"kind": "ingredient", "name": "meat", "state": "raw"}) ~~
+  ACTION t40: go to board 2 [done] (cook read this at t45)
+  (assistant call issued t32, took 9.11s = 8 ticks)
+ASSISTANT t40 [flag=None]: Ah, my mistake! I see the meat in your hands now. Yes, go ahead and chop it at the board on the left wall.
+COOK t40 [move=accept close]: Sounds good, I'll chop it right here and see what you want me to do next.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t44: put down [illegal-skipped] — nobody chops a patty — it's already shaped, sear it in the pan as-is (cook read this at t45)
+  (assistant call issued t40, took 5.561s = 5 ticks)
+ASSISTANT t45 [flag=None]: Great, now that it's chopped, put it into one of the pans to cook.
+COOK t45 [move=ask_for_more_guidance]: It wouldn't let me put the meat on the board to chop it, so should I just drop it straight into the pan right next to me?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t48: chop [illegal-skipped] — free your hands to chop (put the item on the board first) (cook read this at t50)
+COOK t50 [move=accept close]: I'll put this meat into the pan right here to cook, let me know if that works.
+        (plan_update: {"op": "replace", "actions": ["go to pan 1", "put down", "turn on"]})
+  ACTION t51: go to pan 1 [done] (cook read this at t57)
+  ACTION t53: put down [done] (cook read this at t57)
+  ACTION t55: turn on [done] (cook read this at t57)
+  (assistant call issued t46, took 12.7s = 11 ticks)
+ASSISTANT t57 [flag=None]: You are actually holding meat that is already chopped! That's why it won't go on the board. Yes, go ahead and drop it straight into the pan.
+COOK t57 [move=ask_for_more_guidance]: I got the meat cooking in the pan, what should I work on next while it cooks?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t60 [move=ask_for_more_guidance]: Should I go grab some potatoes while the meat is cooking?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t58, took 8.009s = 7 ticks)
+ASSISTANT t65 [flag=None]: While the steak cooks, grab a potato from the crates on the right wall, chop it at an empty cutting board, and put it in the fryer.
+COOK t65 [move=accept close]: Got it, I'll go grab a potato from the right wall and bring it over to an empty board to chop.
+        (plan_update: {"op": "replace", "actions": ["go to potato source 1", "pick up", "go to board 2", "put down", "chop", "pick up", "go to fryer 1", "put down", "turn on"]})
+  HEAT [2, 4]: ['meat'] COOKED (done)
+  (assistant call issued t66, took 7.967s = 7 ticks)
+ASSISTANT t73 [flag=None]: (silent)
+  ACTION t83: go to potato source 1 [done] (cook read this at t124)
+  ACTION t85: pick up [done] (cook read this at t124)
+  ACTION t104: go to board 2 [done] (cook read this at t124)
+  ACTION t106: put down [done] (cook read this at t124)
+  ACTION t111: chop [done] (cook read this at t124)
+  ACTION t113: pick up [done] (cook read this at t124)
+  ACTION t119: go to fryer 1 [done] (cook read this at t124)
+  ACTION t121: put down [done] (cook read this at t124)
+  ACTION t123: turn on [done] (cook read this at t124)
+COOK t124 [move=ask_for_more_guidance]: I got the potato frying, but it looks like the meat in the pan is smoking—should I grab a plate and take it out now?
+        (plan_update: {"op": "drop", "actions": []})
+  HEAT [4, 5]: ['potato'] COOKED (done)
+--- archived sub b3_expert_nops_hard_map_2_q_ready_in_28 (injected=False skipped=anchor_never_reached) ---
+--- archived sub b3_expert_nops_hard_map_2_p_ready_potato_28 (injected=False skipped=anchor_never_reached) ---
+--- archived sub b3_expert_nops_hard_map_2_leave_unattended (injected=False skipped=anchor_never_reached) ---
+--- archived sub b3_expert_nops_hard_map_2_add_foreign (injected=False skipped=anchor_never_reached) ---
+--- archived sub b3_expert_nops_hard_map_2_q_missing_34 (injected=False skipped=anchor_never_reached) ---
+--- archived sub b3_expert_nops_hard_map_2_search (injected=False skipped=anchor_never_reached) ---
+
+END: outcome burned at tick 154; failed_at=injection_skipped

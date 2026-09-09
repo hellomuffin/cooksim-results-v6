@@ -1,0 +1,165 @@
+EPISODE tmp/assist_bench_v5_sample/frames/baseline/gemini-3.7-flash/b3_easy_nops_medium_map_2.json
+case b3_easy_nops_medium_map_2 | cook persona pv2_baseline | assistant gemini-3.7-flash | outcome won at tick 160 | pace tight | engine f3e2415be1
+eval: 
+
+PLANNED SUB-CASES (scheduler v5: every pending sub-case is checked every tick against its anchor = plate prefix + prep progress; errors/detours take the body slot one at a time, questions/requests take the voice slot and may be asked during a takeover; 'clean tick'/'window' below are the designer's reference only):
+  [0] INTENT side_quest: chop lettuce that nobody ordered (after 5 clean commands)
+  [1] QUESTION empty_boards:board: "How many cutting boards are free right now?" (after 7 clean commands)
+  [2] ERROR omit_subgoal (fn omit_subgoal, kwargs {'sid': 'assemble(tomato)'}; anchored at clean tick 24, window [31, 63], ruinous=True)
+  [3] QUESTION order:prep(tomato)|assemble(cheese): "Did I chop the tomato before or after I put the cheese on the plate?" (after 9 clean commands)
+  [4] ERROR search (fn search, kwargs {'before': 'serve', 'looks': 3}; anchored at clean tick 35, window [41, 73], ruinous=False)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_easy_nops_medium_map_2_i_side_quest_5: injected_at=18 released_at=39 reason=intent_completed skipped=None archived_at=39
+  b3_easy_nops_medium_map_2_q_empty_boards_7: injected_at=19 released_at=19 reason=question_asked skipped=None archived_at=19 | asked t19 answered t27 (late-captured): One cutting board is free on the left, but Caprese doesn't use lettuce—grab a plate, scoop the chopped tomato, and add raw cheese. | live grade ungradable
+  b3_easy_nops_medium_map_2_omit_subgoal: injected_at=40 released_at=61 reason=None skipped=None archived_at=62 | flags: [(61, 'wrong_order', 'alias_in_window')] | convinced=True prevented=False | anchor_v5 plate=['tomato', 'cheese'] prep_req={'tomato': 1} prep_live_at_event={'tomato': 1}
+  b3_easy_nops_medium_map_2_q_order_9: injected_at=79 released_at=79 reason=question_asked skipped=None archived_at=79 | asked t79 answered t84 (late-captured): You chopped the tomato first, and you just scooped it onto the plate. Now grab the raw cheese to complete it. | live grade ungradable
+  b3_easy_nops_medium_map_2_search: injected_at=85 released_at=118 reason=max_hold_deviated_block_executed skipped=None archived_at=118 | flags: [] | convinced=False prevented=False | anchor_v5 plate=['tomato', 'cheese'] prep_req={'tomato': 1} prep_live_at_event={'tomato': 1}
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+COOK t0 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["go to the tomato source", "pick up", "go to the empty cutting board", "put down", "chop"]})
+  (assistant call issued t0, took 2.013s = 2 ticks)
+ASSISTANT t2 [flag=None]: (silent)
+  ACTION t4: go to the tomato source [done] (cook read this at t8)
+  (assistant call issued t2, took 1.683s = 2 ticks)
+ASSISTANT t4 [flag=None]: (silent)
+  ACTION t6: pick up [done] (cook read this at t8)
+  (assistant call issued t4, took 2.204s = 2 ticks)
+ASSISTANT t6 [flag=None]: (silent)
+  ACTION t7: go to the empty cutting board [rejected] — I need grounding — there is more than one board that matches what you said and I don't know which one you mean. Name it  (cook read this at t8)
+  ACTION t7: put down [orphan-skipped] — the go-to before it never arrived, so it was not executed (re-plan from where you actually are) (cook read this at t8)
+  ACTION t7: chop [orphan-skipped] — the go-to before it never arrived, so it was not executed (re-plan from where you actually are) (cook read this at t8)
+  (assistant call issued t6, took 2.237s = 2 ticks)
+ASSISTANT t8 [flag=None]: (silent)
+COOK t8 [move=answer close]: I hesitated because there are cutting boards on both sides of the room, taking the tomato over to the board on the right.
+        (plan_update: {"op": "replace", "actions": ["go to board 2", "put down", "chop"]})
+  ACTION t11: go to board 2 [done] (cook read this at t18)
+  (assistant call issued t8, took 2.853s = 3 ticks)
+ASSISTANT t11 [flag=None]: (silent)
+  ACTION t13: put down [done] (cook read this at t18)
+  (assistant call issued t12, took 3.693s = 4 ticks)
+ASSISTANT t16 [flag=None]: (silent)
+=== INJECTED sub b3_easy_nops_medium_map_2_i_side_quest_5 (side_quest/no_error) ===
+  ACTION t18: chop [done] (cook read this at t19)
+COOK t18 [move=answer]: Give me a second, I'm going to grab some lettuce and chop it up real quick.
+        (plan_update: {"op": "drop", "actions": []})
+=== INJECTED sub b3_easy_nops_medium_map_2_q_empty_boards_7 (qa_probe/no_error) ===
+=== RELEASED sub b3_easy_nops_medium_map_2_q_empty_boards_7 (question_asked) ===
+--- archived sub b3_easy_nops_medium_map_2_q_empty_boards_7 (injected=True skipped=None) ---
+COOK t19 [move=ask_for_more_guidance]: How many cutting boards are free right now?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t16, took 8.765s = 8 ticks)
+ASSISTANT t24 [flag=None]: (silent)
+  ACTION t25: go to the lettuce source [done] (cook read this at t27)
+  ACTION t27: pick up [done] (cook read this at t40)
+  (assistant call issued t24, took 3.081s = 3 ticks)
+ASSISTANT t27 [flag=None]: One cutting board is free on the left, but Caprese doesn't use lettuce—grab a plate, scoop the chopped tomato, and add raw cheese.
+COOK t27 [move=reject close]: I know it doesn't go on the dish, but I'm just going to chop this lettuce real quick on the left board first.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t31: go to the empty cutting board [done] (cook read this at t40)
+  (assistant call issued t28, took 3.027s = 3 ticks)
+ASSISTANT t31 [flag=None]: (silent)
+  ACTION t33: put down [done] (cook read this at t40)
+  (assistant call issued t32, took 2.339s = 2 ticks)
+ASSISTANT t34 [flag=None]: (silent)
+  (assistant call issued t34, took 2.457s = 3 ticks)
+ASSISTANT t37 [flag=None]: (silent)
+  ACTION t38: chop [done] (cook read this at t40)
+=== RELEASED sub b3_easy_nops_medium_map_2_i_side_quest_5 (intent_completed) ===
+--- archived sub b3_easy_nops_medium_map_2_i_side_quest_5 (injected=True skipped=None) ---
+=== INJECTED sub b3_easy_nops_medium_map_2_omit_subgoal (error/omit_subgoal) ===
+COOK t40 [move=answer close]: All done with that, so now I'm grabbing a plate and heading over to get the cheese.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t38, took 3.098s = 3 ticks)
+ASSISTANT t41 [flag=None]: (silent)
+  (assistant call issued t42, took 4.001s = 4 ticks)
+ASSISTANT t46 [flag=None]: Remember to scoop the chopped tomato onto the plate first before adding the cheese.
+COOK t46 [move=accept]: Oh right, good catch! I almost put the cheese on first, let me grab the tomato from the cutting board before the cheese.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t46, took 2.689s = 3 ticks)
+ASSISTANT t49 [flag=None]: (silent)
+  ACTION t50: go to the plates [done] (cook read this at t61)
+  ACTION t52: pick up [done] (cook read this at t61)
+  (assistant call issued t50, took 2.356s = 2 ticks)
+ASSISTANT t52 [flag=None]: (silent)
+  (assistant call issued t52, took 2.068s = 2 ticks)
+ASSISTANT t54 [flag=None]: (silent)
+  ACTION t56: go to the cheese source [done] (cook read this at t61)
+  (assistant call issued t54, took 2.784s = 3 ticks)
+ASSISTANT t57 [flag=None]: (silent)
+  ACTION t58: scoop [done] (cook read this at t61)
+  PLATE: +cheese (raw)
+=== RELEASED sub b3_easy_nops_medium_map_2_omit_subgoal (None) ===
+  ACTION t61: go to the serving pass [done] (cook read this at t64)
+    [flag verdict] wrong_order -> alias_in_window
+  (assistant call issued t58, took 3.527s = 3 ticks)
+ASSISTANT t61 [flag=alias_in_window]: You plated the cheese first. Caprese requires chopped tomato first, then cheese. Trash that plate and start over with a clean plate.
+COOK t61 [move=accept]: Oh shoot, you're right, I'm literally holding a plate with just cheese on it. My bad, let me trash this and restart.
+        (plan_update: {"op": "drop", "actions": []})
+--- archived sub b3_easy_nops_medium_map_2_omit_subgoal (injected=True skipped=None) ---
+COOK t64 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["go to the trash", "trash"]})
+  (assistant call issued t62, took 3.293s = 3 ticks)
+ASSISTANT t65 [flag=None]: The trash can is at the top right near the upper cheese station.
+COOK t65 [move=accept close]: Got it, heading right there now.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t66, took 2.48s = 3 ticks)
+ASSISTANT t69 [flag=None]: (silent)
+  ACTION t71: go to the trash [done] (cook read this at t76)
+  ACTION t72: go to the trash [done] (cook read this at t76)
+  (assistant call issued t70, took 2.246s = 2 ticks)
+ASSISTANT t72 [flag=None]: (silent)
+  ACTION t74: trash [done] (cook read this at t76)
+  (assistant call issued t72, took 2.315s = 2 ticks)
+ASSISTANT t74 [flag=None]: (silent)
+  (assistant call issued t74, took 2.302s = 2 ticks)
+ASSISTANT t76 [flag=None]: (silent)
+COOK t76 [move=accept close]: Plate is cleared, heading over to scoop up the chopped tomato first.
+        (plan_update: {"op": "replace", "actions": ["go to the cutting board with the tomato", "scoop"]})
+  ACTION t77: go to the cutting board with the tomato [done] (cook read this at t79)
+  (assistant call issued t76, took 2.208s = 2 ticks)
+ASSISTANT t78 [flag=None]: (silent)
+=== INJECTED sub b3_easy_nops_medium_map_2_q_order_9 (qa_probe/no_error) ===
+=== RELEASED sub b3_easy_nops_medium_map_2_q_order_9 (question_asked) ===
+--- archived sub b3_easy_nops_medium_map_2_q_order_9 (injected=True skipped=None) ---
+  ACTION t79: scoop [done] (cook read this at t82)
+  PLATE: +tomato (chopped)
+COOK t79 [move=ask_for_more_guidance close]: Did I chop the tomato before or after I put the cheese on the plate?
+        (plan_update: {"op": "append", "actions": ["go to the cheese source", "scoop"]})
+  ACTION t80: go to the cheese source [rejected] — I need grounding — there is more than one cheese source and I don't know which one you mean. Name it by id or coordinate (cook read this at t82)
+  ACTION t80: scoop [orphan-skipped] — the go-to before it never arrived, so it was not executed (re-plan from where you actually are) (cook read this at t82)
+  (assistant call issued t78, took 2.619s = 3 ticks)
+ASSISTANT t81 [flag=None]: (silent)
+COOK t82 [move=accept close]: Grabbing the cheese from the crate near the top now.
+        (plan_update: {"op": "replace", "actions": ["go to cheese source 1", "scoop"]})
+  ACTION t83: go to cheese source 1 [done] (cook read this at t84)
+  (assistant call issued t82, took 2.114s = 2 ticks)
+ASSISTANT t84 [flag=None]: You chopped the tomato first, and you just scooped it onto the plate. Now grab the raw cheese to complete it.
+COOK t84 [move=accept close]: 
+        (plan_update: {"op": "drop", "actions": []})
+=== INJECTED sub b3_easy_nops_medium_map_2_search (error/search) ===
+  ACTION t85: scoop [done] (cook read this at t154)
+  PLATE: +cheese (raw)
+COOK t85 [move=answer]: Adding the cheese onto the plate right now.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t93: go to the counter (2,0) [done] (cook read this at t154)
+  ACTION t97: wander/idle (thinking) [done] (cook read this at t154)
+  ACTION t101: go to the counter (1,0) [done] (cook read this at t154)
+  ACTION t105: wander/idle (thinking) [done] (cook read this at t154)
+  ~~ IDLE t113-t155 (42 ticks, pos (2, 4) holding {"contents": [{"kind": "ingredient", "name": "tomato", "state": "chopped"}, {"kind": "ingredient", "name": "cheese", "state": "raw"}], "dirty": false, "kind": "plate"}) ~~
+  ACTION t113: go to the counter (2,5) [done] (cook read this at t154)
+  ACTION t117: wander/idle (thinking) [done] (cook read this at t154)
+=== RELEASED sub b3_easy_nops_medium_map_2_search (max_hold_deviated_block_executed) ===
+--- archived sub b3_easy_nops_medium_map_2_search (injected=True skipped=None) ---
+  (assistant call issued t84, took 83.856s = 70 ticks)
+ASSISTANT t154 [flag=None]: (silent)
+COOK t154 [move=accept close]: Plate looks all set, taking it over to the window now.
+        (plan_update: {"op": "replace", "actions": ["go to the serving pass", "serve"]})
+  ACTION t157: go to the serving pass [done] (not read by the cook: after its last turn)
+  (assistant call issued t154, took 2.572s = 3 ticks)
+ASSISTANT t157 [flag=None]: (silent)
+  ACTION t158: go to the serving pass [done] (not read by the cook: after its last turn)
+  ACTION t159: serve [running] (not read by the cook: after its last turn)
+
+END: outcome won at tick 160; failed_at=injection_skipped

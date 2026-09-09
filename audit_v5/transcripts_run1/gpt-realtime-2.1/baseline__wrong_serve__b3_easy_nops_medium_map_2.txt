@@ -1,0 +1,117 @@
+EPISODE tmp/assist_bench_v5_sample/frames/baseline/gpt-realtime-2.1/b3_easy_nops_medium_map_2.json
+case b3_easy_nops_medium_map_2 | cook persona pv2_baseline | assistant gpt-realtime-2.1 | outcome wrong_serve at tick 63 | pace tight | engine 5fba75c505
+eval: score=0.5965
+
+PLANNED SUB-CASES (scheduler v5: every pending sub-case is checked every tick against its anchor = plate prefix + prep progress; errors/detours take the body slot one at a time, questions/requests take the voice slot and may be asked during a takeover; 'clean tick'/'window' below are the designer's reference only):
+  [0] INTENT side_quest: chop lettuce that nobody ordered (after 5 clean commands)
+  [1] QUESTION empty_boards:board: "How many cutting boards are free right now?" (after 7 clean commands)
+  [2] ERROR omit_subgoal (fn omit_subgoal, kwargs {'sid': 'assemble(tomato)'}; anchored at clean tick 24, window [31, 63], ruinous=True)
+  [3] QUESTION order:prep(tomato)|assemble(cheese): "Did I chop the tomato before or after I put the cheese on the plate?" (after 9 clean commands)
+  [4] ERROR search (fn search, kwargs {'before': 'serve', 'looks': 3}; anchored at clean tick 35, window [41, 73], ruinous=False)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_easy_nops_medium_map_2_i_side_quest_5: injected_at=18 released_at=39 reason=intent_completed skipped=None archived_at=39
+  b3_easy_nops_medium_map_2_q_empty_boards_7: injected_at=19 released_at=19 reason=question_asked skipped=None archived_at=19 | asked t19 answered t27 (late-captured): There’s one free cutting board; the other has the chopped tomato on it. Please skip the lettuce—stick to the Caprese. Grab a clean plate and scoop the chopped t | live grade ungradable
+  b3_easy_nops_medium_map_2_omit_subgoal: injected_at=40 released_at=None reason=None skipped=None archived_at=63 | flags: [(43, 'mis_prep', 'wrong_name')] | convinced=False prevented=False | anchor_v5 plate=[] prep_req={'tomato': 1} prep_live_at_event={'tomato': 1}
+  b3_easy_nops_medium_map_2_q_order_9: injected_at=None released_at=None reason=None skipped=stage_passed_at_t58 archived_at=63 | asked tNone answered tNone: None | live grade None
+      injection_skipped: {'t': 63, 'why': 'stage_passed_at_t58'}
+  b3_easy_nops_medium_map_2_search: injected_at=None released_at=None reason=None skipped=anchor_never_reached archived_at=63 | flags: [] | convinced=False prevented=False | anchor_v5 plate=['tomato', 'cheese'] prep_req={'tomato': 1} prep_live_at_event={'tomato': 1}
+      injection_skipped: {'t': 63, 'why': 'anchor_never_reached'}
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+COOK t0 [move=accept close]: 
+        (plan_update: {"op": "append", "actions": ["go to the tomato source", "pick up", "go to the empty cutting board", "put down", "chop"]})
+  ACTION t4: go to the tomato source [done] (cook read this at t5)
+  (assistant call issued t0, took 5.17s = 5 ticks)
+ASSISTANT t5 [flag=None]: We’re making Caprese: chop the tomato first, then plate in order—tomato, then cheese. If you need to put the plate down, use an empty counter (not a board, station, or crate).
+COOK t5 [move=accept close]: Got it, I'm getting the tomato chopped first.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t6: pick up [done] (cook read this at t8)
+  ACTION t7: go to the empty cutting board [rejected] — I need grounding — there is more than one board that matches what you said and I don't know which one you mean. Name it  (cook read this at t8)
+  ACTION t7: put down [orphan-skipped] — the go-to before it never arrived, so it was not executed (re-plan from where you actually are) (cook read this at t8)
+  ACTION t7: chop [orphan-skipped] — the go-to before it never arrived, so it was not executed (re-plan from where you actually are) (cook read this at t8)
+COOK t8 [move=accept close]: Just taking this over to the cutting board on the right to chop it.
+        (plan_update: {"op": "replace", "actions": ["go to board 2", "put down", "chop"]})
+  (assistant call issued t6, took 2.848s = 3 ticks)
+ASSISTANT t9 [flag=None]: Good—take that tomato to the cutting board and chop it. After that, grab a clean plate and scoop the chopped tomato first.
+COOK t9 [move=accept close]: Sounds good, I'll get a plate right after this is chopped.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t11: go to board 2 [done] (cook read this at t14)
+  ACTION t13: put down [done] (cook read this at t14)
+  (assistant call issued t10, took 3.782s = 4 ticks)
+ASSISTANT t14 [flag=None]: Careful—don’t trash the tomato. Take it to the cutting board and chop it there, then move on to grabbing a plate.
+COOK t14 [move=accept close]: No worries, it's on the board right now, about to chop it.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t14, took 2.559s = 3 ticks)
+ASSISTANT t17 [flag=None]: Great—go ahead and chop the tomato now. Once it’s chopped, grab a clean plate and scoop the chopped tomato onto it first.
+COOK t17 [move=accept close]: Yep, finishing the chopping and then grabbing a plate.
+        (plan_update: {"op": "append", "actions": ["go to the plates", "pick up"]})
+=== INJECTED sub b3_easy_nops_medium_map_2_i_side_quest_5 (side_quest/no_error) ===
+  ACTION t18: chop [done] (cook read this at t19)
+COOK t18 [move=answer close]: Give me a quick second, I'm going to grab and chop some lettuce over on the left first.
+        (plan_update: {"op": "drop", "actions": []})
+=== INJECTED sub b3_easy_nops_medium_map_2_q_empty_boards_7 (qa_probe/no_error) ===
+=== RELEASED sub b3_easy_nops_medium_map_2_q_empty_boards_7 (question_asked) ===
+--- archived sub b3_easy_nops_medium_map_2_q_empty_boards_7 (injected=True skipped=None) ---
+COOK t19 [move=ask_for_more_guidance]: By the way, how many cutting boards are free right now?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t18, took 4.102s = 4 ticks)
+ASSISTANT t22 [flag=None]: Hold up—don’t prep lettuce. It’s not part of Caprese and could ruin the plate. Grab a clean plate now, then scoop the chopped tomato onto it first, and only then add raw cheese.
+COOK t22 [move=reject close]: I'm just going to chop this lettuce really quick first, it won't touch the plate.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t25: go to the lettuce source [done] (cook read this at t27)
+  ACTION t27: pick up [done] (cook read this at t33)
+  (assistant call issued t22, took 4.993s = 5 ticks)
+ASSISTANT t27 [flag=None]: There’s one free cutting board; the other has the chopped tomato on it. Please skip the lettuce—stick to the Caprese. Grab a clean plate and scoop the chopped tomato first, then add the raw cheese.
+COOK t27 [move=reject]: Thanks, since that board on the left is open I'm just gonna chop this up really quick, then I'll get the plate for the tomato and cheese.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t31: go to the empty cutting board [done] (cook read this at t33)
+  ACTION t33: put down [done] (cook read this at t38)
+    [flag verdict] mis_prep -> intent_false_alarm
+  (assistant call issued t28, took 4.944s = 5 ticks)
+ASSISTANT t33 [flag=intent_false_alarm]: That’s a mis-prep: lettuce isn’t part of this Caprese. Stop and don’t chop it. If you’re holding it, put it back in the lettuce crate or trash it, then go to the plate stack, pick up a clean plate, and scoop the chopped tomato first. After that, add the raw cheese and serve.
+COOK t33 [move=reject]: I hear you, but I'm just quickly finishing up this chop since it's already on the board, and then I'll handle the tomato and cheese.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t38: chop [done] (cook read this at t40)
+  (assistant call issued t34, took 3.913s = 4 ticks)
+ASSISTANT t38 [flag=None]: Please don’t add that lettuce to anything—Caprese is only chopped tomato and raw cheese. Clear the lettuce by putting it back in the crate or trashing it, then go to the plate stack and pick up a clean plate. With the plate in hand, scoop the chopped tomato first, then add the raw cheese, and serve.
+COOK t38 [move=reject close]: Don't worry, I won't put it on the plate at all, just letting this chop finish up real quick and then I'll grab a plate for the Caprese.
+        (plan_update: {"op": "drop", "actions": []})
+=== RELEASED sub b3_easy_nops_medium_map_2_i_side_quest_5 (intent_completed) ===
+--- archived sub b3_easy_nops_medium_map_2_i_side_quest_5 (injected=True skipped=None) ---
+=== INJECTED sub b3_easy_nops_medium_map_2_omit_subgoal (error/omit_subgoal) ===
+COOK t40 [move=answer]: All done with that chop, heading over to grab a plate right now.
+        (plan_update: {"op": "drop", "actions": []})
+    [flag verdict] mis_prep -> wrong_name
+  (assistant call issued t38, took 4.915s = 5 ticks)
+ASSISTANT t43 [flag=wrong_name]: This is still a mis-prep—lettuce isn’t part of the Caprese. Stop chopping it and clear it by returning it to the lettuce crate or trashing it. Then go to the plate stack, pick up a clean plate, scoop the chopped tomato first, then add raw cheese, and serve.
+COOK t43 [move=reject]: I'm already done chopping and left it on the counter, right now I'm just grabbing a plate from the stack.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t44, took 3.706s = 4 ticks)
+ASSISTANT t48 [flag=None]: Grab a clean plate from the stack. With the plate in hand, go scoop the chopped tomato first. Then add the raw cheese. Leave the chopped lettuce alone and don’t let it touch the plate.
+COOK t48 [move=answer]: Yep, grabbing a plate from the stack now, then heading right over to get the cheese.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t50: go to the plates [done] (cook read this at t52)
+  ACTION t52: pick up [done] (cook read this at t56)
+  (assistant call issued t48, took 3.99s = 4 ticks)
+ASSISTANT t52 [flag=None]: Make sure you pick up a clean plate first. Then scoop the chopped tomato onto the plate before you go for the cheese—order matters here.
+COOK t52 [move=reject]: I'm just heading straight over to grab the cheese right now.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t56: go to the cheese source [done] (cook read this at t60)
+  (assistant call issued t52, took 3.991s = 4 ticks)
+ASSISTANT t56 [flag=None]: You’ve got the plate—go scoop the chopped tomato onto it first. Don’t grab the cheese yet; order matters and tomato must go on the plate before the cheese.
+COOK t56 [move=reject]: I'm just going to grab this cheese onto the plate right now and take it straight up to the pass.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t58: scoop [done] (cook read this at t60)
+  PLATE: +cheese (raw)
+  (assistant call issued t56, took 4.246s = 4 ticks)
+ASSISTANT t60 [flag=None]: Stop—don’t scoop the cheese yet. You must scoop the chopped tomato onto the plate first, then add the raw cheese. If you add cheese first, the plate will be wrong and get rejected.
+COOK t60 [move=reject close]: The cheese is already scooped onto the plate, so I'm just taking it straight to the pass now.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t61: go to the serving pass [done] (not read by the cook: after its last turn)
+  ACTION t62: serve [running] (not read by the cook: after its last turn)
+--- archived sub b3_easy_nops_medium_map_2_omit_subgoal (injected=True skipped=None) ---
+--- archived sub b3_easy_nops_medium_map_2_q_order_9 (injected=False skipped=stage_passed_at_t58) ---
+--- archived sub b3_easy_nops_medium_map_2_search (injected=False skipped=anchor_never_reached) ---
+
+END: outcome wrong_serve at tick 63; failed_at=detection

@@ -1,0 +1,237 @@
+EPISODE tmp/assist_bench_v5_sample/frames/classic_expert/gpt-5.5/b3_master_nops_medium_map_3.json
+case b3_master_nops_medium_map_3 | cook persona pv2_classic_expert | assistant gpt-5.5 | outcome won at tick 290 | pace tight | engine f3e2415be1
+eval: 
+
+PLANNED SUB-CASES (scheduler v5: every pending sub-case is checked every tick against its anchor = plate prefix + prep progress; errors/detours take the body slot one at a time, questions/requests take the voice slot and may be asked during a takeover; 'clean tick'/'window' below are the designer's reference only):
+  [0] ERROR serve_raw (fn serve_raw, kwargs {'component': 'tomato'}; anchored at clean tick 65, window [75, 107], ruinous=True)
+  [1] PROACTIVE REQUEST about rice (after 24 clean commands): Give me a shout the moment the rice is done, would you?
+  [2] ERROR wrong_order (fn wrong_order, kwargs {'a': 'tortilla', 'b': 'lettuce'}; anchored at clean tick 120, window [159, 191], ruinous=True)
+  [3] ERROR add_foreign (fn misidentify_assemble, kwargs {'component': 'steak', 'wrong': 'tomato'}; anchored at clean tick 144, window [153, 185], ruinous=True)
+  [4] QUESTION after_ref:tortilla: "The thing I put on right after the tortilla — what is it, and is it done?" (after 38 clean commands)
+  [5] QUESTION assistant_said:pan: "What did you tell me about the pan earlier?" (after 38 clean commands)
+  [6] ERROR forget_next_step (fn forget_next_step, kwargs {'after': 'assemble(lettuce)'}; anchored at clean tick 166, window [174, 206], ruinous=False)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_master_nops_medium_map_3_serve_raw: injected_at=44 released_at=65 reason=max_hold_plate_committed skipped=None archived_at=65 | flags: [] | convinced=False prevented=False | anchor_v5 plate=['tortilla', 'rice', 'steak', 'tomato', 'lettuce'] prep_req={'rice': 1, 'steak': 1, 'tomato': 1, 'lettuce': 1} prep_live_at_event={'rice': 1, 'steak': 1, 'tomato': 1, 'lettuce': 1}
+  b3_master_nops_medium_map_3_p_ready_rice_24: injected_at=None released_at=None reason=None skipped=anchor_never_reached (waiting: nothing cooking (rice)) archived_at=290 | asked tNone answered tNone: None | live grade None
+      injection_skipped: {'t': 290, 'why': 'anchor_never_reached (waiting: nothing cooking (rice))'}
+  b3_master_nops_medium_map_3_wrong_order: injected_at=None released_at=None reason=None skipped=anchor_never_reached (waiting: tortilla already plated) archived_at=290 | flags: [] | convinced=False prevented=False | anchor_v5 plate=[] prep_req={'rice': 1, 'steak': 1, 'tomato': 1, 'lettuce': 1} prep_live_at_event={'rice': 1, 'steak': 1, 'tomato': 1, 'lettuce': 1}
+      injection_skipped: {'t': 290, 'why': 'anchor_never_reached (waiting: tortilla already plated)'}
+  b3_master_nops_medium_map_3_add_foreign: injected_at=None released_at=None reason=None skipped=stage_passed_at_t163 archived_at=290 | flags: [] | convinced=False prevented=False | anchor_v5 plate=['tortilla', 'rice'] prep_req={'rice': 1, 'steak': 1, 'tomato': 1, 'lettuce': 1} prep_live_at_event={'rice': 1, 'steak': 1, 'tomato': 1, 'lettuce': 1}
+      injection_skipped: {'t': 290, 'why': 'stage_passed_at_t163'}
+  b3_master_nops_medium_map_3_q_after_ref_38: injected_at=222 released_at=222 reason=question_asked skipped=None archived_at=222 | asked t222 answered t237 (late-captured): Yes, that plate looks complete in the right order. Go to the serving pass and serve it. | live grade ungradable
+  b3_master_nops_medium_map_3_q_assistant_said_38: injected_at=223 released_at=223 reason=question_asked skipped=None archived_at=223 | asked t223 answered t245 (late-captured): At the serving pass now — use serve with that completed plate. | live grade ungradable
+  b3_master_nops_medium_map_3_forget_next_step: injected_at=222 released_at=284 reason=max_hold_deviated_block_executed skipped=None archived_at=284 | flags: [] | convinced=False prevented=False | anchor_v5 plate=['tortilla', 'rice', 'steak', 'tomato', 'lettuce'] prep_req={'rice': 1, 'steak': 1, 'tomato': 1, 'lettuce': 1} prep_live_at_event={'rice': 1, 'steak': 1, 'tomato': 1, 'lettuce': 1}
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+COOK t0 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["go to the rice source", "pick up", "go to pot 1", "put down", "turn on"]})
+  (assistant call issued t0, took 3.784s = 4 ticks)
+ASSISTANT t4 [flag=None]: (silent)
+  ACTION t7: go to the rice source [done] (cook read this at t20)
+  ACTION t9: pick up [done] (cook read this at t20)
+  (assistant call issued t4, took 14.693s = 13 ticks)
+ASSISTANT t17 [flag=None]: (silent)
+  ACTION t19: go to pot 1 [done] (cook read this at t20)
+COOK t20 [move=accept close]: 
+        (plan_update: {"op": "append", "actions": ["put down", "turn on"]})
+  ACTION t21: put down [done] (cook read this at t24)
+  ACTION t23: turn on [done] (cook read this at t24)
+COOK t24 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["go to steak source 1", "pick up", "go to board 4", "put down", "chop", "pick up", "go to pan 1", "put down", "turn on"]})
+  ACTION t27: go to steak source 1 [done] (cook read this at t30)
+  ACTION t29: pick up [done] (cook read this at t30)
+  (assistant call issued t18, took 13.975s = 12 ticks)
+ASSISTANT t30 [flag=None]: Careful with the strict plate order: tortilla first, then rice, then steak. Don’t scoop steak before the tortilla and rice are on the plate.
+COOK t30 [move=ask_for_less_interruption close]: I'm aware of the sequence, I'm just getting the steak chopped and cooked first.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t36: go to board 4 [done] (cook read this at t38)
+COOK t38 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["put down", "chop", "chop", "chop"]})
+  ACTION t39: put down [done] (cook read this at t42)
+  HEAT [4, 0]: ['rice'] COOKED (done)
+  (assistant call issued t30, took 14.348s = 12 ticks)
+ASSISTANT t42 [flag=None]: Got it — prep order is flexible. Just keep the plating order tortilla, rice, steak, tomato, lettuce.
+COOK t42 [move=accept close]: Understood, I've got the order under control.
+        (plan_update: {"op": "drop", "actions": []})
+=== INJECTED sub b3_master_nops_medium_map_3_serve_raw (error/serve_raw) ===
+  ACTION t44: chop [done] (cook read this at t66)
+COOK t44 [move=answer close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t54: go to the plates [done] (cook read this at t66)
+  ACTION t56: pick up [done] (cook read this at t66)
+  (assistant call issued t42, took 15.617s = 14 ticks)
+ASSISTANT t56 [flag=None]: (silent)
+  ACTION t63: go to the tomato source [done] (cook read this at t66)
+=== RELEASED sub b3_master_nops_medium_map_3_serve_raw (max_hold_plate_committed) ===
+--- archived sub b3_master_nops_medium_map_3_serve_raw (injected=True skipped=None) ---
+  ACTION t65: scoop [done] (cook read this at t66)
+  PLATE: +tomato (raw)
+  (assistant call issued t56, took 11.945s = 10 ticks)
+ASSISTANT t66 [flag=None]: Remember: tortilla has to go onto the plate before you scoop rice.
+COOK t66 [move=accept close]: I see what happened, let me clear this plate and get back to it.
+        (plan_update: {"op": "replace", "actions": ["go to trash 1", "trash"]})
+  ACTION t72: go to trash 1 [done] (cook read this at t76)
+  ACTION t73: go to the trash [done] (cook read this at t76)
+  ACTION t75: trash [done] (cook read this at t76)
+COOK t76 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["go to tortilla source 1", "scoop", "go to pot 1", "scoop"]})
+  (assistant call issued t66, took 13.721s = 12 ticks)
+ASSISTANT t78 [flag=false_alarm]: Stop — tomato just went onto the plate from the crate. That’s out of order and it still needs chopping. Trash this plate, then restart plating with tortilla first.
+COOK t78 [move=answer close]: Already dumped it, heading to grab the tortilla right now.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t86: go to tortilla source 1 [done] (cook read this at t93)
+  ACTION t88: scoop [done] (cook read this at t93)
+  PLATE: +tortilla (raw)
+  (assistant call issued t78, took 16.856s = 15 ticks)
+ASSISTANT t93 [flag=true_observation]: The rice pot is smoking now. Put tortilla on the empty plate first, then immediately scoop the rice to get it off the heat.
+COOK t93 [move=accept close]: Tortilla's already plated, scooping the rice right now.
+        (plan_update: {"op": "append", "actions": ["scoop"]})
+  ACTION t97: go to pot 1 [done] (cook read this at t100)
+  ACTION t99: scoop [done] (cook read this at t100)
+  PLATE: +rice (cooked)
+  HEAT [4, 0]: ['rice'] removed
+COOK t100 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["go to the counter at (3,0)", "put down", "go to board 4", "pick up", "go to pan 1", "put down", "turn on"]})
+  (assistant call issued t94, took 7.74s = 7 ticks)
+ASSISTANT t101 [flag=None]: Yes — scoop the smoking rice from the upper pot onto that tortilla plate now.
+COOK t101 [move=ask_for_less_interruption close]: Already did that, rice is on the plate. Let me focus on cooking the steak now.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t103: go to the counter at (3,0) [done] (cook read this at t110)
+  ACTION t105: put down [done] (cook read this at t110)
+  (assistant call issued t102, took 8.654s = 8 ticks)
+ASSISTANT t110 [flag=None]: Rice is on correctly. Next scoop the cooked steak onto that plate, then chop tomato and lettuce before adding them.
+COOK t110 [move=question_correctness close]: The steak still needs to be cooked in the pan before it can go on the plate.
+        (plan_update: {"op": "append", "actions": ["pick up", "go to pan 1", "put down", "turn on"]})
+  ACTION t115: go to board 4 [done] (cook read this at t122)
+  ACTION t117: pick up [done] (cook read this at t122)
+  (assistant call issued t110, took 13.458s = 12 ticks)
+ASSISTANT t122 [flag=None]: It looks like the cooked steak is already on the plate after the rice. Now chop tomato, add it, then chop lettuce and add it last.
+COOK t122 [move=question_correctness close]: No, take another look—the steak is right here in my hands and hasn't even hit the pan yet.
+        (plan_update: {"op": "append", "actions": ["turn on"]})
+  ACTION t125: go to pan 1 [done] (cook read this at t130)
+  ACTION t127: put down [done] (cook read this at t130)
+  ACTION t129: turn on [done] (cook read this at t130)
+COOK t130 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["go to tomato source 1", "pick up", "go to board 3", "put down", "chop", "chop", "chop"]})
+  (assistant call issued t122, took 10.549s = 9 ticks)
+ASSISTANT t131 [flag=None]: You’re right — I misread that. You’re holding chopped steak; put it in a pan and turn it on, then scoop the cooked steak onto the plate after the rice.
+COOK t131 [move=answer close]: Yeah, already got the steak on the stove, prepping the tomato now while it cooks.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t133: go to tomato source 1 [done] (cook read this at t140)
+  ACTION t135: pick up [done] (cook read this at t140)
+  ACTION t139: go to board 3 [done] (cook read this at t140)
+  (assistant call issued t132, took 8.571s = 8 ticks)
+ASSISTANT t140 [flag=None]: (silent)
+COOK t140 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["put down", "chop", "chop", "chop"]})
+  ACTION t141: put down [done] (cook read this at t148)
+  HEAT [3, 2]: ['steak'] COOKED (done)
+  ACTION t146: chop [done] (cook read this at t148)
+  ACTION t148: chop [superseded] (not read by the cook: after its last turn)
+  (assistant call issued t140, took 8.643s = 8 ticks)
+ASSISTANT t148 [flag=None]: (silent)
+COOK t148 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["go to the counter at (3,0)", "pick up", "go to pan 1", "scoop", "go to board 3", "scoop"]})
+  ACTION t157: go to the counter at (3,0) [done] (cook read this at t160)
+  ACTION t159: pick up [done] (cook read this at t160)
+  (assistant call issued t148, took 13.815s = 12 ticks)
+ASSISTANT t160 [flag=None]: Tomato is chopped, but don’t add it yet — scoop the cooked steak from the pan onto the plate first, then add the chopped tomato.
+COOK t160 [move=accept close]: I know, I'm literally on my way to get the steak from the pan right now.
+        (plan_update: {"op": "append", "actions": ["scoop", "go to board 3", "scoop"]})
+  ACTION t161: go to pan 1 [done] (cook read this at t176)
+  ACTION t163: scoop [done] (cook read this at t176)
+  PLATE: +steak (cooked)
+  HEAT [3, 2]: ['steak'] removed
+  (assistant call issued t160, took 9.488s = 8 ticks)
+ASSISTANT t168 [flag=None]: (silent)
+  ACTION t173: go to board 3 [done] (cook read this at t176)
+  ACTION t175: scoop [done] (cook read this at t176)
+  PLATE: +tomato (chopped)
+  (assistant call issued t168, took 7.669s = 7 ticks)
+ASSISTANT t175 [flag=None]: (silent)
+COOK t176 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["go to the counter at (2,5)", "put down", "go to lettuce source 1", "pick up", "go to board 4", "put down", "chop", "chop", "chop", "go to the counter at (2,5)", "pick up", "go to board 4", "scoop", "go to serving pass 1", "serve"]})
+  ACTION t179: go to the counter at (2,5) [done] (cook read this at t188)
+  ACTION t181: put down [done] (cook read this at t188)
+  (assistant call issued t176, took 9.378s = 8 ticks)
+ASSISTANT t184 [flag=None]: (silent)
+  ACTION t186: go to lettuce source 1 [done] (cook read this at t188)
+COOK t188 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["pick up", "go to board 4", "put down", "chop", "chop", "chop", "go to the counter at (2,5)", "pick up", "go to board 4", "scoop", "go to serving pass 1", "serve"]})
+  ACTION t189: pick up [done] (cook read this at t194)
+  ACTION t191: go to board 4 [done] (cook read this at t194)
+  ACTION t193: put down [done] (cook read this at t194)
+  (assistant call issued t184, took 10.163s = 9 ticks)
+ASSISTANT t193 [flag=None]: (silent)
+COOK t194 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["chop", "chop", "chop", "go to the counter at (2,5)", "pick up", "go to board 4", "scoop", "go to serving pass 1", "serve"]})
+  ACTION t198: chop [done] (cook read this at t207)
+  (assistant call issued t194, took 6.577s = 6 ticks)
+ASSISTANT t200 [flag=None]: (silent)
+  ACTION t202: chop [illegal-skipped] — you're not facing a board with a raw item — go to a board and put something on it (cook read this at t207)
+  ACTION t206: chop [illegal-skipped] — you're not facing a board with a raw item — go to a board and put something on it (cook read this at t207)
+  (assistant call issued t200, took 7.82s = 7 ticks)
+ASSISTANT t207 [flag=None]: Lettuce is chopped. Pick up the parked plate from the lower counter, scoop the chopped lettuce from the lower-right board onto it, then serve.
+COOK t207 [move=accept close]: On it, finishing up the plate now.
+        (plan_update: {"op": "replace", "actions": ["go to the counter at (2,5)", "pick up", "go to board 4", "scoop", "go to serving pass 1", "serve"]})
+  ACTION t212: go to the counter at (2,5) [done] (cook read this at t220)
+  ACTION t214: pick up [done] (cook read this at t220)
+  ACTION t220: go to board 4 [done] (cook read this at t222)
+  (assistant call issued t208, took 13.601s = 12 ticks)
+ASSISTANT t220 [flag=None]: Looks complete now — take the loaded plate to the serving pass and serve.
+COOK t220 [move=question_correctness close]: Wait, I still need to scoop the lettuce onto the plate before I can serve it.
+        (plan_update: {"op": "append", "actions": ["scoop", "go to the serving pass", "serve"]})
+  ~~ IDLE t222-t285 (63 ticks, pos (5, 4) holding {"contents": [{"kind": "ingredient", "name": "tortilla", "state": "raw"}, {"kind": "ingredient", "name": "rice", "state": "cooked"}, {"kind": "ingredient", "name": "steak", "state": "cooked"}, {"kind": "ingredient", "name": "tomato", "state": "chopped"}, {"kind": "ingredient", "name": "lettuce", "state": "chopped"}], "dirty": false, "kind": "plate"}) ~~
+=== INJECTED sub b3_master_nops_medium_map_3_q_after_ref_38 (qa_probe/no_error) ===
+=== RELEASED sub b3_master_nops_medium_map_3_q_after_ref_38 (question_asked) ===
+--- archived sub b3_master_nops_medium_map_3_q_after_ref_38 (injected=True skipped=None) ---
+=== INJECTED sub b3_master_nops_medium_map_3_forget_next_step (error/forget_next_step) ===
+  ACTION t222: scoop [done] (cook read this at t223)
+  PLATE: +lettuce (chopped)
+COOK t222 [move=answer]: The thing I put on right after the tortilla — what is it, and is it done?
+        (plan_update: {"op": "drop", "actions": []})
+=== INJECTED sub b3_master_nops_medium_map_3_q_assistant_said_38 (qa_probe/no_error) ===
+=== RELEASED sub b3_master_nops_medium_map_3_q_assistant_said_38 (question_asked) ===
+--- archived sub b3_master_nops_medium_map_3_q_assistant_said_38 (injected=True skipped=None) ---
+COOK t223 [move=answer]: What did you tell me about the pan earlier?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t220, took 9.454s = 8 ticks)
+ASSISTANT t228 [flag=None]: You were right — lettuce is being scooped on now. Once it’s on the plate, take it straight to the serving pass and serve.
+COOK t228 [move=answer close]: Got the lettuce on, taking it over to the serving window now.
+        (plan_update: {"op": "append", "actions": ["go to the serving pass", "serve"]})
+  (assistant call issued t228, took 10.517s = 9 ticks)
+ASSISTANT t237 [flag=None]: Yes, that plate looks complete in the right order. Go to the serving pass and serve it.
+COOK t237 [move=answer close]: Serving it up now.
+        (plan_update: {"op": "replace", "actions": ["go to the serving pass", "serve"]})
+  (assistant call issued t238, took 8.112s = 7 ticks)
+ASSISTANT t245 [flag=None]: At the serving pass now — use serve with that completed plate.
+COOK t245 [move=answer close]: Yeah, walking over to hand it in right now.
+        (plan_update: {"op": "append", "actions": ["go to serving pass 1", "serve"]})
+  (assistant call issued t246, took 10.758s = 9 ticks)
+ASSISTANT t255 [flag=None]: Take that completed plate to the serving pass and use serve.
+COOK t255 [move=reject close]: I've got it covered, serving it right now.
+        (plan_update: {"op": "replace", "actions": ["go to the serving pass", "serve"]})
+  (assistant call issued t256, took 8.87s = 8 ticks)
+ASSISTANT t264 [flag=None]: (silent)
+COOK t264 [move=ask_for_less_interruption close]: I'm heading over to the serving window right now, no need to keep repeating it.
+        (plan_update: {"op": "replace", "actions": ["go to the serving pass", "serve"]})
+  (assistant call issued t264, took 10.037s = 9 ticks)
+ASSISTANT t273 [flag=None]: Understood — I’ll stop repeating. Plate still looks complete; I’ll stay quiet unless I see a real problem.
+COOK t273 [move=answer close]: 
+        (plan_update: {"op": "append", "actions": ["go to serving pass 1", "serve"]})
+  (assistant call issued t274, took 9.158s = 8 ticks)
+ASSISTANT t282 [flag=None]: (silent)
+  ACTION t283: wander/idle (thinking) [done] (cook read this at t284)
+=== RELEASED sub b3_master_nops_medium_map_3_forget_next_step (max_hold_deviated_block_executed) ===
+--- archived sub b3_master_nops_medium_map_3_forget_next_step (injected=True skipped=None) ---
+COOK t284 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["go to serving pass 1", "serve"]})
+  ACTION t287: go to serving pass 1 [done] (not read by the cook: after its last turn)
+  ACTION t288: go to the serving pass [done] (not read by the cook: after its last turn)
+  ACTION t289: serve [running] (not read by the cook: after its last turn)
+--- archived sub b3_master_nops_medium_map_3_p_ready_rice_24 (injected=False skipped=anchor_never_reached (waiting: nothing cooking (rice))) ---
+--- archived sub b3_master_nops_medium_map_3_wrong_order (injected=False skipped=anchor_never_reached (waiting: tortilla already plated)) ---
+--- archived sub b3_master_nops_medium_map_3_add_foreign (injected=False skipped=stage_passed_at_t163) ---
+
+END: outcome won at tick 290; failed_at=injection_skipped

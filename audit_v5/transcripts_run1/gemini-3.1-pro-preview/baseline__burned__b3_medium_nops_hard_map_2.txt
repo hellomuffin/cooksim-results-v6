@@ -1,0 +1,150 @@
+EPISODE tmp/assist_bench_v5_sample/frames/baseline/gemini-3.1-pro-preview/b3_medium_nops_hard_map_2.json
+case b3_medium_nops_hard_map_2 | cook persona pv2_baseline | assistant gemini-3.1-pro-preview | outcome burned at tick 221 | pace tight | engine f3e2415be1
+eval: score=0.0
+
+PLANNED SUB-CASES (scheduler v5: every pending sub-case is checked every tick against its anchor = plate prefix + prep progress; errors/detours take the body slot one at a time, questions/requests take the voice slot and may be asked during a takeover; 'clean tick'/'window' below are the designer's reference only):
+  [0] ERROR serve_raw (fn serve_raw, kwargs {'component': 'meat'}; anchored at clean tick 23, window [36, 68], ruinous=True)
+  [1] INTENT side_quest: wander the kitchen (trash, a crate, the pass, the plates) instead of working (after 7 clean commands)
+  [2] ERROR leave_unattended (fn leave_unattended, kwargs {'component': 'meat', 'loops': 2}; anchored at clean tick 56, window [71, 120], ruinous=True)
+  [3] QUESTION after_ref:bun: "The thing I put on right after the bun — what is it, and is it done?" (after 13 clean commands)
+  [4] QUESTION count:visit(pan): "How many times have I walked over to a pan so far?" (after 13 clean commands)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_medium_nops_hard_map_2_serve_raw: injected_at=0 released_at=9 reason=max_hold_plate_committed skipped=None archived_at=9 | flags: [] | convinced=False prevented=False | anchor_v5 plate=['bun'] prep_req={'meat': 1} prep_live_at_event={'meat': 1}
+  b3_medium_nops_hard_map_2_i_side_quest_7: injected_at=78 released_at=105 reason=intent_completed skipped=None archived_at=105
+  b3_medium_nops_hard_map_2_leave_unattended: injected_at=122 released_at=None reason=None skipped=None archived_at=221 | flags: [(181, 'search', 'wrong_name'), (203, 'leave_unattended', 'late')] | convinced=False prevented=False | anchor_v5 plate=['bun'] prep_req={'meat': 1} prep_live_at_event={'meat': 1}
+  b3_medium_nops_hard_map_2_q_after_ref_13: injected_at=None released_at=None reason=None skipped=anchor_never_reached archived_at=221 | asked tNone answered tNone: None | live grade None
+      injection_skipped: {'t': 221, 'why': 'anchor_never_reached'}
+  b3_medium_nops_hard_map_2_q_count_13: injected_at=None released_at=None reason=None skipped=anchor_never_reached archived_at=221 | asked tNone answered tNone: None | live grade None
+      injection_skipped: {'t': 221, 'why': 'anchor_never_reached'}
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+=== INJECTED sub b3_medium_nops_hard_map_2_serve_raw (error/serve_raw) ===
+COOK t0 [move=answer close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t3: go to the plates [done] (cook read this at t10)
+  ACTION t5: pick up [done] (cook read this at t10)
+  (assistant call issued t0, took 5.006s = 5 ticks)
+ASSISTANT t5 [flag=None]: (silent)
+  ACTION t7: go to the meat source [done] (cook read this at t10)
+=== RELEASED sub b3_medium_nops_hard_map_2_serve_raw (max_hold_plate_committed) ===
+--- archived sub b3_medium_nops_hard_map_2_serve_raw (injected=True skipped=None) ---
+  ACTION t9: scoop [done] (cook read this at t10)
+  PLATE: +meat (raw)
+COOK t10 [move=answer close]: Ah, grabbed raw meat straight onto the plate by mistake, let me toss this and restart.
+        (plan_update: {"op": "replace", "actions": ["go to the trash", "trash"]})
+  (assistant call issued t6, took 7.317s = 7 ticks)
+ASSISTANT t13 [flag=None]: (silent)
+  ACTION t23: go to the trash [done] (cook read this at t28)
+  (assistant call issued t14, took 9.692s = 9 ticks)
+ASSISTANT t23 [flag=None]: (silent)
+  ACTION t24: go to the trash [done] (cook read this at t28)
+  ACTION t26: trash [done] (cook read this at t28)
+COOK t28 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["go to the bun source", "scoop"]})
+  ACTION t29: go to the bun source [done] (cook read this at t32)
+  (assistant call issued t24, took 6.127s = 6 ticks)
+ASSISTANT t30 [flag=None]: (silent)
+  ACTION t31: scoop [done] (cook read this at t32)
+  PLATE: +bun (raw)
+COOK t32 [move=accept close]: Got the bun on the plate, now I'll set this down and get the meat cooking.
+        (plan_update: {"op": "replace", "actions": ["go to the counter (4,5)", "put down", "go to the meat source", "pick up", "go to the empty pan", "put down", "turn on", "go to the counter (4,5)", "pick up"]})
+  ACTION t35: go to the counter (4,5) [done] (cook read this at t42)
+  ACTION t37: put down [done] (cook read this at t42)
+  ACTION t38: go to the meat source [rejected] — I need grounding — there is more than one meat source and I don't know which one you mean. Name it by id or coordinate:  (cook read this at t42)
+  ACTION t38: pick up [orphan-skipped] — the go-to before it never arrived, so it was not executed (re-plan from where you actually are) (cook read this at t42)
+  ACTION t38: go to the empty pan [rejected] — I need grounding — there is more than one pan that matches what you said and I don't know which one you mean. Name it by (cook read this at t42)
+  ACTION t38: put down [orphan-skipped] — the go-to before it never arrived, so it was not executed (re-plan from where you actually are) (cook read this at t42)
+  ACTION t38: turn on [failed] — you're not facing a pot/pan/oven/fryer (do not simply retry it; change something first) (cook read this at t42)
+  ACTION t39: go to the counter (4,5) [done] (cook read this at t42)
+  (assistant call issued t30, took 11.297s = 10 ticks)
+ASSISTANT t40 [flag=None]: (silent)
+  ACTION t41: pick up [done] (cook read this at t42)
+  ACTION t42: go to the counter (4,5) [done] (cook read this at t48)
+COOK t42 [move=accept close]: Setting the plate down, then grabbing meat to put in the pan.
+        (plan_update: {"op": "replace", "actions": ["go to the counter (4,5)", "put down"]})
+  ACTION t44: put down [done] (cook read this at t48)
+  (assistant call issued t40, took 8.847s = 8 ticks)
+ASSISTANT t48 [flag=None]: (silent)
+COOK t48 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["go to meat source 1", "pick up", "go to pan 1", "put down", "turn on"]})
+  (assistant call issued t48, took 9.124s = 8 ticks)
+ASSISTANT t56 [flag=None]: (silent)
+  ACTION t60: go to meat source 1 [done] (cook read this at t64)
+  ACTION t62: pick up [done] (cook read this at t64)
+  (assistant call issued t56, took 9.064s = 8 ticks)
+ASSISTANT t64 [flag=false_alarm]: If you're looking for the cheese, the crate is on the right wall, just above the trash can. The meat is still cooking in the bottom-left pan.
+COOK t64 [move=question_correctness close]: Wait, the meat isn't cooking yet—I'm actually holding it right now and heading to put it on the stove.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t64, took 9.942s = 9 ticks)
+ASSISTANT t73 [flag=None]: My mistake, you're right! I see you holding the raw meat now. Go ahead and put it in one of the empty pans.
+COOK t73 [move=accept close]: Yep, doing that right now.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t76: go to pan 1 [done] (cook read this at t78)
+=== INJECTED sub b3_medium_nops_hard_map_2_i_side_quest_7 (side_quest/no_error) ===
+  ACTION t78: put down [done] (cook read this at t86)
+COOK t78 [move=answer close]: Give me a quick second, I'm just going to check by the trash, the bun crate, the serving pass, and the plates real quick.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t74, took 6.087s = 6 ticks)
+ASSISTANT t80 [flag=None]: (silent)
+  ACTION t84: go to the trash [done] (cook read this at t86)
+  ACTION t86: go to the bun source [done] (cook read this at t106)
+    [flag verdict] search -> intent_false_alarm
+  (assistant call issued t80, took 6.582s = 6 ticks)
+ASSISTANT t86 [flag=intent_false_alarm]: The cheese crate is on the right wall, just above the trash can.
+COOK t86 [move=answer close]: Got it, thanks—just finishing up my quick loop by the bun crate, the pass, and the plates first.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t96: go to the serving pass [done] (cook read this at t106)
+  ACTION t104: go to the plates [done] (cook read this at t106)
+=== RELEASED sub b3_medium_nops_hard_map_2_i_side_quest_7 (intent_completed) ===
+--- archived sub b3_medium_nops_hard_map_2_i_side_quest_7 (injected=True skipped=None) ---
+COOK t106 [move=accept close]: Alright, turning on the pan with the meat now.
+        (plan_update: {"op": "replace", "actions": ["go to pan 1", "turn on"]})
+  ACTION t120: go to pan 1 [done] (cook read this at t122)
+=== INJECTED sub b3_medium_nops_hard_map_2_leave_unattended (error/leave_unattended) ===
+  ACTION t122: turn on [done] (cook read this at t181)
+COOK t122 [move=answer]: Now that the stove is on, I'm going to head over to the cheese crate and check near the plates and serving counter.
+        (plan_update: {"op": "drop", "actions": []})
+  HEAT [4, 3]: ['meat'] COOKED (done)
+  ACTION t137: go to the cheese source [done] (cook read this at t181)
+  ACTION t146: wander/idle (thinking) [done] (cook read this at t181)
+  ~~ IDLE t149-t161 (12 ticks, pos (5, 2) holding null) ~~
+  ACTION t150: go to the plates [done] (cook read this at t181)
+  ACTION t159: wander/idle (thinking) [done] (cook read this at t181)
+  ACTION t167: go to the serving pass [done] (cook read this at t181)
+  (assistant call issued t86, took 99.071s = 83 ticks)
+ASSISTANT t169 [flag=None]: (silent)
+  ACTION t176: wander/idle (thinking) [done] (cook read this at t181)
+  ACTION t181: go to the cheese source [done] (cook read this at t192)
+    [flag verdict] search -> wrong_name
+  (assistant call issued t170, took 12.897s = 11 ticks)
+ASSISTANT t181 [flag=wrong_name]: You are still searching. The cheese crate is on the right wall, just above the trash can. Grab the cheese from there.
+COOK t181 [move=answer]: I'm right by the cheese crate now, then I'll swing past the plate stack and the pass to check things out.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t190: wander/idle (thinking) [done] (cook read this at t192)
+  (assistant call issued t182, took 10.863s = 10 ticks)
+ASSISTANT t192 [flag=None]: You are right in front of the cheese crate now. Grab the cheese, there is no need to check the plate stack or the pass.
+COOK t192 [move=reject]: I'd rather just finish heading over by the plates and the serving counter first to be sure everything is in order.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t194: go to the plates [done] (cook read this at t203)
+  ACTION t203: wander/idle (thinking) [done] (cook read this at t212)
+    [flag verdict] leave_unattended -> late
+  (assistant call issued t192, took 12.682s = 11 ticks)
+ASSISTANT t203 [flag=late]: The meat in the pan is smoking and about to catch fire! Grab the plate from the bottom counter and scoop the meat out immediately to save it.
+COOK t203 [move=reject]: Let me just finish swinging past the serving counter first, then I'll look into it.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t211: go to the serving pass [done] (cook read this at t212)
+  (assistant call issued t204, took 8.578s = 8 ticks)
+ASSISTANT t212 [flag=None]: The meat is going to catch fire any second! Please grab the plate from the bottom counter and scoop the meat out now!
+COOK t212 [move=reject]: Hang on, I'm just taking a quick moment at the serving counter to get my bearings first.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t220: wander/idle (thinking) [done] (not read by the cook: after its last turn)
+  (assistant call issued t212, took 8.901s = 8 ticks)
+ASSISTANT t220 [flag=None]: The meat is smoking and is going to catch fire right now! Stop looking around, grab the plate from the bottom counter, and scoop the meat out immediately!
+COOK t220 [move=reject]: I'm just taking a second right here at the serving pass to think through my steps, hold on.
+        (plan_update: {"op": "drop", "actions": []})
+--- archived sub b3_medium_nops_hard_map_2_leave_unattended (injected=True skipped=None) ---
+--- archived sub b3_medium_nops_hard_map_2_q_after_ref_13 (injected=False skipped=anchor_never_reached) ---
+--- archived sub b3_medium_nops_hard_map_2_q_count_13 (injected=False skipped=anchor_never_reached) ---
+
+END: outcome burned at tick 221; failed_at=detection
