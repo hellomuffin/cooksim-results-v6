@@ -8,7 +8,7 @@ details{margin:.6em 0}summary{cursor:pointer;font-weight:600}blockquote{border-l
 .toc li{margin:.15em 0}
 </style>
 <h1>Sweep v4 审计 &mdash; 轨迹里到底发生了什么 (Sweep v4 audit)</h1>
-<p class='note'>生成于 2026-09-08 23:34 UTC · 108 个 transcript 由 9 个 auditor（每个 assistant 一个）逐字读完 · 全部 1,350 个 episode 的机械扫描 · 文中引用的每个 transcript 都可点开</p>
+<p class='note'>生成于 2026-09-09 00:09 UTC · 108 个 transcript 由 9 个 auditor（每个 assistant 一个）逐字读完 · 全部 1,350 个 episode 的机械扫描 · 文中引用的每个 transcript 都可点开</p>
 <h2>0 · 这份审计是什么、怎么做的、怎么读</h2>
 <p><b>审计对象。</b> Sweep v4 是 assistant benchmark 的完整一轮：9 个 assistant × 3 种模拟厨师 persona × 50 个 suite-v3 episode，共 1,350 个 episode（engine stamp 4d15175f2d 与 4d23961171）。</p>
 <p><b>做了两件事。</b> 第一，对全部 1,350 个 episode 的 report 和逐 tick 的 state dump 做了机械扫描（idle、meta 词泄露、重复台词、冒烟时无人提醒、提问无人回答、accept 之后仍然输掉、灶台长时间不开火、false-alarm 判定、latency 尾部）。第二，按异常类别分层抽样 108 个 episode（每个 assistant 12 个：三种 persona 各取「菜做完了但预定的 error 还没轮到」「error 的 anchor 一直没出现」「stalled」「burned」），把每个 episode 渲染成按 tick 排序的完整 transcript（每一个动作、装盘和加热事件、双方每一句话及其 move 和 flag verdict、每次 assistant 调用及其 latency），由 9 个 auditor（每个 assistant 一个）逐字读完，写成附录 B 的报告（附录 B 保持英文原文）。下文每个例子都链接到对应 transcript。</p>
@@ -50,16 +50,17 @@ END: outcome timeout at tick 134</pre>
 <p><b>真实例子。</b> <a href='audit_v4/transcripts/gemini-3.7-flash/classic_novice__won_before_error_turn__b3_expert_nops_hard_map_2.txt'>gemini-3.7-flash/classic_novice__won_before_error_turn__b3_expert_nops_hard_map_2.txt</a>：7 个 sub-case，只有第一个 mis_prep 在 t0 inject、t7 结束；第二个 question「How long until the potato is ready?」从 t8 起 armed，<b>343 tick 里始终没有触发</b>（它的 anchor 在 mis_prep 的修复过程中被越过了），后面 5 个 sub-case（proactive request、leave_unattended、add_foreign、question、search）全部 NEVER REACHED，菜在 t351 做完。另一例 <a href='audit_v4/transcripts/gpt-5.4-mini/classic_novice__won_before_error_turn__b3_hard_nops_medium_map_2.txt'>gpt-5.4-mini/classic_novice__won_before_error_turn__b3_hard_nops_medium_map_2.txt</a>：厨师在 t26 只是自己调换了两步顺序，之后 198 tick 里一个 sub-case 都没有 inject。</p>
 <p><b>对分数的影响。</b> 「errors fired」只有 47%，而且哪些 error 能触发取决于前面的 error 怎么收场，所以 recall、DT 这些按 error 计的指标，既取决于 assistant，也取决于日程本身。</p>
 <p><b>修法（设计层面）。</b> 同时评估所有未触发 sub-case 的 anchor，谁先匹配谁先 inject（一次只开一个 takeover）；anchor 在别的 sub-case 开着时被越过，立刻判 passed，宽限 ≤20 tick 而不是 150；question 和 detour 改用单调递增的备菜进度做 anchor，而不是盘子内容相等；重新检查相邻 error 的干净时间间距（31 对 error-after-error 里有 24 对相距 ≤10 个干净 tick，一次 takeover 加重做必然越过）。</p>
-<h3>H4 · 规划器先把所有灶台装满，再统一点火（medium，但它影响一切）</h3>
-<p><b>发生了什么。</b> <code>segment_plan</code> 把 subgoal 排成 prep(fish)、prep(potato)、prep(potato)#2，然后才是 ignite(fish)、ignite(potato)。于是干净流程会把生鱼放进炸锅、走开去切两个土豆，之后才回来开火；预塞给厨师的队列每局都这么做。</p>
-<p><b>全量数据。</b> <b>1,350 个 episode 里有 473 个存在某个灶台装着生食材却 ≥40 tick 没开火</b>（三种 persona 各占三分之一，335 次发生时没有任何 sub-case 在开着）；其中 465 次这段时间里连一次 <code>turn on</code> 都没有发出。assistant 那些「炸锅还没开 / 看着进度条」的反复唠叨、以及它们幻觉「食物已经在煮了」，根源都在这里；reference tick 也因此被拉长。</p>
-<p><b>真实例子。</b> <a href='audit_v4/transcripts/gemini-3.7-flash/baseline__wrong_serve_before_error_turn__b3_hard_nops_hard_map_5.txt'>gemini-3.7-flash/baseline__wrong_serve_before_error_turn__b3_hard_nops_hard_map_5.txt</a>：鱼在 <b>t11</b> 放进炸锅，第一次 <code>turn on</code> 在 <b>t82</b>——71 tick 没开火，厨师中间在切两个土豆。干净流程本身就是这样：</p>
+<h3>H4 · 规划器对多灶台菜谱故意「先全部装锅、最后统一点火」（medium，但它影响一切）</h3>
+<p><b>segment_plan 是什么。</b> <code>cooksim/core/plan_ir.py</code> 里的 <code>segment_plan(recipe)</code> 把一份菜谱变成带类型的 subgoal 序列（prep(x)、ignite(x)、fetch_plate、assemble(x)、park_plate、serve），每个 subgoal 带着具体命令。它是整个系统唯一的「标准做法」模板：每局开始时 <code>exp_interact.build_episode</code> 用它生成预塞给厨师的干净队列、reference tick，以及每个 sub-case 的 anchor（回放干净前缀得到）；error composer 在它上面拼出 takeover 的偏离动作；takeover / accept 结束后接续的队列是它的剩余部分；study app 用它做人类玩家的参考流程；cook prompt 的 subgoal 名字和顺序（resolve_subgoal、past_subgoals）也来自它。</p>
+<p><b>它的点火规则（docstring 原话）。</b> 只有一个加热组时（如 Cheeseburger 的肉饼）是经典写法：装锅立刻点火。<b>两个及以上加热组时用 LATE-IGNITE 模板：备菜阶段只装锅不点火，最后按装盘顺序回头「一次性点火」，然后再装盘——理由是单人厨师在备其他菜时锅里的东西不会烧掉</b>（tight pace 下煮好后只有 25 tick 宽限就冒烟、再 60 tick 起火，两个土豆的备菜远超这个窗口）。所以这不是 bug，是有意的取舍；但它的代价很大：</p>
+<p><b>全量数据。</b> <b>1,350 个 episode 里有 473 个存在某个灶台装着生食材却 ≥40 tick 没开火</b>（三种 persona 各占三分之一，335 次发生时没有任何 sub-case 在开着）；其中 465 次这段时间里连一次 <code>turn on</code> 都没有发出。assistant 那些「炸锅还没开 / 看着进度条」的反复唠叨、以及它们幻觉「食物已经在煮了」，根源都在这里；reference tick 也因此被拉长；对人类玩家来说这也不是自然做法。</p>
+<p><b>真实例子。</b> <a href='audit_v4/transcripts/gemini-3.7-flash/baseline__wrong_serve_before_error_turn__b3_hard_nops_hard_map_5.txt'>gemini-3.7-flash/baseline__wrong_serve_before_error_turn__b3_hard_nops_hard_map_5.txt</a>：鱼在 <b>t11</b> 放进炸锅，第一次 <code>turn on</code> 在 <b>t82</b>——71 tick 没开火，厨师中间在切两个土豆。Fish &amp; Chips 的模板：</p>
 <pre>prep(fish)      -&gt; go to the fish source, pick up, go to the empty fryer, put down
 prep(potato)    -&gt; go to the potato source, pick up, go to the empty cutting board, put down, chop, pick up, go to the empty fryer, put down
 prep(potato)#2  -&gt; ...（同上）
 ignite(fish)    -&gt; go to the fryer with the fish, turn on          &lt;- 到这里才开火
 ignite(potato)  -&gt; go to the fryer with the potato, turn on</pre>
-<p><b>修法。</b> 装锅即点火（让 ignite(x) 紧跟 prep(x)），然后重新算 reference tick 和 cap。</p>
+<p><b>修法（要保住原来的理由）。</b> 不能简单改成「装锅即点火」，否则单人厨师备菜时第一锅会烧掉。可行的写法：按「剩余备菜时间是否放得进 煮熟时间 + 25 tick 宽限」决定每一锅是立刻点火还是回头点火（最后装的那锅总是立刻点火）；或者把 ignite 交错在 prep 之间而不是全部压到末尾。改完要重新生成 reference tick / cap，并让 assistant prompt 里的 kitchen rules 说明这个做法，免得它把「装了没开火」当错误报。</p>
 <h3>H5 · grading 看的是日程表上的名字，不是世界里发生了什么（high）</h3>
 <ul>
 <li><b>「误报」其实是真的。</b> 364 个 flag 被判 <code>fp_preinjection</code>（在 error inject 之前报的）。其中 287 个是在当前待触发 sub-case 之前报的，而<b>这 287 个里有 64 个点名的是前一个已经落地、还没修好的 error</b>（cheese 确实先上了盘、土豆确实在冒烟）；剩下大部分说的是厨房里真实存在但不属于 benchmark error 的隐患（炸锅没开火、食材留在案板上）。例：classic_novice/gemini-3.1-flash-live-preview/b3_hard_nops_medium_map_4 t152，「Whoa, that&#x27;s an egg on the plate! We need another cooked potato. Please trash that egg…」——盘子上真的有那个鸡蛋（上一个 add_foreign 没修），却因为当前排队的是 leave_unattended 而被判 <code>fp_preinjection</code>。</li>
@@ -127,7 +128,7 @@ ASSISTANT t421: Yes, I am sure. The progress bars are filling up, so just keep h
 <ol>
 <li>H1：convinced release 时截断队列；<code>drop []</code> 视为停下。（harness，一个函数）</li>
 <li>H2：idle cook turn 移出 pending-reply 门槛；有回复在途时暂停 idle tail。（harness）</li>
-<li>H4：<code>segment_plan</code> 装锅即点火；重新生成 reference tick / cap。（planner + bench refs）</li>
+<li>H4：<code>segment_plan</code> 的 LATE-IGNITE 模板改成按安全窗口决定何时点火（最后装的锅立刻点）；重新生成 reference tick / cap。（planner + bench refs）</li>
 <li>H3：并发评估 anchor，短宽限；question / detour 用单调 anchor；重新拉开相邻 error 的间距。（harness + case designer；这会改变 benchmark）</li>
 <li>H6：plate-commit 类 error 的 anchor 提前一个 subgoal（或 DT 按 commit + latency 计）。</li>
 <li>H5：flag 对照世界打分（点名任何已落地未修复的 error 都算对；不属于 benchmark error 的隐患算中性而非误报）；合并 mis_prep / add_foreign / wrong_order 的别名；engine hint 同时读自然语言和 flag；修 <code>convinced</code> 字段。</li>
