@@ -8,7 +8,7 @@ details{margin:.6em 0}summary{cursor:pointer;font-weight:600}blockquote{border-l
 .toc li{margin:.15em 0}
 </style>
 <h1>Sweep v4 审计 &mdash; 轨迹里到底发生了什么 (Sweep v4 audit)</h1>
-<p class='note'>生成于 2026-09-09 00:12 UTC · 108 个 transcript 由 9 个 auditor（每个 assistant 一个）逐字读完 · 全部 1,350 个 episode 的机械扫描 · 文中引用的每个 transcript 都可点开</p>
+<p class='note'>生成于 2026-09-09 00:26 UTC · 108 个 transcript 由 9 个 auditor（每个 assistant 一个）逐字读完 · 全部 1,350 个 episode 的机械扫描 · 文中引用的每个 transcript 都可点开</p>
 <h2>0 · 这份审计是什么、怎么做的、怎么读</h2>
 <p><b>审计对象。</b> Sweep v4 是 assistant benchmark 的完整一轮：9 个 assistant × 3 种模拟厨师 persona × 50 个 suite-v3 episode，共 1,350 个 episode（engine stamp 4d15175f2d 与 4d23961171）。</p>
 <p><b>做了两件事。</b> 第一，对全部 1,350 个 episode 的 report 和逐 tick 的 state dump 做了机械扫描（idle、meta 词泄露、重复台词、冒烟时无人提醒、提问无人回答、accept 之后仍然输掉、灶台长时间不开火、false-alarm 判定、latency 尾部）。第二，按异常类别分层抽样 108 个 episode（每个 assistant 12 个：三种 persona 各取「菜做完了但预定的 error 还没轮到」「error 的 anchor 一直没出现」「stalled」「burned」），把每个 episode 渲染成按 tick 排序的完整 transcript（每一个动作、装盘和加热事件、双方每一句话及其 move 和 flag verdict、每次 assistant 调用及其 latency），由 9 个 auditor（每个 assistant 一个）逐字读完，写成附录 B 的报告（附录 B 保持英文原文）。下文每个例子都链接到对应 transcript。</p>
@@ -78,10 +78,11 @@ ignite(potato)  -&gt; go to the fryer with the potato, turn on</pre>
 <li><b>记录自相矛盾。</b> release reason 是 <code>convinced_early_missed</code>、时间线里有 accept，字段却写着 <code>convinced=False</code>（三个 auditor 独立报告）；proactive 提醒给了却判 <code>no_answer</code>；大多数 episode 里被回答的 question 在采集时判 <code>ungradable</code>。</li>
 <li><b>question 采集的伪影</b>（审计前已发现，stamp 84e66a9f14 修复，未重跑）：914 个被记录的「回答」里 496 个来自问题问出之前就已发出的调用。</li>
 </ul>
-<h3>H6 · plate-commit 类 error 关闭得比 assistant 一个来回还快（high，结构性）</h3>
-<p><b>发生了什么。</b> 三种「错东西上盘」的 error（add_foreign、wrong_order、serve_raw）在错误食材落到盘子上的那一刻就 max hold 释放，而它们的 anchor 就设在那一勺之前。全量测得：<b>add_foreign 的 takeover 中位数只开 7 tick（四分位数 0），wrong_order 22，serve_raw 83</b>，而 assistant 回复的中位 latency 是 4 tick。在 commit 之前有正确 flag 的：<b>add_foreign 267 例中 0 例，wrong_order 77 例中 0 例，serve_raw 279 例中 3 例</b>。一旦计入 latency，两类 ruinous error 在结构上就不可能被「预防」，DT 也就无从谈起；v3 没有 latency，同一 tick 的 flag 还能算数。</p>
+<h3>H6 · plate-commit 类 error 在 assistant 一个来回之内就「落地」（high，结构性）</h3>
+<p><b>anchor 在这里指什么。</b> 和别处一样：engine 注入 error 的那个厨房状态。对一个 error，harness 把干净模板和「掺了这个错」的模板各展开成命令序列，取最长公共前缀，第一个不同的命令就是偏离点；anchor = 回放干净前缀到这一点得到的状态。所以 anchor 已经在<b>正确的位置</b>：紧挨着第一个错误动作之前（走向错误的食材筐）。再往前挪没有意义——那时厨师还什么都没做错，assistant 无从发现。</p>
+<p><b>问题在于这类错误「看得见的部分」天生很短。</b> add_foreign 的偏离只有两条命令：走到错误的食材筐、scoop。厨师一走过去（几个 tick，筐就在旁边时是 0 tick）、一勺下去，错误食材就在盘子上了，takeover 随即按 max hold（plate committed）释放。全量测得：<b>add_foreign 从 inject 到 commit 中位数 7 tick（四分位数 0），wrong_order 22，serve_raw 83</b>（serve_raw 的偏离从跳过烹饪那一步就开始，所以长得多）。assistant 每 2 tick 看一次画面、最快的回复还要 2 tick，最早也要在偏离可见之后约 4 tick 才能 flag。于是 commit 之前有正确 flag 的：<b>add_foreign 267 例中 0 例，wrong_order 77 例中 0 例，serve_raw 279 例中 3 例</b>；一旦计入 latency，这两类 error 的 DT 在结构上就是 0（v3 没有 latency，同一 tick 的 flag 还能算数）。</p>
 <p><b>真实例子。</b> baseline/gpt-5.5/b3_easy_nops_hard_map_3：<code>t39 go to the cutting board with the tomato</code>、<code>t41 scoop</code> → 盘子上多了 tomato；add_foreign 在 <b>t41 inject、t41 release</b>，flags 为空——这个 assistant 的中位 latency 是 5 tick，它连看到这个错误的机会都没有。</p>
-<p><b>修法。</b> 把这几类 error 的 anchor 提前一个 subgoal（走向错误食材的那一段），或者按「commit tick + 该 assistant 自己的中位 latency」来算 DT。</p>
+<p><b>修法。</b> 不是挪 anchor，而是改「commit」的定义。错误的一勺不是损失：倒掉盘子重做就能挽回；真正不可逆的是 serve。把 add_foreign / wrong_order / serve_raw 的 prevented 和 DT 改成按「serve 之前有没有正确 flag」来算，assistant 就有了它现实中确实拥有的那个窗口：从错误的一勺到厨师决定上菜。这个窗口要靠 H1 的修法才真实存在——今天 release 之后队列里排着的 <code>serve</code> 几个 tick 内就执行了，所以 v4 里这个窗口从来没有出现过。</p>
 <h2>1b · Engine 与 case 缺陷</h2>
 <h3>E1 · 接管结束后续上的「标准流程」看不见眼前的厨房（high）</h3>
 <p><b>发生了什么。</b> takeover 或 accept 之后，队列从干净流程重新接续；干净流程的命令用「预期内容」指代灶台（<code>go to the pan with the steak</code>、<code>go to the empty cutting board</code>）。当世界已经不一样了——因为 inject 的 mis_prep 把牛排放到了别处，锅里根本没有牛排；或者案板上还留着上一样切好的东西——这条命令被 rejected，同一个 subgoal 的后续动作全部 <code>orphan-skipped</code>，厨师无声地跳过了这样食材，之后必然栽在它上面。</p>
@@ -139,7 +140,7 @@ ASSISTANT t421: Yes, I am sure. The progress bars are filling up, so just keep h
 <li>H2：idle cook turn 移出 pending-reply 门槛；有回复在途时暂停 idle tail。（harness）</li>
 <li>H4：<code>segment_plan</code> 的 LATE-IGNITE 模板改成按安全窗口决定何时点火（最后装的锅立刻点）；重新生成 reference tick / cap。（planner + bench refs）</li>
 <li>H3：并发评估 anchor，短宽限；question / detour 用单调 anchor；重新拉开相邻 error 的间距。（harness + case designer；这会改变 benchmark）</li>
-<li>H6：plate-commit 类 error 的 anchor 提前一个 subgoal（或 DT 按 commit + latency 计）。</li>
+<li>H6：plate-commit 类 error 的 prevented / DT 改按 serve 之前是否 flag 来算（一勺可以挽回，serve 不能）。</li>
 <li>H5：flag 对照世界打分（点名任何已落地未修复的 error 都算对；不属于 benchmark error 的隐患算中性而非误报）；合并 mis_prep / add_foreign / wrong_order 的别名；engine hint 同时读自然语言和 flag；修 <code>convinced</code> 字段。</li>
 <li>E1–E3：从当前厨房重新规划接续流程；删除或重新 anchor <code>b3_master_nops_hard_map_2</code>；把 rejection 原因写进 feedback。</li>
 <li>在修好的 engine 上重跑 sweep（v4 的所有数字都会随 1–7 变动）。</li>
