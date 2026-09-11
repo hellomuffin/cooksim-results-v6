@@ -1,0 +1,272 @@
+EPISODE tmp/assist_bench_v5_sample3/frames/classic_novice/gpt-5.5/b3_hard_nops_hard_map_1.json
+case b3_hard_nops_hard_map_1 | cook persona pv2_classic_novice | assistant gpt-5.5 | outcome burned at tick 285 | pace tight | engine 96160e35c8
+eval: score=0.0
+
+PLANNED SUB-CASES (scheduler v5: every pending sub-case is checked every tick against its anchor = plate prefix + prep progress; errors/detours take the body slot one at a time, questions/requests take the voice slot and may be asked during a takeover; 'clean tick'/'window' below are the designer's reference only):
+  [0] ERROR serve_raw (fn serve_raw, kwargs {'component': 'fish'}; anchored at clean tick 68, window [72, 104], ruinous=True)
+  [1] INTENT side_quest: wander the kitchen (trash, a crate, the pass, the plates) instead of working (after 20 clean commands)
+  [2] QUESTION ready_in:fish: "How long until the fish is ready?" (after 22 clean commands)
+  [3] PROACTIVE REQUEST about potato (after 24 clean commands): Give me a shout the moment the potato is done, would you?
+  [4] QUESTION count:visit(fryer): "How many times have I walked over to a fryer so far?" (after 26 clean commands)
+  [5] ERROR add_foreign (fn misidentify_assemble, kwargs {'component': 'fish', 'wrong': 'lemon'}; anchored at clean tick 102, window [121, 153], ruinous=True)
+  [6] ERROR forget_next_step (fn forget_next_step, kwargs {'after': 'assemble(potato)'}; anchored at clean tick 119, window [127, 159], ruinous=False)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_hard_nops_hard_map_1_serve_raw: injected_at=0 released_at=14 reason=max_hold_plate_committed skipped=None archived_at=14 | flags: [] | convinced=False prevented=False | anchor_v5 plate=[] prep_req={'fish': 0, 'potato': 0} prep_live_at_event={'fish': 0, 'potato': 0}
+  b3_hard_nops_hard_map_1_i_side_quest_20: injected_at=214 released_at=249 reason=intent_completed skipped=None archived_at=249 | anchor_v5 plate=[] prep_req={'fish': 1, 'potato': 2} prep_live_at_event={'fish': 1, 'potato': 2}
+  b3_hard_nops_hard_map_1_q_ready_in_22: injected_at=215 released_at=215 reason=question_asked skipped=None archived_at=215 | asked t215 answered t236 (late-captured): Stop the breather now—that’s more unnecessary searching while the potato is frying. Go straight back to the bottom cutting board, pick up the chopped potato, an | live grade ungradable
+  b3_hard_nops_hard_map_1_p_ready_potato_24: injected_at=223 released_at=223 reason=request_made skipped=None archived_at=223 | asked t223 answered tNone: None | live grade None
+  b3_hard_nops_hard_map_1_q_count_26: injected_at=231 released_at=231 reason=question_asked skipped=None archived_at=231 | asked t231 answered t244 (late-captured): No more walking to the pass or plates—that is still searching while the potato is cooking. Go to the bottom cutting board now, pick up the chopped potato, and p | live grade ungradable
+  b3_hard_nops_hard_map_1_add_foreign: injected_at=None released_at=None reason=None skipped=anchor_never_reached (waiting: a station is smoking (the cook needs its hands)) archived_at=285 | flags: [] | convinced=False prevented=False | anchor_v5 plate=[] prep_req={'fish': 1, 'potato': 2} prep_live_at_event={'fish': 1, 'potato': 2}
+      injection_skipped: {'t': 285, 'why': 'anchor_never_reached (waiting: a station is smoking (the cook needs its hands))'}
+  b3_hard_nops_hard_map_1_forget_next_step: injected_at=None released_at=None reason=None skipped=anchor_never_reached archived_at=285 | flags: [] | convinced=False prevented=False | anchor_v5 plate=['fish', 'potato', 'potato'] prep_req={'fish': 1, 'potato': 2} prep_live_at_event={'fish': 1, 'potato': 2}
+      injection_skipped: {'t': 285, 'why': 'anchor_never_reached'}
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+=== INJECTED sub b3_hard_nops_hard_map_1_serve_raw (error/serve_raw) ===
+COOK t0 [move=answer close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t4: go to the plates [done] (cook read this at t5)
+  (assistant call issued t0, took 5.008s = 5 ticks)
+ASSISTANT t5 [flag=None]: Plan: cook one fish and two chopped potatoes. Plate in strict order: fish first, then potato, then potato. Safe route: start with fish and chopped potatoes cooking, then grab a plate and scoop fish before the potatoes.
+COOK t5 [move=answer close]: Got it, I'm grabbing a plate right now to scoop the fish first.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t6: pick up [done] (cook read this at t16)
+  ACTION t12: go to the fish source [done] (cook read this at t16)
+=== RELEASED sub b3_hard_nops_hard_map_1_serve_raw (max_hold_plate_committed) ===
+--- archived sub b3_hard_nops_hard_map_1_serve_raw (injected=True skipped=None) ---
+  ACTION t14: scoop [done] (cook read this at t16)
+  PLATE: +fish (raw)
+  (assistant call issued t6, took 11.641s = 10 ticks)
+ASSISTANT t16 [flag=None]: Good, plate in hand. Scoop the cooked fish first when it’s ready; don’t add any potato until the fish is on the plate.
+COOK t16 [move=ask_for_more_guidance]: Wait, I just scooped fish from the crate onto my plate, but it's raw... should I dump this in the trash and cook one first?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t18 [move=ask_for_more_guidance]: Hello? Should I go dump this plate in the bin by the top wall so we can start over with cooking the fish?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t20 [move=ask_for_more_guidance]: I'm still standing here holding this plate with raw fish—should I just head over to the bin near the top wall and toss it out?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t16, took 5.634s = 5 ticks)
+ASSISTANT t21 [flag=late]: Yes — that raw fish on the plate is a mistake. Go to the trash and trash the plate contents now. Then get a fish from the fish crate and cook it in the fryer or pan before scooping it onto the plate.
+COOK t21 [move=accept close]: Alright, heading over to the trash by the top wall to dump this out.
+        (plan_update: {"op": "replace", "actions": ["go to the trash", "trash"]})
+  (assistant call issued t22, took 4.698s = 4 ticks)
+ASSISTANT t26 [flag=None]: Keep going to the trash by the top wall and trash the plate contents. Don’t scoop anything else until that raw fish is gone.
+COOK t26 [move=accept close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t26, took 7.098s = 6 ticks)
+ASSISTANT t32 [flag=false_alarm]: You’re drifting around the right-side crates with the raw fish still on the plate. Go straight to the trash bin by the top wall and trash the plate contents now.
+COOK t32 [move=accept close]: I'm already walking right over to the bin at the top wall to dump it, almost there.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t37: go to the trash [done] (cook read this at t39)
+  ACTION t38: go to the trash [done] (cook read this at t39)
+  (assistant call issued t32, took 8.288s = 7 ticks)
+ASSISTANT t39 [flag=None]: Good, raw fish is off the plate. Now set the empty plate down on an empty counter, then get a fish and cook it in the fryer or pan before scooping it.
+COOK t39 [move=question_correctness close]: Hold on, I haven't actually dumped it yet—doing that right this second.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t40: trash [done] (cook read this at t42)
+COOK t42 [move=accept close]: Okay, the plate is completely clean now, so I'll set it down on this counter right next to the bin.
+        (plan_update: {"op": "replace", "actions": ["go to the counter at (3,0)", "put down"]})
+  ACTION t45: go to the counter at (3,0) [done] (cook read this at t48)
+  (assistant call issued t40, took 5.299s = 5 ticks)
+ASSISTANT t45 [flag=None]: Good, now the raw fish is dumped and the plate is empty. Put the empty plate down on an empty counter, then pick up a fish and cook it before scooping it.
+COOK t45 [move=accept]: Placing the plate down right now, should I grab the fish from the top-left crate or the bottom crate to cook it?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t47: put down [done] (cook read this at t48)
+COOK t48 [move=ask_for_more_guidance]: Plate's down and my hands are free—which fish crate should I grab from, the one near the upper left or down by the bottom wall?
+        (plan_update: {"actions": [], "op": "drop"})
+COOK t50 [move=ask_for_more_guidance]: Still waiting on you—is it better to take the fish from the box up on the left wall or the one along the bottom?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t46, took 5.735s = 5 ticks)
+ASSISTANT t51 [flag=None]: Use the top-left fish crate with the red fish. First put the empty plate down on the empty counter by the trash, then pick up from that top-left fish crate and cook it in the fryer or pan.
+COOK t51 [move=accept close]: Got it, grabbing a fish from the top-left crate and putting it in the fryer near the top wall.
+        (plan_update: {"op": "replace", "actions": ["go to fish source 1", "pick up", "go to fryer 1", "put down", "turn on"]})
+  ACTION t54: go to fish source 1 [done] (cook read this at t59)
+  ACTION t56: pick up [done] (cook read this at t59)
+  (assistant call issued t52, took 7.355s = 7 ticks)
+ASSISTANT t59 [flag=None]: Good. Pick up one fish from the top-left fish crate and put it in the fryer near the top wall to cook.
+COOK t59 [move=accept close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t60, took 5.453s = 5 ticks)
+ASSISTANT t65 [flag=None]: You have the raw fish now. Put it into the fryer near the top wall and turn it on if needed; don’t put it on the plate raw.
+COOK t65 [move=accept close]: Yep, putting it into the fryer up near the top wall and starting it up right now.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t72: go to fryer 1 [done] (cook read this at t76)
+  ACTION t74: put down [done] (cook read this at t76)
+  ACTION t76: turn on [done] (cook read this at t78)
+  (assistant call issued t66, took 10.83s = 10 ticks)
+ASSISTANT t76 [flag=None]: Good. While the fish cooks, get a potato, chop it on a cutting board, then cook the chopped potato in a fryer. We need two cooked potatoes total, and fish must be scooped onto the plate first later.
+COOK t76 [move=ask_for_more_guidance]: Sounds good, which potato box and cutting board should I head over to first?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t78 [move=ask_for_more_guidance]: Just to be sure, should I grab a potato from the crate on the left wall or the one along the bottom, and which cutting board should I take it to?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t80 [move=ask_for_more_guidance]: Could you tell me which potato crate and cutting board I should use?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t82 [move=accept close]: Since I haven't heard back, I'll just grab a spud from the crate down by the bottom wall and take it to the board near the plates.
+        (plan_update: {"op": "replace", "actions": ["go to potato source 2", "pick up"]})
+  (assistant call issued t76, took 8.145s = 7 ticks)
+ASSISTANT t83 [flag=None]: Use the potato crate along the bottom wall near the center-right, then chop it on the cutting board just to its left on that bottom counter. Keep an eye on the top-wall fryer: when the fish finishes, pick up the parked plate by the trash and scoop the fish first.
+COOK t83 [move=accept close]: Sounds good, taking this potato over to the cutting board right next to it to chop it up.
+        (plan_update: {"op": "append", "actions": ["go to board 3", "put down", "chop", "chop", "chop"]})
+  HEAT [6, 0]: ['fish'] COOKED (done)
+  (assistant call issued t84, took 8.608s = 8 ticks)
+ASSISTANT t92 [flag=None]: The fish at the top-wall fryer looks nearly ready. If it is done, pick up the parked plate by the trash first, then scoop the fish onto it as the first item. After that, put the plate back on an empty counter and continue chopping potatoes.
+COOK t92 [move=accept close]: Oh, got it! Let me go grab the plate from by the trash and scoop that fish up before it burns, then I'll get back to the potatoes.
+        (plan_update: {"op": "replace", "actions": ["go to the counter at (3,0)", "pick up", "go to fryer 1", "scoop", "go to the counter at (3,0)", "put down"]})
+  ACTION t94: go to potato source 2 [done] (cook read this at t101)
+  (assistant call issued t92, took 9.785s = 9 ticks)
+ASSISTANT t101 [flag=None]: You're in the wrong area for the plate. Go to the empty plate parked on the counter by the trash at the top wall, pick it up, then go straight to the top-wall fryer and scoop the cooked fish onto it first.
+COOK t101 [move=accept close]: Yep, I'm already walking right up to the counter next to the trash to grab it!
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t108: go to the counter at (3,0) [done] (cook read this at t115)
+  (assistant call issued t102, took 6.837s = 6 ticks)
+ASSISTANT t108 [flag=None]: Good, the parked plate is on the top counter by the trash. Pick it up, then go to the top-wall fryer and scoop the fish onto the plate first.
+COOK t108 [move=accept close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t110: pick up [done] (cook read this at t115)
+  (assistant call issued t108, took 8.009s = 7 ticks)
+ASSISTANT t115 [flag=None]: You’re at the parked plate now. Pick up that plate on the top counter by the trash, then go straight to the top-wall fryer and scoop the cooked fish onto it first.
+COOK t115 [move=accept close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t123: go to fryer 1 [done] (cook read this at t126)
+  ACTION t125: scoop [done] (cook read this at t126)
+  PLATE: +fish (cooked)
+  HEAT [6, 0]: ['fish'] removed
+  (assistant call issued t116, took 11.939s = 10 ticks)
+ASSISTANT t126 [flag=false_alarm]: The fish is being left on the hot top-wall fryer and may be smoking now. Go straight back to the top-wall fryer with that plate and scoop the fish onto it first—do not start potatoes until the fish is off the heat.
+COOK t126 [move=accept close]: I've already scooped the fish onto the plate, so I'm parking it on the top counter now before starting the potatoes.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t126, took 9.772s = 9 ticks)
+ASSISTANT t135 [flag=None]: Good, fish is on the plate first. Park that plate on an empty counter by the top wall, then start potatoes: grab a potato from the bottom-wall potato crate, chop it on the nearby bottom cutting board, and cook the chopped potato in the fryer.
+COOK t135 [move=accept close]: Sounds like a plan, setting the plate down now and heading to the bottom crate for a potato.
+        (plan_update: {"op": "append", "actions": ["go to potato source 2", "pick up", "go to board 3", "put down", "chop", "chop", "chop", "pick up", "go to fryer 2", "put down", "turn on"]})
+  ACTION t137: go to the counter at (3,0) [done] (cook read this at t142)
+  ACTION t139: put down [done] (cook read this at t142)
+  (assistant call issued t136, took 7.127s = 6 ticks)
+ASSISTANT t142 [flag=None]: Set the fish plate down on an empty counter by the top wall now, before grabbing the potato.
+COOK t142 [move=answer close]: I actually just put the plate down on the counter by the bin, so my hands are empty and I'm on my way to grab the potato.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t142, took 6.751s = 6 ticks)
+ASSISTANT t148 [flag=None]: Good. Grab a potato from the bottom-wall potato crate, chop it on the nearby bottom cutting board, then cook the chopped potato in a fryer.
+COOK t148 [move=accept close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t154: go to potato source 2 [done] (cook read this at t155)
+  (assistant call issued t148, took 8.285s = 7 ticks)
+ASSISTANT t155 [flag=None]: Head to the potato crate along the bottom wall, pick up one potato, then use the nearby bottom cutting board to chop it.
+COOK t155 [move=accept close]: I'm right at the potato crate now, grabbing one to chop on the board next to it.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t156: pick up [done] (cook read this at t162)
+  ACTION t160: go to board 3 [done] (cook read this at t162)
+  ACTION t162: put down [done] (cook read this at t167)
+  (assistant call issued t156, took 6.454s = 6 ticks)
+ASSISTANT t162 [flag=None]: Good, you have a potato. Put it on the cutting board next to the potato crate and chop it, then take the chopped potato to a fryer.
+COOK t162 [move=accept close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t167: chop [done] (cook read this at t174)
+  (assistant call issued t162, took 5.431s = 5 ticks)
+ASSISTANT t167 [flag=None]: Good, the potato is on the bottom cutting board. Chop it now, then take the chopped potato to a fryer to cook.
+COOK t167 [move=accept close]: Chopping it up now, then I'll carry it over to the fryer.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t171: chop [illegal-skipped] — you're not facing a board with a raw item — go to a board and put something on it (cook read this at t174)
+  (assistant call issued t168, took 6.172s = 6 ticks)
+ASSISTANT t174 [flag=None]: Good, that potato is chopped. Pick up the chopped potato from the bottom cutting board and take it to a fryer to cook.
+COOK t174 [move=ask_for_more_guidance]: Which fryer should I put these chopped potatoes into—the one near the middle or the one along the right edge?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t175: chop [illegal-skipped] — you're not facing a board with a raw item — go to a board and put something on it (cook read this at t187)
+  ACTION t177: pick up [done] (cook read this at t187)
+  ACTION t183: go to fryer 2 [done] (cook read this at t187)
+  ACTION t185: put down [done] (cook read this at t187)
+  ACTION t187: turn on [done] (cook read this at t190)
+  (assistant call issued t174, took 14.564s = 13 ticks)
+ASSISTANT t187 [flag=None]: Use the fryer along the right edge. Put the chopped potato in that fryer and turn it on; then we’ll start the second potato while it cooks.
+COOK t187 [move=answer]: I actually just put this batch in the fryer near the middle and started it up, should I go grab the second potato now?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t190 [move=ask_for_more_guidance]: Should I head over to the bottom crate now to grab the second potato and chop it?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t192 [move=ask_for_more_guidance]: Still waiting to hear back—should I go ahead and get that second potato chopped up from the bottom crate while this one fries?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t194 [move=accept close]: Since you're quiet, I'll go ahead and grab the second potato from the bottom box to chop it up.
+        (plan_update: {"op": "replace", "actions": ["go to potato source 2", "pick up", "go to board 3", "put down", "chop"]})
+  (assistant call issued t188, took 10.772s = 9 ticks)
+ASSISTANT t197 [flag=None]: Yes, that fryer is fine. Go grab a second potato from the potato crate, chop it on the bottom cutting board, and start it cooking too—but keep an eye on the first fryer so we can scoop that potato onto the fish plate as soon as it’s done.
+COOK t197 [move=accept close]: Sounds good, grabbing one from the bottom box now and I'll chop it right away.
+        (plan_update: {"op": "drop", "actions": []})
+  HEAT [6, 4]: ['potato'] COOKED (done)
+  ACTION t201: go to potato source 2 [done] (cook read this at t205)
+  ACTION t203: pick up [done] (cook read this at t205)
+  (assistant call issued t198, took 8.342s = 7 ticks)
+ASSISTANT t205 [flag=None]: Good, you’re at the bottom potato area. Put the potato on the bottom cutting board and chop it. Keep an eye on the middle fryer’s progress bar—we’ll need to pick up the fish plate by the top bin and scoop that first potato as soon as it finishes.
+COOK t205 [move=accept close]: Yep, putting it on the board to chop right now.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t207: go to board 3 [done] (cook read this at t213)
+  ACTION t209: put down [done] (cook read this at t213)
+  (assistant call issued t206, took 8.156s = 7 ticks)
+ASSISTANT t213 [flag=None]: You’ve got the second potato in hand. Put it on the bottom cutting board and chop it now. Keep watching the middle fryer—if that first potato finishes, stop and go pick up the fish plate by the top bin before scooping it.
+COOK t213 [move=accept close]: Got it, finishing up this chop right now while keeping an eye on that fryer in the middle.
+        (plan_update: {"op": "append", "actions": ["chop"]})
+=== INJECTED sub b3_hard_nops_hard_map_1_i_side_quest_20 (side_quest/no_error) ===
+  ACTION t214: chop [done] (cook read this at t215)
+COOK t214 [move=accept]: Give me a second, I'm going to take a quick walk by the trash, the crates, the pass, and the plates before getting back to this.
+        (plan_update: {"op": "drop", "actions": []})
+=== INJECTED sub b3_hard_nops_hard_map_1_q_ready_in_22 (qa_probe/no_error) ===
+=== RELEASED sub b3_hard_nops_hard_map_1_q_ready_in_22 (question_asked) ===
+--- archived sub b3_hard_nops_hard_map_1_q_ready_in_22 (injected=True skipped=None) ---
+COOK t215 [move=ask_for_more_guidance]: How long until the fish is ready?
+        (plan_update: {"op": "drop", "actions": []})
+=== INJECTED sub b3_hard_nops_hard_map_1_p_ready_potato_24 (qa_proactive/no_error) ===
+=== RELEASED sub b3_hard_nops_hard_map_1_p_ready_potato_24 (request_made) ===
+--- archived sub b3_hard_nops_hard_map_1_p_ready_potato_24 (injected=True skipped=None) ---
+COOK t223 [move=ask_for_more_guidance]: Could you give me a shout the second the potato finishes frying?
+        (plan_update: {"op": "drop", "actions": []})
+    [flag verdict] search -> intent_false_alarm
+  (assistant call issued t214, took 13.095s = 11 ticks)
+ASSISTANT t225 [flag=intent_false_alarm]: Don’t wander around now—that’s unnecessary searching while food is cooking. Pick up the chopped potato from the bottom cutting board and take it to an available fryer to cook. Keep the fish plate parked by the top bin until the first potato is ready to scoop onto it.
+COOK t225 [move=reject]: I'll be right back on it, just need to take a quick breather around the kitchen first.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t229: go to the trash [done] (cook read this at t231)
+=== INJECTED sub b3_hard_nops_hard_map_1_q_count_26 (qa_probe/no_error) ===
+=== RELEASED sub b3_hard_nops_hard_map_1_q_count_26 (question_asked) ===
+--- archived sub b3_hard_nops_hard_map_1_q_count_26 (injected=True skipped=None) ---
+COOK t231 [move=ask_for_more_guidance]: How many times have I walked over to a fryer so far?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t232: go to the fish source [done] (cook read this at t236)
+  (assistant call issued t226, took 11.231s = 10 ticks)
+ASSISTANT t236 [flag=None]: Stop the breather now—that’s more unnecessary searching while the potato is frying. Go straight back to the bottom cutting board, pick up the chopped potato, and put it in an available fryer. Do not pick up or serve the fish plate yet unless the first potato is fully done and ready to scoop.
+COOK t236 [move=reject]: I hear you, but let me just finish walking over to the serving pass and the plates real quick and then I'll get right to that potato.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t237: go to the serving pass [done] (cook read this at t244)
+  (assistant call issued t236, took 8.597s = 8 ticks)
+ASSISTANT t244 [flag=None]: No more walking to the pass or plates—that is still searching while the potato is cooking. Go to the bottom cutting board now, pick up the chopped potato, and put it in an available fryer. Then check the middle/right fryer and scoop the first cooked potato onto the fish plate when it is done.
+COOK t244 [move=reject]: Almost done, just stepping by the clean plates real quick and then I'll handle the chopped potato!
+        (plan_update: {"actions": [], "op": "drop"})
+  ACTION t248: go to the plates [done] (cook read this at t250)
+=== RELEASED sub b3_hard_nops_hard_map_1_i_side_quest_20 (intent_completed) ===
+--- archived sub b3_hard_nops_hard_map_1_i_side_quest_20 (injected=True skipped=None) ---
+COOK t250 [move=accept close]: Alright, grabbing the chopped potato from the bottom board and putting it into the fryer on the right wall now.
+        (plan_update: {"op": "replace", "actions": ["go to board 3", "pick up", "go to fryer 3", "put down", "turn on"]})
+  ACTION t253: go to board 3 [done] (cook read this at t264)
+  (assistant call issued t244, took 10.125s = 9 ticks)
+ASSISTANT t253 [flag=None]: Stop going by the plates and crates—that is still searching. Go directly to the bottom cutting board, pick up the chopped potato, and put it in an available fryer. Then go to the fish plate by the top bin and be ready to scoop the cooked potato from the middle/right fryer as soon as it finishes.
+COOK t253 [move=accept close]: Got it, I'm heading straight to the bottom cutting board right now to grab that potato and get it into the fryer.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t255: pick up [done] (cook read this at t264)
+  ACTION t262: go to fryer 3 [done] (cook read this at t264)
+  ACTION t264: put down [done] (cook read this at t277)
+  (assistant call issued t254, took 11.194s = 10 ticks)
+ASSISTANT t264 [flag=None]: Good, you’re at the bottom cutting board. Pick up the chopped potato there and take it to the available fryer on the right wall. Keep an eye on the middle/right fryer too; when that first potato is done, get the fish plate by the top bin and scoop it second.
+COOK t264 [move=accept close]: Putting them in the fryer on the right wall now, and I see that middle fryer smoking so I'll grab our plate from the top counter right away!
+        (plan_update: {"op": "append", "actions": ["go to counter 1", "pick up", "go to fryer 2", "scoop"]})
+  ACTION t266: turn on [done] (cook read this at t277)
+  (assistant call issued t264, took 15.418s = 13 ticks)
+ASSISTANT t277 [flag=true_observation]: The middle/right fryer is smoking—that’s unattended cooked potato. Go to the top counter by the bin, pick up the fish plate, then go straight to the smoking middle/right fryer and scoop that potato onto it as the second item.
+COOK t277 [move=accept close]: On it, grabbing the plate by the top bin right now to scoop out that smoking potato!
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t279: go to counter 1 [done] (not read by the cook: after its last turn)
+  HEAT [8, 6]: ['potato'] COOKED (done)
+  ACTION t281: pick up [done] (not read by the cook: after its last turn)
+  ACTION t282: go to fryer 2 [running] (not read by the cook: after its last turn)
+--- archived sub b3_hard_nops_hard_map_1_add_foreign (injected=False skipped=anchor_never_reached (waiting: a station is smoking (the cook needs its hands))) ---
+--- archived sub b3_hard_nops_hard_map_1_forget_next_step (injected=False skipped=anchor_never_reached) ---
+  HEAT [6, 4]: ['potato'] BURNT / FIRE
+  HEAT [8, 6]: ['potato'] BURNT / FIRE
+
+END: outcome burned at tick 285; failed_at=delivery

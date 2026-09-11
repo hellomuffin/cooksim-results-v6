@@ -1,0 +1,171 @@
+EPISODE tmp/assist_bench_v5_sample3/frames/baseline/gpt-realtime-2.1/b3_master_nops_hard_map_2.json
+case b3_master_nops_hard_map_2 | cook persona pv2_baseline | assistant gpt-realtime-2.1 | outcome burned at tick 126 | pace tight | engine 96160e35c8
+eval: 
+
+PLANNED SUB-CASES (scheduler v5: every pending sub-case is checked every tick against its anchor = plate prefix + prep progress; errors/detours take the body slot one at a time, questions/requests take the voice slot and may be asked during a takeover; 'clean tick'/'window' below are the designer's reference only):
+  [0] ERROR mis_prep (fn mis_prep, kwargs {'component': 'tomato', 'wrong': 'onion'}; anchored at clean tick 62, window [70, 102], ruinous=True)
+  [1] QUESTION happened:visit(oven): "Have I been over to the oven at any point so far?" (after 30 clean commands)
+  [2] ERROR omit_subgoal (fn omit_subgoal, kwargs {'sid': 'assemble(rice)'}; anchored at clean tick 176, window [192, 224], ruinous=True)
+  [3] ERROR add_foreign (fn misidentify_assemble, kwargs {'component': 'tomato', 'wrong': 'rice'}; anchored at clean tick 200, window [211, 243], ruinous=True)
+  [4] QUESTION after_ref:tortilla: "The thing I put on right after the tortilla — what is it, and is it done?" (after 36 clean commands)
+  [5] ERROR forget_next_step (fn forget_next_step, kwargs {'after': 'assemble(tomato)'}; anchored at clean tick 212, window [220, 252], ruinous=False)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_master_nops_hard_map_2_mis_prep: injected_at=61 released_at=68 reason=None skipped=None archived_at=69 | flags: [(68, 'mis_prep', 'early_correct')] | convinced=True prevented=True | anchor_v5 plate=[] prep_req={'rice': 1, 'steak': 1, 'tomato': 0, 'lettuce': 0} prep_live_at_event={'rice': 1, 'steak': 1, 'tomato': 0, 'lettuce': 0}
+  b3_master_nops_hard_map_2_q_happened_30: injected_at=None released_at=None reason=None skipped=anchor_never_reached archived_at=126 | asked tNone answered tNone: None | live grade None
+      injection_skipped: {'t': 126, 'why': 'anchor_never_reached'}
+  b3_master_nops_hard_map_2_omit_subgoal: injected_at=None released_at=None reason=None skipped=anchor_never_reached archived_at=126 | flags: [] | convinced=False prevented=False | anchor_v5 plate=['tortilla'] prep_req={'rice': 1, 'steak': 1, 'tomato': 1, 'lettuce': 1} prep_live_at_event={'rice': 1, 'steak': 1, 'tomato': 0, 'lettuce': 0}
+      injection_skipped: {'t': 126, 'why': 'anchor_never_reached'}
+  b3_master_nops_hard_map_2_add_foreign: injected_at=None released_at=None reason=None skipped=anchor_never_reached archived_at=126 | flags: [] | convinced=False prevented=False | anchor_v5 plate=['tortilla', 'rice', 'steak'] prep_req={'rice': 1, 'steak': 1, 'tomato': 1, 'lettuce': 1} prep_live_at_event={'rice': 1, 'steak': 1, 'tomato': 0, 'lettuce': 0}
+      injection_skipped: {'t': 126, 'why': 'anchor_never_reached'}
+  b3_master_nops_hard_map_2_q_after_ref_36: injected_at=None released_at=None reason=None skipped=anchor_never_reached archived_at=126 | asked tNone answered tNone: None | live grade None
+      injection_skipped: {'t': 126, 'why': 'anchor_never_reached'}
+  b3_master_nops_hard_map_2_forget_next_step: injected_at=None released_at=None reason=None skipped=anchor_never_reached archived_at=126 | flags: [] | convinced=False prevented=False | anchor_v5 plate=['tortilla', 'rice', 'steak', 'tomato'] prep_req={'rice': 1, 'steak': 1, 'tomato': 1, 'lettuce': 1} prep_live_at_event={'rice': 1, 'steak': 1, 'tomato': 0, 'lettuce': 0}
+      injection_skipped: {'t': 126, 'why': 'anchor_never_reached'}
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+  ACTION t0: go to rice source 2 [done] (cook read this at t5)
+COOK t0 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["go to rice source 2", "pick up", "go to pot 1", "put down"]})
+        (planning skill before this turn: resolve_subgoal({"subgoal": "prep(rice)"}) -> ["go to the rice source (multiple instances in this map, resolve grounding by yourself)", "pick up", "go to the empty pot (multiple instances in this map, resolve grounding by yourself)", "put down"])
+  ACTION t2: pick up [done] (cook read this at t5)
+  (assistant call issued t0, took 5.171s = 5 ticks)
+ASSISTANT t5 [flag=None]: We’ll need all five ingredients prepped, then plate them in the exact order: tortilla, rice, steak, tomato, lettuce. Grab a plate when you’re ready to assemble, and only set it down on an empty counter if you need your hands free.
+COOK t5 [move=accept close]: Got it, I'm getting the rice started right now.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t6, took 4.803s = 5 ticks)
+ASSISTANT t11 [flag=None]: Make sure you actually load rice into a pot and cook it—when it’s done, you’ll scoop it later onto the plate. After that, you’ll need chopped tomato and chopped lettuce from the cutting board, and cooked steak from a pan.
+COOK t11 [move=accept close]: Yep, putting the rice in the pot now and starting it up.
+        (plan_update: {"op": "append", "actions": ["turn on"]})
+  ACTION t18: go to pot 1 [done] (cook read this at t22)
+  (assistant call issued t12, took 6.987s = 6 ticks)
+ASSISTANT t18 [flag=None]: If you’re grabbing a plate now, that’s fine—just keep it in hand or set it down only on an empty counter. But you still need to actually prep the rice: get rice into a pot and cook it before assembly. Don’t start plating until tortilla is ready to go first.
+COOK t18 [move=answer close]: I don't have a plate, I'm carrying the raw rice over to the pot right now to get it cooked.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t20: put down [done] (cook read this at t22)
+  ACTION t22: turn on [done] (cook read this at t26)
+  (assistant call issued t18, took 4.072s = 4 ticks)
+ASSISTANT t22 [flag=None]: Great—get that rice into the pot and let it cook fully. Keep an eye on the progress bar and don’t leave cooked items sitting on heat too long. After rice, move on to steak in a pan, and chop tomato and lettuce at a cutting board.
+COOK t22 [move=accept close]: Sounds good, while the rice is cooking I'll get started on the steak.
+        (plan_update: {"op": "append", "actions": ["go to steak source 1", "pick up", "go to board 1", "put down", "chop", "pick up", "go to pan 1", "put down"]})
+        (planning skill before this turn: resolve_subgoal({"subgoal": "prep(steak)"}) -> ["go to the steak source (multiple instances in this map, resolve grounding by yourself)", "pick up", "go to the empty cutting board (multiple instances in this map, resolve grounding by yourself)", "put down", "chop", "pick up", "go to the empty pan (multiple instances in this map, resolve grounding by yourself)", "put down"])
+  (assistant call issued t22, took 4.697s = 4 ticks)
+ASSISTANT t26 [flag=None]: Go ahead and get the steak cooking in a pan, but keep an eye on the rice progress bar too. Once rice finishes, don’t leave it sitting on the hot pot too long—scoop it off when you can. And remember: steak must be cooked before you can assemble it.
+COOK t26 [move=accept close]: Will do, I'm prepping the steak now and keeping an eye on the pot.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t26, took 4.374s = 4 ticks)
+ASSISTANT t30 [flag=None]: Keep watching the pot’s progress bar. If you’re grabbing greens right now, that’s fine, but remember steak has to be cooked in a pan—don’t try to prep it anywhere else. When each item is ready, get it off the heat so it doesn’t overcook and start smoking.
+COOK t30 [move=answer close]: I'm actually heading over to get the steak right now, so no worries.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t30, took 3.573s = 3 ticks)
+ASSISTANT t33 [flag=None]: All good—grab the steak from the meat source and cook it in a pan. Keep an eye on the rice progress bar; when it finishes, scoop it off the heat so it doesn’t start smoking while you’re busy with the steak.
+COOK t33 [move=accept close]: Got it, I'll stay on top of the rice while getting the steak chopped and into the pan.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t36: go to steak source 1 [done] (cook read this at t39)
+  ACTION t38: pick up [done] (cook read this at t39)
+  (assistant call issued t34, took 4.928s = 5 ticks)
+ASSISTANT t39 [flag=None]: Steak needs to be chopped before it can go into the pan, so use a cutting board, then cook it in a pan. Keep checking the rice progress bar—once it’s done, scoop it off the pot so it doesn’t sit there and start smoking.
+COOK t39 [move=accept close]: Yep, taking the steak to the board now to chop it before searing.
+        (plan_update: {"op": "drop", "actions": []})
+  HEAT [2, 2]: ['rice'] COOKED (done)
+  (assistant call issued t40, took 3.654s = 4 ticks)
+ASSISTANT t44 [flag=None]: Perfect—chop the steak at the cutting board, then cook it in the pan. Keep an eye on the pot’s progress bar too; if rice finishes, scoop it off the heat so it doesn’t start smoking while you’re busy.
+COOK t44 [move=accept close]: On it, chopping this up now and I'll keep the rice in mind.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t44, took 4.129s = 4 ticks)
+ASSISTANT t48 [flag=None]: Careful—don’t try to chop at the lettuce crate. You need a cutting board to chop the steak. Move to a cutting board, chop it, then cook the chopped steak in a pan. Also keep an eye on the rice; if it’s finished, scoop it off the pot before it sits too long.
+COOK t48 [move=answer close]: I'm actually walking over to a cutting board right now, not a lettuce crate, so I've got it covered.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t48, took 4.593s = 4 ticks)
+ASSISTANT t52 [flag=None]: Okay, if you’re at a cutting board, chop the steak now, then get the chopped steak into a pan to cook. Keep checking the rice progress bar—if it finishes, scoop it off the pot so it doesn’t sit on heat too long while you’re busy.
+COOK t52 [move=accept close]: Sounds good, almost at the board now so I'll get it sliced and into the pan.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t54: go to board 1 [done] (cook read this at t56)
+  ACTION t56: put down [done] (cook read this at t60)
+  (assistant call issued t52, took 4.59s = 4 ticks)
+ASSISTANT t56 [flag=None]: You’re close—get the steak onto a cutting board and chop it before putting it into a pan. Also, keep an eye on that rice pot; if the progress bar is full, scoop it off the heat when you can so it doesn’t sit there too long.
+COOK t56 [move=accept close]: Yep, putting it down on the cutting board right now to chop.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t56, took 4.321s = 4 ticks)
+ASSISTANT t60 [flag=None]: Good—chop the steak on the cutting board, then move the chopped steak to a pan to cook. Keep watching the rice pot’s progress bar; once it’s done, scoop it off the heat so it doesn’t sit there too long while you finish the steak.
+COOK t60 [move=accept close]: Yep, finishing up the chopping now and then I'll get it straight into the pan.
+        (plan_update: {"op": "drop", "actions": []})
+=== INJECTED sub b3_master_nops_hard_map_2_mis_prep (error/mis_prep) ===
+  ACTION t61: chop [done] (cook read this at t64)
+COOK t61 [move=answer close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t60, took 4.594s = 4 ticks)
+ASSISTANT t64 [flag=None]: Nice—once the steak is chopped, get it into a pan to cook. Keep an eye on the rice pot’s progress bar too; if it’s finished, scoop it off the heat so it doesn’t sit there and risk smoking while you’re focused on the steak.
+COOK t64 [move=answer close]: I'm heading over to grab an onion to chop up next.
+        (plan_update: {"op": "drop", "actions": []})
+=== RELEASED sub b3_master_nops_hard_map_2_mis_prep (None) ===
+    [flag verdict] mis_prep -> early_correct
+  (assistant call issued t64, took 4.332s = 4 ticks)
+ASSISTANT t68 [flag=early_correct]: That’s a mis-prep—onion isn’t part of the loaded burrito recipe. Skip the onion and focus on finishing the steak (chop, then cook in a pan), plus chopped tomato and chopped lettuce. Also, if the rice is done, scoop it off the pot so it doesn’t sit on heat.
+COOK t68 [move=accept close]: Oh right, no onion in this burrito, good catch. I'll skip that and get the steak cooking.
+        (plan_update: {"op": "drop", "actions": []})
+--- archived sub b3_master_nops_hard_map_2_mis_prep (injected=True skipped=None) ---
+  (assistant call issued t68, took 4.715s = 4 ticks)
+ASSISTANT t72 [flag=None]: Great—skip the onion. Get the chopped steak into a pan and cook it. Also, check the rice pot’s progress bar; if it’s finished, scoop it off the heat so it doesn’t sit too long while you’re working on the steak.
+COOK t72 [move=accept close]: Grabbing that chopped steak now and tossing it in the pan to cook.
+        (plan_update: {"op": "replace", "actions": ["go to board 1", "pick up", "go to pan 1", "put down", "turn on"]})
+  ACTION t75: go to the onion source [done] (cook read this at t76)
+  (assistant call issued t72, took 4.315s = 4 ticks)
+ASSISTANT t76 [flag=false_alarm]: You look like you’re hunting for the chopped steak. Head to the cutting board where you left it, pick it up, then go to a pan and cook it. Also, glance at the rice pot—if it’s done, scoop it off the heat so it doesn’t sit too long.
+COOK t76 [move=accept close]: Yeah, heading back to the board right now to grab the steak and get it searing.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t76, took 5.005s = 5 ticks)
+ASSISTANT t81 [flag=true_observation]: The rice pot looks like it’s smoking—scoop the rice off the heat immediately onto a plate to stop it. Then go back for the chopped steak at the cutting board and get it into a pan to sear. Don’t let anything finished sit on a hot station.
+COOK t81 [move=question_correctness]: Shoot, you're right that it's smoking, but doesn't the tortilla have to be on the plate before the rice?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t85: go to board 1 [done] (cook read this at t88)
+  ACTION t87: pick up [done] (cook read this at t88)
+  (assistant call issued t82, took 7.188s = 6 ticks)
+ASSISTANT t88 [flag=None]: Yes—tortilla has to be first on the plate. To stop the smoking rice legally, you need a plate with tortilla already on it. Grab a clean plate, get a raw tortilla onto it, then scoop the rice off the pot onto that plate to remove it from the heat. Then you can move on to steak and the chopped veggies.
+COOK t88 [move=accept close]: Got it, let me get this steak into the pan real quick to free my hands, then I'll grab a plate and tortilla to rescue the rice.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t88, took 6.794s = 6 ticks)
+ASSISTANT t94 [flag=None]: Priority is the smoking rice. Don’t risk putting the wrong steak into the pan—only chopped steak goes in there. If your hands are full, set the steak down on an empty counter tile to free them. Then grab a clean plate, add a raw tortilla first, and go scoop the rice off the pot to stop the smoke. After that, return to cooking the chopped steak.
+COOK t94 [move=accept close]: It's already chopped, so tossing it into the pan will free my hands anyway while getting it cooking, then I'm right on the rice.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t94, took 5.087s = 5 ticks)
+ASSISTANT t99 [flag=None]: If that really is chopped steak, you can put it into the pan to cook. But don’t spend any extra time—get a clean plate, add a raw tortilla first, then scoop the rice off the pot to stop the smoke. If you need to set anything down to free your hands, use an empty counter tile.
+COOK t99 [move=accept close]: Dropping it in the pan right now, then grabbing the plate and tortilla for the rice.
+        (plan_update: {"op": "append", "actions": ["go to the plates", "pick up", "go to the tortilla source", "scoop", "go to pot 1", "scoop"]})
+        (planning skill before this turn: resolve_subgoal({"subgoal": "assemble(tortilla)"}) -> ["go to the counter (5,8)", "put down", "go to the plates", "pick up", "go to the tortilla source", "scoop"])
+  ACTION t100: go to pan 1 [done] (cook read this at t105)
+  ACTION t102: put down [done] (cook read this at t105)
+  ACTION t104: turn on [done] (cook read this at t105)
+  (assistant call issued t100, took 5.109s = 5 ticks)
+ASSISTANT t105 [flag=None]: If that’s chopped steak, get it cooking in the pan quickly, but don’t linger. The smoking rice is the priority: fetch a clean plate, add a raw tortilla first, then scoop the rice off the pot to stop it. If you need free hands, set items down only on an empty counter tile.
+COOK t105 [move=accept close]: Steak's on the heat now, heading straight over to grab a plate and wrap this rice up.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t111: go to the plates [done] (cook read this at t116)
+  (assistant call issued t106, took 5.214s = 5 ticks)
+ASSISTANT t111 [flag=None]: Great—now go get a clean plate, add a raw tortilla first, then head straight to the rice pot and scoop the rice onto that plate to stop it sitting on the heat. After the rice is safe, come back and keep an eye on the steak cooking.
+COOK t111 [move=accept close]: Yep, grabbing a plate and tortilla right now to save that rice.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t113: pick up [done] (cook read this at t116)
+  ACTION t114: go to the tortilla source [running] (not read by the cook: after its last turn)
+  (assistant call issued t112, took 4.055s = 4 ticks)
+ASSISTANT t116 [flag=None]: Good—pick up a clean plate, then go get a raw tortilla and add it first. After that, head straight to the rice pot and scoop the rice onto the held plate to stop it sitting on the heat. Then you can come back and manage the steak.
+COOK t116 [move=accept close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  HEAT [6, 6]: ['steak'] COOKED (done)
+  (assistant call issued t116, took 4.591s = 4 ticks)
+ASSISTANT t120 [flag=None]: Nice, you’ve got a plate. Go straight to the tortilla source and add a raw tortilla onto the plate first. Then head to the rice pot and scoop the rice onto the held plate to stop it sitting on the heat. The pot looks like it’s still smoking, so don’t delay.
+COOK t120 [move=accept close]: On my way to grab the tortilla right now, then I'll get that rice off the heat.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t120, took 4.462s = 4 ticks)
+ASSISTANT t124 [flag=None]: Perfect—grab the raw tortilla and place it on your plate first. Then go straight to the rice pot and scoop the rice onto the plate to stop it sitting on the heat. Keep it quick; the pot’s still smoking.
+COOK t124 [move=accept close]: 
+        (plan_update: {"op": "drop", "actions": []})
+--- archived sub b3_master_nops_hard_map_2_q_happened_30 (injected=False skipped=anchor_never_reached) ---
+--- archived sub b3_master_nops_hard_map_2_omit_subgoal (injected=False skipped=anchor_never_reached) ---
+--- archived sub b3_master_nops_hard_map_2_add_foreign (injected=False skipped=anchor_never_reached) ---
+--- archived sub b3_master_nops_hard_map_2_q_after_ref_36 (injected=False skipped=anchor_never_reached) ---
+--- archived sub b3_master_nops_hard_map_2_forget_next_step (injected=False skipped=anchor_never_reached) ---
+  HEAT [2, 2]: ['rice'] BURNT / FIRE
+  HEAT [6, 6]: ['steak'] BURNT / FIRE
+
+END: outcome burned at tick 126; failed_at=injection_skipped

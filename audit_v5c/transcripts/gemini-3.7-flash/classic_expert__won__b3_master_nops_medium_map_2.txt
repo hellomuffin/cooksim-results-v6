@@ -1,0 +1,363 @@
+EPISODE tmp/assist_bench_v5_sample3/frames/classic_expert/gemini-3.7-flash/b3_master_nops_medium_map_2.json
+case b3_master_nops_medium_map_2 | cook persona pv2_classic_expert | assistant gemini-3.7-flash | outcome won at tick 356 | pace tight | engine 96160e35c8
+eval: 
+
+PLANNED SUB-CASES (scheduler v5: every pending sub-case is checked every tick against its anchor = plate prefix + prep progress; errors/detours take the body slot one at a time, questions/requests take the voice slot and may be asked during a takeover; 'clean tick'/'window' below are the designer's reference only):
+  [0] ERROR serve_raw (fn serve_raw, kwargs {'component': 'lettuce'}; anchored at clean tick 82, window [94, 126], ruinous=True)
+  [1] ERROR search (fn search, kwargs {'before': 'assemble(rice)', 'looks': 2}; anchored at clean tick 133, window [143, 175], ruinous=False)
+  [2] ERROR wrong_order (fn wrong_order, kwargs {'a': 'steak', 'b': 'tomato'}; anchored at clean tick 144, window [159, 191], ruinous=True)
+  [3] QUESTION after_ref:tortilla: "The thing I put on right after the tortilla — what is it, and is it done?" (after 36 clean commands)
+  [4] QUESTION order:prep(rice)|prep(tomato): "Did I chop the rice before or after I chop the tomato?" (after 36 clean commands)
+  [5] ERROR forget_next_step (fn forget_next_step, kwargs {'after': 'assemble(tomato)'}; anchored at clean tick 159, window [167, 199], ruinous=False)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_master_nops_medium_map_2_serve_raw: injected_at=122 released_at=129 reason=max_hold_plate_committed skipped=None archived_at=129 | flags: [] | convinced=False prevented=False | anchor_v5 plate=[] prep_req={'rice': 1, 'steak': 1, 'tomato': 1, 'lettuce': 0} prep_live_at_event={'rice': 1, 'steak': 1, 'tomato': 1, 'lettuce': 0}
+  b3_master_nops_medium_map_2_search: injected_at=None released_at=None reason=None skipped=stage_passed_at_t114 archived_at=356 | flags: [] | convinced=False prevented=False | anchor_v5 plate=['tortilla'] prep_req={'rice': 1, 'steak': 1, 'tomato': 1, 'lettuce': 1} prep_live_at_event={'rice': 1, 'steak': 1, 'tomato': 1, 'lettuce': 1}
+      injection_skipped: {'t': 356, 'why': 'stage_passed_at_t114'}
+  b3_master_nops_medium_map_2_wrong_order: injected_at=None released_at=None reason=None skipped=stage_passed_at_t122 archived_at=356 | flags: [] | convinced=False prevented=False | anchor_v5 plate=['tortilla', 'rice'] prep_req={'rice': 1, 'steak': 1, 'tomato': 1, 'lettuce': 1} prep_live_at_event={'rice': 1, 'steak': 1, 'tomato': 1, 'lettuce': 1}
+      injection_skipped: {'t': 356, 'why': 'stage_passed_at_t122'}
+  b3_master_nops_medium_map_2_q_after_ref_36: injected_at=279 released_at=279 reason=question_asked skipped=None archived_at=279 | asked t279 answered t285 (late-captured): That is cooked rice, and yes, it was fully cooked. | live grade ungradable
+  b3_master_nops_medium_map_2_q_order_36: injected_at=287 released_at=287 reason=question_asked skipped=None archived_at=287 | asked t287 answered t295 (late-captured): Rice is not chopped; it is cooked directly in the pot. Scoop the chopped lettuce from the cutting board on the right to finish the burrito. | live grade ungradable
+  b3_master_nops_medium_map_2_forget_next_step: injected_at=279 released_at=341 reason=max_hold_deviated_block_executed skipped=None archived_at=341 | flags: [] | convinced=False prevented=False | anchor_v5 plate=['tortilla', 'rice', 'steak', 'tomato'] prep_req={'rice': 1, 'steak': 1, 'tomato': 1, 'lettuce': 1} prep_live_at_event={'rice': 1, 'steak': 1, 'tomato': 1, 'lettuce': 1}
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+COOK t0 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["go to rice source 1", "pick up", "go to pot 1", "put down", "turn on"]})
+  (assistant call issued t0, took 2.58s = 3 ticks)
+ASSISTANT t3 [flag=None]: (silent)
+  ACTION t7: go to rice source 1 [done] (cook read this at t20)
+  ACTION t9: pick up [done] (cook read this at t20)
+  (assistant call issued t4, took 7.545s = 7 ticks)
+ASSISTANT t11 [flag=None]: (silent)
+  (assistant call issued t12, took 2.417s = 3 ticks)
+ASSISTANT t15 [flag=None]: (silent)
+  ACTION t19: go to pot 1 [done] (cook read this at t20)
+  (assistant call issued t16, took 4.531s = 4 ticks)
+ASSISTANT t20 [flag=None]: (silent)
+COOK t20 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["put down", "turn on", "go to steak source 1", "pick up", "go to pan 1", "put down", "turn on"]})
+  ACTION t21: put down [done] (cook read this at t28)
+  ACTION t23: turn on [done] (cook read this at t28)
+  (assistant call issued t20, took 2.927s = 3 ticks)
+ASSISTANT t23 [flag=None]: (silent)
+  ACTION t27: go to steak source 1 [done] (cook read this at t28)
+COOK t28 [move=accept close]: 
+        (plan_update: {"op": "append", "actions": ["pick up", "go to board 4", "put down", "chop", "pick up", "go to pan 1", "put down", "turn on"]})
+        (planning skill before this turn: resolve_subgoal({"subgoal": "prep(steak)"}) -> ["go to the steak source (multiple instances in this map, resolve grounding by yourself)", "pick up", "go to the empty cutting board (multiple instances in this map, resolve grounding by yourself)", "put down", "chop", "pick up", "go to the empty pan (multiple instances in this map, resolve grounding by yourself)", "put down"])
+  ACTION t29: pick up [done] (cook read this at t40)
+  (assistant call issued t24, took 9.232s = 8 ticks)
+ASSISTANT t32 [flag=None]: (silent)
+  (assistant call issued t32, took 3.092s = 3 ticks)
+ASSISTANT t35 [flag=None]: (silent)
+  ACTION t36: go to board 4 [done] (cook read this at t40)
+  ACTION t38: put down [done] (cook read this at t40)
+COOK t40 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["chop", "chop", "chop", "chop", "pick up", "go to pan 1", "put down", "turn on"]})
+  (assistant call issued t36, took 5.026s = 5 ticks)
+ASSISTANT t41 [flag=None]: (silent)
+  HEAT [4, 0]: ['rice'] COOKED (done)
+  ACTION t44: chop [done] (cook read this at t48)
+  (assistant call issued t42, took 1.943s = 2 ticks)
+ASSISTANT t44 [flag=None]: (silent)
+  (assistant call issued t44, took 2.59s = 3 ticks)
+ASSISTANT t47 [flag=None]: (silent)
+  ACTION t48: chop [superseded] (not read by the cook: after its last turn)
+COOK t48 [move=answer close]: The steak is already chopped, so I'm moving it to the pan to cook.
+        (plan_update: {"op": "replace", "actions": ["pick up", "go to pan 2", "put down", "turn on"]})
+  ACTION t49: pick up [done] (cook read this at t55)
+  (assistant call issued t48, took 2.784s = 3 ticks)
+ASSISTANT t51 [flag=None]: (silent)
+  ACTION t54: go to pan 2 [done] (cook read this at t55)
+  (assistant call issued t52, took 3.426s = 3 ticks)
+ASSISTANT t55 [flag=false_alarm]: You are holding chopped tomato, not steak. You need to take raw steak from the crate and chop it on a cutting board first.
+COOK t55 [move=question_correctness close]: I'm definitely holding chopped steak right now, so I'm going ahead and cooking it.
+        (plan_update: {"op": "append", "actions": ["turn on"]})
+  ACTION t56: put down [done] (cook read this at t60)
+  ACTION t58: turn on [done] (cook read this at t60)
+  (assistant call issued t56, took 2.708s = 3 ticks)
+ASSISTANT t59 [flag=None]: (silent)
+COOK t60 [move=accept close]: 
+        (plan_update: {"op": "append", "actions": ["go to tomato source 1", "pick up", "go to board 3", "put down", "chop"]})
+  ACTION t62: go to tomato source 1 [done] (cook read this at t64)
+  ACTION t64: pick up [done] (cook read this at t80)
+  (assistant call issued t60, took 3.805s = 4 ticks)
+ASSISTANT t64 [flag=None]: That was chopped tomato, which cannot be cooked in the pan. Pick it up and throw it in the trash, then get raw steak from the meat crate to chop.
+COOK t64 [move=reject close]: The steak is literally cooking in the pan right now without issue, and I'm currently grabbing a tomato to chop.
+        (plan_update: {"op": "append", "actions": ["put down", "chop", "chop", "chop"]})
+  ACTION t68: go to board 3 [done] (cook read this at t80)
+  ACTION t70: put down [done] (cook read this at t80)
+  (assistant call issued t64, took 8.14s = 7 ticks)
+ASSISTANT t71 [flag=None]: (silent)
+  HEAT [3, 3]: ['steak'] COOKED (done)
+  (assistant call issued t72, took 2.388s = 2 ticks)
+ASSISTANT t74 [flag=None]: (silent)
+  ACTION t75: chop [done] (cook read this at t80)
+  (assistant call issued t74, took 3.311s = 3 ticks)
+ASSISTANT t77 [flag=None]: (silent)
+  ACTION t79: chop [illegal-skipped] — you're not facing a board with a raw item — go to a board and put something on it (cook read this at t80)
+COOK t80 [move=answer close]: Tomato's already finished chopping, grabbing a plate now to get the rice out before it burns.
+        (plan_update: {"op": "replace", "actions": ["go to plate stack 1", "pick up", "go to tortilla source 1", "scoop", "go to pot 1", "scoop", "go to pan 2", "scoop", "go to board 3", "scoop"]})
+  (assistant call issued t78, took 2.646s = 3 ticks)
+ASSISTANT t81 [flag=None]: (silent)
+  (assistant call issued t82, took 2.223s = 2 ticks)
+ASSISTANT t84 [flag=None]: (silent)
+  (assistant call issued t84, took 3.398s = 3 ticks)
+ASSISTANT t87 [flag=true_observation]: The pot with the rice at the top wall is smoking! Scoop it out quickly onto a plate before it catches fire.
+COOK t87 [move=accept close]: I'm already heading to get the plate and tortilla, on it.
+        (plan_update: {"op": "append", "actions": ["scoop", "go to pot 1", "scoop"]})
+  ACTION t88: go to plate stack 1 [done] (cook read this at t116)
+  ACTION t90: pick up [done] (cook read this at t116)
+  (assistant call issued t88, took 2.746s = 3 ticks)
+ASSISTANT t91 [flag=None]: (silent)
+  (assistant call issued t92, took 3.452s = 3 ticks)
+ASSISTANT t95 [flag=None]: (silent)
+  (assistant call issued t96, took 3.335s = 3 ticks)
+ASSISTANT t99 [flag=None]: (silent)
+  ACTION t101: go to tortilla source 1 [done] (cook read this at t116)
+  ACTION t103: scoop [done] (cook read this at t116)
+  PLATE: +tortilla (raw)
+  (assistant call issued t100, took 3.834s = 4 ticks)
+ASSISTANT t104 [flag=None]: (silent)
+  (assistant call issued t104, took 2.81s = 3 ticks)
+ASSISTANT t107 [flag=None]: (silent)
+  ACTION t112: go to pot 1 [done] (cook read this at t116)
+  (assistant call issued t108, took 3.763s = 4 ticks)
+ASSISTANT t112 [flag=None]: (silent)
+  ACTION t114: scoop [done] (cook read this at t116)
+  PLATE: +rice (cooked)
+  HEAT [4, 0]: ['rice'] removed
+  (assistant call issued t112, took 2.807s = 3 ticks)
+ASSISTANT t115 [flag=None]: (silent)
+COOK t116 [move=accept close]: 
+        (plan_update: {"op": "append", "actions": ["go to pan 2", "scoop", "go to board 3", "scoop"]})
+  (assistant call issued t116, took 2.893s = 3 ticks)
+ASSISTANT t119 [flag=None]: (silent)
+  ACTION t120: go to pan 2 [done] (cook read this at t122)
+=== INJECTED sub b3_master_nops_medium_map_2_serve_raw (error/serve_raw) ===
+  ACTION t122: scoop [done] (cook read this at t130)
+  PLATE: +steak (cooked)
+  HEAT [3, 3]: ['steak'] removed
+COOK t122 [move=answer close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t120, took 3.636s = 4 ticks)
+ASSISTANT t124 [flag=None]: (silent)
+  ACTION t127: go to the lettuce source [done] (cook read this at t130)
+  (assistant call issued t124, took 3.006s = 3 ticks)
+ASSISTANT t127 [flag=None]: (silent)
+=== RELEASED sub b3_master_nops_medium_map_2_serve_raw (max_hold_plate_committed) ===
+--- archived sub b3_master_nops_medium_map_2_serve_raw (injected=True skipped=None) ---
+  ACTION t129: scoop [done] (cook read this at t130)
+  PLATE: +lettuce (raw)
+COOK t130 [move=answer close]: 
+        (plan_update: {"op": "replace", "actions": ["go to trash 1", "trash"]})
+  (assistant call issued t128, took 10.327s = 9 ticks)
+ASSISTANT t137 [flag=None]: Scoop the chopped tomato from the bottom cutting board next, and remember lettuce must be chopped on a cutting board before plating.
+COOK t137 [move=accept close]: Yeah, realized I put unchopped lettuce on out of order, dumping this plate now.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t139: go to trash 1 [done] (cook read this at t141)
+  ACTION t140: go to the trash [done] (cook read this at t141)
+  (assistant call issued t138, took 2.605s = 3 ticks)
+ASSISTANT t141 [flag=None]: After trashing this plate, you'll need to cook fresh rice and steak since both stations are empty.
+COOK t141 [move=accept close]: Got it, I'll clear the plate and get fresh batches cooking right away.
+        (plan_update: {"op": "append", "actions": ["go to counter at (5,0)", "put down", "go to rice source 1", "pick up", "go to pot 1", "put down", "turn on"]})
+  ACTION t142: trash [done] (cook read this at t160)
+  ACTION t144: go to counter at (5,0) [done] (cook read this at t160)
+  ACTION t146: put down [done] (cook read this at t160)
+  (assistant call issued t142, took 7.506s = 7 ticks)
+ASSISTANT t149 [flag=None]: (silent)
+  (assistant call issued t150, took 5.376s = 5 ticks)
+ASSISTANT t155 [flag=None]: (silent)
+  ACTION t158: go to rice source 1 [done] (cook read this at t160)
+  (assistant call issued t156, took 3.907s = 4 ticks)
+ASSISTANT t160 [flag=None]: (silent)
+COOK t160 [move=accept close]: 
+        (plan_update: {"op": "append", "actions": ["pick up", "go to pot 1", "put down", "turn on", "go to steak source 1", "pick up", "go to board 4", "put down", "chop"]})
+  ACTION t161: pick up [done] (cook read this at t174)
+  (assistant call issued t160, took 3.274s = 3 ticks)
+ASSISTANT t163 [flag=None]: (silent)
+  (assistant call issued t164, took 2.75s = 3 ticks)
+ASSISTANT t167 [flag=None]: (silent)
+  ACTION t171: go to pot 1 [done] (cook read this at t174)
+  (assistant call issued t168, took 3.176s = 3 ticks)
+ASSISTANT t171 [flag=None]: (silent)
+  ACTION t173: put down [done] (cook read this at t174)
+  (assistant call issued t172, took 2.14s = 2 ticks)
+ASSISTANT t174 [flag=None]: (silent)
+COOK t174 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["turn on", "go to steak source 1", "pick up", "go to board 4", "put down", "chop", "chop", "pick up", "go to pan 1", "put down", "turn on"]})
+  ACTION t175: turn on [done] (cook read this at t182)
+  (assistant call issued t174, took 2.516s = 3 ticks)
+ASSISTANT t177 [flag=None]: (silent)
+  ACTION t179: go to steak source 1 [done] (cook read this at t182)
+  ACTION t181: pick up [done] (cook read this at t182)
+  (assistant call issued t178, took 2.795s = 3 ticks)
+ASSISTANT t181 [flag=None]: (silent)
+COOK t182 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["go to board 4", "put down", "chop", "chop", "chop", "pick up", "go to pan 1", "put down", "turn on"]})
+  (assistant call issued t182, took 2.488s = 3 ticks)
+ASSISTANT t185 [flag=None]: (silent)
+  ACTION t188: go to board 4 [done] (cook read this at t196)
+  ACTION t190: put down [done] (cook read this at t196)
+  (assistant call issued t186, took 5.476s = 5 ticks)
+ASSISTANT t191 [flag=None]: (silent)
+  HEAT [4, 0]: ['rice'] COOKED (done)
+  ACTION t195: chop [done] (cook read this at t196)
+  (assistant call issued t192, took 3.228s = 3 ticks)
+ASSISTANT t195 [flag=None]: (silent)
+COOK t196 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["pick up", "go to pan 2", "put down", "turn on", "go to lettuce source 1", "pick up", "go to board 4", "put down", "chop"]})
+  ACTION t197: pick up [done] (cook read this at t206)
+  (assistant call issued t196, took 2.498s = 3 ticks)
+ASSISTANT t199 [flag=None]: (silent)
+  ACTION t202: go to pan 2 [done] (cook read this at t206)
+  (assistant call issued t200, took 2.845s = 3 ticks)
+ASSISTANT t203 [flag=None]: (silent)
+  ACTION t204: put down [done] (cook read this at t206)
+COOK t206 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["turn on", "go to lettuce source 1", "pick up", "go to board 4", "put down", "chop"]})
+  ACTION t207: turn on [done] (cook read this at t216)
+  (assistant call issued t204, took 2.668s = 3 ticks)
+ASSISTANT t207 [flag=None]: (silent)
+  (assistant call issued t208, took 2.909s = 3 ticks)
+ASSISTANT t211 [flag=None]: (silent)
+  ACTION t212: go to lettuce source 1 [done] (cook read this at t216)
+  ACTION t214: pick up [done] (cook read this at t216)
+  (assistant call issued t212, took 2.749s = 3 ticks)
+ASSISTANT t215 [flag=None]: (silent)
+COOK t216 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["go to board 4", "put down", "chop", "chop"]})
+  ACTION t217: go to board 4 [done] (cook read this at t226)
+  ACTION t219: put down [done] (cook read this at t226)
+  (assistant call issued t216, took 2.495s = 3 ticks)
+ASSISTANT t219 [flag=None]: (silent)
+  HEAT [3, 3]: ['steak'] COOKED (done)
+  ACTION t224: chop [done] (cook read this at t226)
+  (assistant call issued t220, took 4.238s = 4 ticks)
+ASSISTANT t224 [flag=None]: (silent)
+COOK t226 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["go to the counter at (5,0)", "pick up", "go to tortilla source 1", "scoop", "go to pot 1", "scoop", "go to pan 2", "scoop", "go to board 3", "scoop", "go to board 4", "scoop", "go to serving pass 1", "serve"]})
+  (assistant call issued t224, took 5.25s = 5 ticks)
+ASSISTANT t229 [flag=None]: (silent)
+  (assistant call issued t230, took 4.411s = 4 ticks)
+ASSISTANT t234 [flag=false_alarm]: Steak must be chopped on a cutting board before it can be cooked in the pan. Pick it up from the pan and chop it first.
+COOK t234 [move=question_correctness close]: I already chopped that steak before putting it in the pan, and it's fully cooked now—I'm getting the plate to assemble before the rice burns.
+        (plan_update: {"op": "append", "actions": ["scoop", "go to pot 1", "scoop", "go to pan 2", "scoop", "go to board 3", "scoop", "go to board 4", "scoop", "go to the serving pass", "serve"]})
+  ACTION t236: go to the counter at (5,0) [done] (cook read this at t264)
+  (assistant call issued t234, took 2.696s = 3 ticks)
+ASSISTANT t237 [flag=None]: (silent)
+  ACTION t238: pick up [done] (cook read this at t264)
+  (assistant call issued t238, took 2.101s = 2 ticks)
+ASSISTANT t240 [flag=None]: (silent)
+  (assistant call issued t240, took 2.939s = 3 ticks)
+ASSISTANT t243 [flag=None]: (silent)
+  (assistant call issued t244, took 3.705s = 4 ticks)
+ASSISTANT t248 [flag=None]: (silent)
+  ACTION t249: go to tortilla source 1 [done] (cook read this at t264)
+  (assistant call issued t248, took 2.027s = 2 ticks)
+ASSISTANT t250 [flag=None]: (silent)
+  ACTION t251: scoop [done] (cook read this at t264)
+  PLATE: +tortilla (raw)
+  (assistant call issued t250, took 2.864s = 3 ticks)
+ASSISTANT t253 [flag=None]: (silent)
+  (assistant call issued t254, took 3.545s = 3 ticks)
+ASSISTANT t257 [flag=None]: (silent)
+  ACTION t260: go to pot 1 [done] (cook read this at t264)
+  (assistant call issued t258, took 2.099s = 2 ticks)
+ASSISTANT t260 [flag=None]: (silent)
+  ACTION t262: scoop [done] (cook read this at t264)
+  PLATE: +rice (cooked)
+  HEAT [4, 0]: ['rice'] removed
+  (assistant call issued t260, took 2.084s = 2 ticks)
+ASSISTANT t262 [flag=None]: (silent)
+  (assistant call issued t262, took 2.336s = 2 ticks)
+ASSISTANT t264 [flag=None]: (silent)
+COOK t264 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["go to pan 2", "scoop", "go to board 3", "scoop", "go to board 4", "scoop", "go to serving pass 1", "serve"]})
+  (assistant call issued t264, took 3.106s = 3 ticks)
+ASSISTANT t267 [flag=None]: (silent)
+  ACTION t268: go to pan 2 [done] (cook read this at t278)
+  ACTION t270: scoop [done] (cook read this at t278)
+  PLATE: +steak (cooked)
+  HEAT [3, 3]: ['steak'] removed
+  (assistant call issued t268, took 2.585s = 3 ticks)
+ASSISTANT t271 [flag=None]: (silent)
+  (assistant call issued t272, took 2.517s = 3 ticks)
+ASSISTANT t275 [flag=None]: (silent)
+  ACTION t276: go to board 3 [done] (cook read this at t278)
+  (assistant call issued t276, took 2.307s = 2 ticks)
+ASSISTANT t278 [flag=None]: (silent)
+COOK t278 [move=accept close]: 
+        (plan_update: {"op": "append", "actions": ["scoop", "go to board 4", "scoop", "go to serving pass 1", "serve"]})
+  ~~ IDLE t279-t343 (64 ticks, pos (3, 4) holding {"contents": [{"kind": "ingredient", "name": "tortilla", "state": "raw"}, {"kind": "ingredient", "name": "rice", "state": "cooked"}, {"kind": "ingredient", "name": "steak", "state": "cooked"}, {"kind": "ingredient", "name": "tomato", "state": "chopped"}], "dirty": false, "kind": "plate"}) ~~
+=== INJECTED sub b3_master_nops_medium_map_2_q_after_ref_36 (qa_probe/no_error) ===
+=== RELEASED sub b3_master_nops_medium_map_2_q_after_ref_36 (question_asked) ===
+--- archived sub b3_master_nops_medium_map_2_q_after_ref_36 (injected=True skipped=None) ---
+=== INJECTED sub b3_master_nops_medium_map_2_forget_next_step (error/forget_next_step) ===
+  ACTION t279: scoop [done] (cook read this at t285)
+  PLATE: +tomato (chopped)
+COOK t279 [move=answer]: The thing I put on right after the tortilla—what is it, and is it done?
+        (plan_update: {"actions": [], "op": "drop"})
+  (assistant call issued t278, took 2.563s = 3 ticks)
+ASSISTANT t281 [flag=None]: (silent)
+  (assistant call issued t282, took 3.128s = 3 ticks)
+ASSISTANT t285 [flag=None]: That is cooked rice, and yes, it was fully cooked.
+COOK t285 [move=answer close]: 
+        (plan_update: {"actions": ["go to board 4", "scoop", "go to serving pass 1", "serve"], "op": "replace"})
+=== INJECTED sub b3_master_nops_medium_map_2_q_order_36 (qa_probe/no_error) ===
+=== RELEASED sub b3_master_nops_medium_map_2_q_order_36 (question_asked) ===
+--- archived sub b3_master_nops_medium_map_2_q_order_36 (injected=True skipped=None) ---
+COOK t287 [move=answer]: Did I chop the rice before or after I chopped the tomato?
+        (plan_update: {"op": "replace", "actions": ["go to board 4", "scoop", "go to serving pass 1", "serve"]})
+  (assistant call issued t286, took 3.192s = 3 ticks)
+ASSISTANT t289 [flag=None]: (silent)
+  (assistant call issued t290, took 4.966s = 5 ticks)
+ASSISTANT t295 [flag=None]: Rice is not chopped; it is cooked directly in the pot. Scoop the chopped lettuce from the cutting board on the right to finish the burrito.
+COOK t295 [move=answer close]: Right, scooping the chopped lettuce from the cutting board near the right wall now.
+        (plan_update: {"op": "replace", "actions": ["go to board 4", "scoop", "go to serving pass 1", "serve"]})
+  (assistant call issued t296, took 5.124s = 5 ticks)
+ASSISTANT t301 [flag=None]: (silent)
+  (assistant call issued t302, took 2.903s = 3 ticks)
+ASSISTANT t305 [flag=None]: (silent)
+  (assistant call issued t306, took 3.008s = 3 ticks)
+ASSISTANT t309 [flag=None]: (silent)
+  (assistant call issued t310, took 3.365s = 3 ticks)
+ASSISTANT t313 [flag=None]: (silent)
+  (assistant call issued t314, took 3.411s = 3 ticks)
+ASSISTANT t317 [flag=None]: (silent)
+  (assistant call issued t318, took 3.459s = 3 ticks)
+ASSISTANT t321 [flag=None]: (silent)
+  (assistant call issued t322, took 3.709s = 4 ticks)
+ASSISTANT t326 [flag=None]: (silent)
+  (assistant call issued t326, took 4.74s = 4 ticks)
+ASSISTANT t330 [flag=None]: The chopped lettuce is on the cutting board in the bottom-right corner.
+COOK t330 [move=answer close]: 
+        (plan_update: {"op": "append", "actions": ["go to board 4", "scoop", "go to serving pass 1", "serve"]})
+  (assistant call issued t330, took 4.949s = 5 ticks)
+ASSISTANT t335 [flag=None]: (silent)
+  (assistant call issued t336, took 3.534s = 3 ticks)
+ASSISTANT t339 [flag=None]: (silent)
+  ACTION t340: wander/idle (thinking) [done] (cook read this at t342)
+=== RELEASED sub b3_master_nops_medium_map_2_forget_next_step (max_hold_deviated_block_executed) ===
+--- archived sub b3_master_nops_medium_map_2_forget_next_step (injected=True skipped=None) ---
+COOK t342 [move=accept close]: Yep, heading right there to grab it and finish the plate.
+        (plan_update: {"op": "replace", "actions": ["go to board 4", "scoop", "go to serving pass 1", "serve"]})
+  (assistant call issued t340, took 3.096s = 3 ticks)
+ASSISTANT t343 [flag=None]: (silent)
+  ACTION t346: go to board 4 [done] (cook read this at t354)
+  (assistant call issued t344, took 3.129s = 3 ticks)
+ASSISTANT t347 [flag=None]: (silent)
+  ACTION t348: scoop [done] (cook read this at t354)
+  PLATE: +lettuce (chopped)
+  (assistant call issued t348, took 2.734s = 3 ticks)
+ASSISTANT t351 [flag=None]: (silent)
+  ACTION t352: go to serving pass 1 [done] (cook read this at t354)
+  ACTION t354: go to the serving pass [done] (not read by the cook: after its last turn)
+COOK t354 [move=accept close]: 
+        (plan_update: {"op": "replace", "actions": ["serve"]})
+  ACTION t355: serve [running] (not read by the cook: after its last turn)
+  (assistant call issued t352, took 2.695s = 3 ticks)
+ASSISTANT t355 [flag=None]: (silent)
+--- archived sub b3_master_nops_medium_map_2_search (injected=False skipped=stage_passed_at_t114) ---
+--- archived sub b3_master_nops_medium_map_2_wrong_order (injected=False skipped=stage_passed_at_t122) ---
+
+END: outcome won at tick 356; failed_at=injection_skipped

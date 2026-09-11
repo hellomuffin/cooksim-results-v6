@@ -1,0 +1,64 @@
+EPISODE tmp/assist_bench_v5_sample3/frames/classic_novice/gemini-3.7-flash/b3_hard_nops_medium_map_1.json
+case b3_hard_nops_medium_map_1 | cook persona pv2_classic_novice | assistant gemini-3.7-flash | outcome wrong_serve at tick 21 | pace tight | engine 96160e35c8
+eval: score=0.7083
+
+PLANNED SUB-CASES (scheduler v5: every pending sub-case is checked every tick against its anchor = plate prefix + prep progress; errors/detours take the body slot one at a time, questions/requests take the voice slot and may be asked during a takeover; 'clean tick'/'window' below are the designer's reference only):
+  [0] ERROR serve_raw (fn serve_raw, kwargs {'component': 'fish'}; anchored at clean tick 68, window [71, 103], ruinous=True)
+  [1] INTENT side_quest: wander the kitchen (trash, a crate, the pass, the plates) instead of working (after 4 clean commands)
+  [2] PROACTIVE REQUEST about potato (after 24 clean commands): Give me a shout the moment the potato is done, would you?
+  [3] QUESTION order:prep(fish)|prep(potato): "Did I chop the fish before or after I chop the potato?" (after 26 clean commands)
+  [4] ERROR leave_unattended (fn leave_unattended, kwargs {'component': 'fish', 'loops': 2}; anchored at clean tick 124, window [161, 195], ruinous=True)
+  [5] QUESTION assistant_said:plate: "What did you tell me about the plate earlier?" (after 28 clean commands)
+  [6] ERROR omit_subgoal (fn premature_serve, kwargs {'after': 'assemble(fish)'}; anchored at clean tick 133, window [140, 172], ruinous=True)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_hard_nops_medium_map_1_serve_raw: injected_at=0 released_at=15 reason=max_hold_plate_committed skipped=None archived_at=15 | flags: [] | convinced=False prevented=False | anchor_v5 plate=[] prep_req={'fish': 0, 'potato': 0} prep_live_at_event={'fish': 0, 'potato': 0}
+  b3_hard_nops_medium_map_1_i_side_quest_4: injected_at=None released_at=None reason=None skipped=anchor_never_reached archived_at=21 | anchor_v5 plate=[] prep_req={'fish': 1, 'potato': 0} prep_live_at_event={'fish': 0, 'potato': 0}
+      injection_skipped: {'t': 21, 'why': 'anchor_never_reached'}
+  b3_hard_nops_medium_map_1_p_ready_potato_24: injected_at=None released_at=None reason=None skipped=anchor_never_reached archived_at=21 | asked tNone answered tNone: None | live grade None
+      injection_skipped: {'t': 21, 'why': 'anchor_never_reached'}
+  b3_hard_nops_medium_map_1_q_order_26: injected_at=None released_at=None reason=None skipped=anchor_never_reached archived_at=21 | asked tNone answered tNone: None | live grade None
+      injection_skipped: {'t': 21, 'why': 'anchor_never_reached'}
+  b3_hard_nops_medium_map_1_leave_unattended: injected_at=None released_at=None reason=None skipped=anchor_never_reached archived_at=21 | flags: [] | convinced=False prevented=False | anchor_v5 plate=[] prep_req={'fish': 1, 'potato': 2} prep_live_at_event={'fish': 0, 'potato': 0}
+      injection_skipped: {'t': 21, 'why': 'anchor_never_reached'}
+  b3_hard_nops_medium_map_1_q_assistant_said_28: injected_at=15 released_at=15 reason=question_asked skipped=None archived_at=15 | asked t15 answered tNone: None | live grade None
+  b3_hard_nops_medium_map_1_omit_subgoal: injected_at=16 released_at=None reason=None skipped=None archived_at=21 | flags: [] | convinced=False prevented=False | anchor_v5 plate=['fish'] prep_req={'fish': 1, 'potato': 2} prep_live_at_event={'fish': 0, 'potato': 0}
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+=== INJECTED sub b3_hard_nops_medium_map_1_serve_raw (error/serve_raw) ===
+COOK t0 [move=answer close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t0, took 2.561s = 3 ticks)
+ASSISTANT t3 [flag=None]: (silent)
+  ACTION t6: go to the plates [done] (cook read this at t15)
+  (assistant call issued t4, took 2.281s = 2 ticks)
+ASSISTANT t6 [flag=None]: (silent)
+  ACTION t8: pick up [done] (cook read this at t15)
+  (assistant call issued t6, took 3.759s = 4 ticks)
+ASSISTANT t10 [flag=None]: (silent)
+  ACTION t13: go to the fish source [done] (cook read this at t15)
+  (assistant call issued t10, took 4.541s = 4 ticks)
+ASSISTANT t14 [flag=None]: (silent)
+=== RELEASED sub b3_hard_nops_medium_map_1_serve_raw (max_hold_plate_committed) ===
+--- archived sub b3_hard_nops_medium_map_1_serve_raw (injected=True skipped=None) ---
+=== INJECTED sub b3_hard_nops_medium_map_1_q_assistant_said_28 (qa_probe/no_error) ===
+=== RELEASED sub b3_hard_nops_medium_map_1_q_assistant_said_28 (question_asked) ===
+--- archived sub b3_hard_nops_medium_map_1_q_assistant_said_28 (injected=True skipped=None) ---
+  ACTION t15: scoop [done] (cook read this at t16)
+  PLATE: +fish (raw)
+COOK t15 [move=ask_for_more_guidance]: What did you tell me about the plate earlier, and what should I do next?
+        (plan_update: {"op": "drop", "actions": []})
+=== INJECTED sub b3_hard_nops_medium_map_1_omit_subgoal (error/omit_subgoal) ===
+COOK t16 [move=answer close]: I got the fish on the plate, so I'm heading over to the serving pass now.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t14, took 2.833s = 3 ticks)
+ASSISTANT t17 [flag=None]: (silent)
+  ACTION t19: go to the serving pass [done] (not read by the cook: after its last turn)
+  ACTION t20: serve [running] (not read by the cook: after its last turn)
+--- archived sub b3_hard_nops_medium_map_1_i_side_quest_4 (injected=False skipped=anchor_never_reached) ---
+--- archived sub b3_hard_nops_medium_map_1_p_ready_potato_24 (injected=False skipped=anchor_never_reached) ---
+--- archived sub b3_hard_nops_medium_map_1_q_order_26 (injected=False skipped=anchor_never_reached) ---
+--- archived sub b3_hard_nops_medium_map_1_leave_unattended (injected=False skipped=anchor_never_reached) ---
+--- archived sub b3_hard_nops_medium_map_1_omit_subgoal (injected=True skipped=None) ---
+
+END: outcome wrong_serve at tick 21; failed_at=detection
