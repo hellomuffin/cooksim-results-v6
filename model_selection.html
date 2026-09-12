@@ -1,0 +1,290 @@
+<title>Model selection and streaming settings</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,500;0,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--paper:#f6f7f9;--card:#ffffff;--ink:#161a20;--muted:#5b6673;--faint:#8a93a0;--rule:#dfe3e8;
+ --accent:#2c4bb8;--accent-soft:#e9edfb;--ok:#2f7a4f;--warn:#9a5b12;--warn-soft:#f7f0e2;--bad:#b3402f;
+ --term:#12161d;--term-ink:#dfe6f0;--measure:46rem;--wide:64rem}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#12151a;--card:#171b21;--ink:#e7ebf1;
+ --muted:#98a2ae;--faint:#727d8a;--rule:#252b33;--accent:#8ba4ff;--accent-soft:#1c2333;--ok:#61b98a;
+ --warn:#d6a94a;--warn-soft:#241f14;--bad:#e58076;--term:#0d1117;--term-ink:#dfe6f0}}
+:root[data-theme="dark"]{--paper:#12151a;--card:#171b21;--ink:#e7ebf1;--muted:#98a2ae;--faint:#727d8a;
+ --rule:#252b33;--accent:#8ba4ff;--accent-soft:#1c2333;--ok:#61b98a;--warn:#d6a94a;--warn-soft:#241f14;
+ --bad:#e58076;--term:#0d1117;--term-ink:#dfe6f0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;
+ font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--wide);margin:0 auto;padding:3.2rem 1.4rem 5rem}
+.wrap>p,.wrap>ul,.wrap>ol,.wrap>h2,.wrap>h3,.wrap>h4,.lede,.note{max-width:var(--measure)}
+.wrap>p{margin:0 0 .95rem}
+h1,h2,h3{font-family:Spectral,Georgia,serif;text-wrap:balance;margin:0}
+h1{font-size:2.15rem;font-weight:600;line-height:1.14;letter-spacing:-.012em}
+h2{font-size:1.34rem;font-weight:600;margin:2.7rem 0 .7rem;padding-top:.85rem;border-top:1px solid var(--rule)}
+h3{font-size:1.04rem;font-weight:600;margin:1.8rem 0 .5rem}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;
+ color:var(--faint);margin-bottom:.8rem}
+.lede{font-size:1.02rem;color:var(--muted);margin:.9rem 0 1.4rem}
+a{color:var(--accent);text-underline-offset:.18em}
+ul,ol{margin:.2rem 0 1rem;padding-left:1.25rem}li{margin-bottom:.4rem}
+code{font-family:"IBM Plex Mono",monospace;font-size:.85em;background:var(--accent-soft);padding:.05em .32em;border-radius:2px}
+pre{background:var(--term);color:var(--term-ink);border-radius:3px;padding:.9rem 1rem;overflow-x:auto;
+ font-family:"IBM Plex Mono",monospace;font-size:.79rem;line-height:1.55;max-width:var(--wide);margin:.7rem 0 1.2rem}
+pre code{background:none;padding:0;color:inherit;font-size:1em}
+pre .c{color:#7f8b9c}
+.toc{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:1rem 1.2rem;margin:1.6rem 0 2rem;
+ max-width:var(--measure);font-size:.9rem}
+.toc a{display:block;color:var(--muted);text-decoration:none;padding:.12rem 0}
+.toc a:hover{color:var(--accent)}
+.tbl{margin:1.2rem 0 1.6rem;max-width:var(--wide)}
+.tcap{font-size:.83rem;color:var(--muted);margin-bottom:.6rem;max-width:var(--measure)}
+.tcap b{color:var(--ink);font-weight:600}
+.tablewrap{overflow-x:auto;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:.79rem;line-height:1.45}
+th{font-weight:500;text-align:left;color:var(--muted);padding:.42rem .55rem;font-size:.71rem;letter-spacing:.03em;
+ text-transform:uppercase;border-bottom:1px solid var(--rule);vertical-align:bottom}
+td{text-align:left;padding:.4rem .55rem;vertical-align:top;border-bottom:1px solid var(--rule)}
+tbody tr:last-child td{border-bottom:none}
+td:first-child{font-weight:500;white-space:nowrap}
+td.n{text-align:right;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+.note{background:var(--warn-soft);border-left:2px solid var(--warn);padding:.8rem 1rem;margin:1.2rem 0;font-size:.92rem;border-radius:0 2px 2px 0}
+.note b{font-weight:600}
+.chk{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:.9rem 1.1rem;margin:1.2rem 0;max-width:var(--measure)}
+.chk h4{margin:0 0 .5rem;font-size:.92rem;font-family:"IBM Plex Sans",sans-serif;font-weight:600}
+.chk ol{margin:0;padding-left:1.2rem;font-size:.93rem}
+footer{border-top:1px solid var(--rule);margin-top:3rem;padding-top:1.3rem;font-size:.85rem;color:var(--muted);max-width:var(--measure)}
+</style>
+<div class="wrap">
+<div class="eyebrow">cooksim · model roster for the paper · 2026-09-12</div>
+<h1>Which models we test, and how to run the streaming ones natively</h1>
+<p class="lede">Two questions, answered together. <b>Which</b> models fill the four families of the
+assistant seat, if each family has five slots. And <b>how</b> each streaming system must be driven so
+the numbers measure the model rather than our polling loop — because today they do not.</p>
+
+<div class="toc">
+<a href="#contract">1 · The fairness contract</a> ·
+<a href="#families">2 · The four families, five slots each</a> ·
+<a href="#streaming">3 · Settings, one card per streaming system</a> ·
+<a href="#wrong">4 · What our harness does wrong today</a> ·
+<a href="#work">5 · What has to be built</a> ·
+<a href="#sources">6 · Sources</a>
+</div>
+
+<h2 id="contract">1 · The fairness contract</h2>
+<p>The benchmark charges wall-clock. A reply's round trip is converted into game ticks
+(<code>COOKSIM_ASSIST_LATENCY=measured</code>, capped at 30) and the kitchen keeps running while the
+model thinks. Every setting that changes time-to-speech therefore changes the score, so three
+quantities have to be controlled or reported per arm.</p>
+
+<div class="tbl"><div class="tcap"><b>The three knobs.</b> Anything left uncontrolled here silently
+becomes part of the result.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>knob</th><th>what it is</th><th>why it decides fairness</th></tr></thead>
+<tbody>
+<tr><td>visual budget</td><td>frames/second × resolution × history depth</td><td>Gemini Live is hard-capped at <b>1 fps</b>; a turn-based model fed 8 frames per poll may see more per decision</td></tr>
+<tr><td>decision cadence</td><td>who decides when to speak</td><td>we poll; a duplex model decides for itself. Polling a proactive model deletes the capability we claim to measure</td></tr>
+<tr><td>latency accounting</td><td>what we charge as ticks</td><td>a voice-native model pays speech-synthesis time; a text model pays none. Charging both the same is a bug, not a control</td></tr>
+</tbody></table></div></div>
+
+<p><b>Report every model twice.</b> A <b>matched arm</b> — 1 fps, identical rulebook prompt, identical
+flag contract, identical context depth, latency charged from first token — is the apples-to-apples
+table. A <b>native arm</b> — each system in its best mode, including its own speak decision — is the
+"what can it actually do" table. The difference between them is the <b>streaming benefit</b>, and it
+is a more publishable quantity than another leaderboard column. This is where the 2026 literature has
+landed: VSAS-Bench standardises synchronous vs asynchronous protocols and separates proactiveness from
+consistency, IPIBench runs every model under one streaming protocol with tolerance windows, and
+"Don't Pause!" argues for a single-token response design precisely so autoregressive and
+non-autoregressive systems can be compared without completion latency.</p>
+
+<h2 id="families">2 · The four families, five slots each</h2>
+
+<h3>A · Non-streaming API</h3>
+<div class="tbl"><div class="tcap"><b>Three frontier, one fast, one open.</b> On our clock speed <i>is</i>
+capability, so the fast tier is not a courtesy slot — it is the cell that carries the latency argument.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>#</th><th>model</th><th>why it earns a slot</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><b>GPT-6 Astra</b></td><td>current ceiling (GA 2026-09-08, $10/$50 per Mtok, 1.05M ctx); a paper without it dates immediately</td></tr>
+<tr><td>2</td><td><b>Claude Opus 5</b></td><td>the instruction-following / agentic pole, a different failure signature</td></tr>
+<tr><td>3</td><td><b>Gemini 3.x Pro</b></td><td>strongest native-multimodal reasoning, and it shares a frame path with the Live arm — which isolates protocol from weights</td></tr>
+<tr><td>4</td><td><b>Gemini 3.8 Flash</b></td><td>the fast tier (GA 2026-09-02); the cell where a cheaper model can win on the clock</td></tr>
+<tr><td>5</td><td><b>Qwen3.8-Max</b> (2.4T MoE, 95B active, open weights)</td><td>open frontier; makes the closed/open gap measurable without owning the GPUs</td></tr>
+</tbody></table></div></div>
+<div class="note"><b>Retire the current roster.</b> We run <code>gpt-5.5</code>, <code>gpt-5.4-mini</code>,
+<code>gemini-3.1-pro-preview</code> and <code>gemini-3.7-flash</code> — a full generation behind. Keep at
+most one as a "previous generation" reference line.</div>
+
+<h3>B · Streaming API</h3>
+<p>Say plainly in the paper that this family is a <b>duopoly</b>: only Google and OpenAI ship streaming
+<i>video</i>. Filling five slots with configurations rather than pretending there are five vendors turns
+a thin family into the sharpest experiment in the paper, because slots 1↔2 and 3↔4 hold the weights
+fixed and vary only the protocol.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>#</th><th>cell</th><th>what it isolates</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>gemini-3.1-flash-live-preview</code>, <b>polled</b></td><td>what we do today</td></tr>
+<tr><td>2</td><td>same model, <b>native</b>: proactive audio on, no forced turns</td><td>the model's own speak decision</td></tr>
+<tr><td>3</td><td><code>gpt-realtime</code>, <b>polled</b></td><td>what we do today</td></tr>
+<tr><td>4</td><td>same model, <b>native</b>: WebRTC video + semantic VAD + server-side turn detection</td><td>the model's own speak decision</td></tr>
+<tr><td>5</td><td><b>MiniCPM-o 4.5</b> served full-duplex through vLLM-Omni</td><td>the only streaming cell anyone can reproduce</td></tr>
+</tbody></table></div>
+
+<h3>C · Non-streaming local video VLM</h3>
+<p>Hardware here: 4 × A100-SXM4-80GB, sm_80 — <b>no FP8</b>, so bf16 or AWQ-int4 only, and the
+<code>-FP8</code> checkpoints are useless to us.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>#</th><th>model</th><th>why</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><b>Qwen3.8-27B</b> (2026-08-14, Apache 2.0, native image+video, 262K ctx)</td><td>the current open baseline — and already benchmarked on this box. <b>Not</b> Qwen3-VL, which is a year old</td></tr>
+<tr><td>2</td><td><b>Molmo 2 8B</b> (+ <b>Molmo 2-O 7B</b>)</td><td>video pointing and tracking beat Gemini 3 on tracking; 2-O is open end-to-end on an Olmo backbone — the strongest open-science story available</td></tr>
+<tr><td>3</td><td><b>InternVideo3-8B</b> (2026-06)</td><td>video-specialist lineage, independent of the VL-generalist trend</td></tr>
+<tr><td>4</td><td><b>GLM-V / Kimi-VL thinking line</b></td><td>inference-time compute on video: does thinking help when the clock runs?</td></tr>
+<tr><td>5</td><td><b>MiniCPM-V/o 4.5 9B (INT4)</b></td><td>efficiency anchor — 212 tok/s at 11 GB is the only local class that meets a ~1 s budget</td></tr>
+</tbody></table></div>
+
+<h3>D · Streaming / interactive open models</h3>
+<p>Pick one model per <i>speak-decision mechanism</i>, not five of the same kind. This family is the one
+our metric is actually about.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>#</th><th>model</th><th>mechanism</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><b>MiniCPM-o 4.5</b> (9B)</td><td>Omni-Flow full duplex: input and output streams do not block; proactive reminding is native</td></tr>
+<tr><td>2</td><td><b>Qwen3-Omni-30B-A3B</b></td><td>duplex MoE, open SOTA on 32/36 audio-visual benchmarks, first-class vLLM-Omni serving</td></tr>
+<tr><td>3</td><td><b>Streamo</b></td><td>State-Token Unified Triggering — explicit <code>Silence</code> / <code>Standby</code> / <code>Response</code> tokens</td></tr>
+<tr><td>4</td><td><b>Proact-VL</b></td><td>a <code>&lt;|FLAG|&gt;</code> response head with transition smoothing — our flag field, learned</td></tr>
+<tr><td>5</td><td><b>StreamingVLM</b> (MIT, Qwen2.5-VL-7B ft) or <b>StreamOV</b></td><td>infinite-stream memory: 2 h+ continuous operation, which our 600-tick episodes need</td></tr>
+</tbody></table></div>
+
+<h2 id="streaming">3 · Settings, one card per streaming system</h2>
+
+<h3>Gemini Live</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>parameter</th><th>native setting</th></tr></thead>
+<tbody>
+<tr><td>video rate</td><td><b>1 fps is a hard cap</b> — frames pushed faster are cost with no information</td></tr>
+<tr><td>frame transport</td><td><code>send_realtime_input(video=…)</code>, only frames new since the last ask (we already do this)</td></tr>
+<tr><td>speak decision</td><td><b>proactive audio</b>: the model chooses to answer or stay a silent co-listener. This is the native answer to "when should I speak", and we never enable it</td></tr>
+<tr><td>turn taking</td><td>automatic VAD, or client-driven <code>ActivityStart</code>/<code>ActivityEnd</code>; never a forced <code>turn_complete=True</code> per poll</td></tr>
+<tr><td>long sessions</td><td>context-window compression + session resumption (recommended past ~15 min; our episodes qualify)</td></tr>
+<tr><td>latency</td><td>charge from first token. Our config takes <code>response_modalities=["AUDIO"]</code> + transcription, so TTS time currently lands inside the ticks we bill</td></tr>
+</tbody></table></div>
+
+<h3>OpenAI Realtime (gpt-realtime)</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>parameter</th><th>native setting</th></tr></thead>
+<tbody>
+<tr><td>video</td><td>live video input over WebRTC; the reference sampler runs 1 fps while the user speaks, 1 frame / 3 s otherwise</td></tr>
+<tr><td>speak decision</td><td>server-side turn detection + <b>semantic VAD</b> — not a <code>response.create</code> per poll</td></tr>
+<tr><td>output</td><td><code>output_modalities=["text"]</code> is fine for us and avoids paying for speech</td></tr>
+<tr><td>session</td><td>one per episode, instructions as session config (we already do this)</td></tr>
+</tbody></table></div>
+
+<h3>MiniCPM-o 4.5 — the local model we have already run here</h3>
+<div class="tbl"><div class="tcap"><b>Paper settings, and our own measurements on one A100.</b> The
+right-hand column is from <code>local_models/minicpmo/RESULTS.md</code>.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>parameter</th><th>value</th><th>source</th></tr></thead>
+<tbody>
+<tr><td>time window</td><td><b>1.0 s</b> (0.1–0.2 s degrades substantially)</td><td>paper ablation</td></tr>
+<tr><td>streaming resolution</td><td>448×448; dynamic 1–5 fps / 0.2–0.4 MP</td><td>paper</td></tr>
+<tr><td>speak decision</td><td><b>Listen–Speak control token</b> emitted <i>before</i> content: <code>[listen]</code> or speak. "Deciding <i>whether</i> to speak should be decoupled from deciding <i>what</i> to say"</td><td>paper</td></tr>
+<tr><td>output pacing</td><td>TAIL — per-window token budget adapts so speech stays time-aligned</td><td>paper</td></tr>
+<tr><td>INT4 throughput</td><td>212 tok/s, 11 GB (RTX 4090); llama.cpp-omni RTF 0.21</td><td>paper</td></tr>
+<tr><td><b>our A100, bf16, plain transformers</b></td><td>0.2–0.5 s per 1-s unit → real-time at 1 fps with headroom</td><td>our run</td></tr>
+<tr><td>our half-duplex numbers</td><td>per-frame prefill 0.11 s · TTFT 0.385 s · 50-token JSON 1.99 s @ 26 tok/s</td><td>our run</td></tr>
+</tbody></table></div></div>
+<div class="note"><b>Duplex is cheaper, not dearer.</b> Stateless costs ≈0.76 s and ≈100 output tokens per
+poll (AWQ). Duplex costs 0.11 s of prefill and, in most windows, <b>one token</b> — so bf16's slow decode
+barely matters when the modal output length is 1. The catch on our box: the streaming APIs are
+transformers-only (no vLLM endpoint, hence no AWQ), a 5× decode penalty we accept in exchange for the
+model's own trigger. Our run also logged the failure modes to report: a false-positive speak on unit 1,
+and recency bias in streaming mode (it hallucinated frames 9–10 as a continuation).</div>
+
+<h3>StreamingVLM — native means never re-prefilling</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>mechanic</th><th>value</th></tr></thead>
+<tbody>
+<tr><td>KV policy</td><td>attention sinks (512 text tokens) + text window (512) + <b>vision window = 16 s</b>; oldest vision evicted first</td></tr>
+<tr><td>positions</td><td><b>contiguous RoPE</b> — indices re-shifted on eviction so positions stay in-distribution over an infinite stream</td></tr>
+<tr><td>input</td><td>vision and text interleaved at <b>1 s</b> intervals (trained on 24 s overlapped chunks)</td></tr>
+<tr><td>throughput</td><td><b>8 FPS on one H100</b>, fixed context, stable latency; expect ~4–5 FPS on an A100 — still 4× our 1 fps need</td></tr>
+<tr><td>vs. the obvious baseline</td><td>66.18% win rate against ~40% for sliding-window-with-overlap</td></tr>
+</tbody></table></div>
+
+<h3>Qwen3-Omni — be honest that local native is not there yet</h3>
+<p>MoE thinker–talker. The repo documents batch inference and <code>vllm serve</code>, and evaluates video
+at <code>fps=2</code>, but <b>no local self-triggering mechanism is documented</b>: real-time interaction is
+offered through the hosted Qwen3-Omni-Flash realtime API, and local full-duplex is vLLM-Omni experimental.
+Unless that path works, this model belongs in the <b>matched arm</b> (thinker-only, text out, fps=2), not
+the native arm. Claiming otherwise would repeat exactly the mistake we are making with the two streaming APIs.</p>
+
+<h3>Streamo / Proact-VL — the cleanest match to our own metric</h3>
+<p>Streamo emits explicit <code>Silence</code> / <code>Standby</code> / <code>Response</code> state tokens;
+Proact-VL carries a <code>&lt;|FLAG|&gt;</code> response head with transition smoothing. Native use is to read
+that head per chunk — structurally, our flag field learned end-to-end. They earn a slot each because they
+let us compare a <i>learned</i> speak decision against the prompted one every other model uses.</p>
+
+<h2 id="wrong">4 · What our harness does wrong today</h2>
+<div class="chk">
+<p><b>We force every turn.</b> <code>LiveBackend</code> asks with <code>send_client_content(turn_complete=True)</code>
+on our poll schedule; <code>RealtimeBackend</code> sends an ask per poll. Both models have a native
+"decide when to speak" mechanism that we never enable. We are measuring them as turn-based models with
+extra latency — the worst of both worlds.</p>
+<p><b>We charge TTS to the model.</b> Gemini Live is configured for audio output with transcription, so
+speech synthesis lands in the latency we convert to ticks. Text-native models pay nothing comparable.</p>
+<p><b>We may exceed 1 fps.</b> Anything above the Live API's cap is cost without information, while a
+turn-based arm gets 8 crisp frames per decision.</p>
+<p><b>We do not serialise.</b> <code>COOKSIM_VOICE_GAP</code> is a floor, not a wait-for-reply. The study app
+measured 97% of its calls issued while an earlier one was unanswered, so the model could not see its own
+last line and repeated itself. For a stateful session this is worse than for a stateless one.</p>
+<p><b>Thinking is pinned to <code>minimal</code></b> on Live while turn-based arms think freely.</p>
+<p><b>Local streaming models get the worst of it.</b> The only local path is
+<code>--assist-backend openai</code> → a vLLM <code>/v1/chat/completions</code> server: one stateless call per
+poll, re-prefilling the frames every time, with every trigger head the model owns left as dead code.</p>
+</div>
+
+<h2 id="work">5 · What has to be built</h2>
+<ol>
+<li><b>A <code>stream</code> backend kind</b> beside gemini/live/openai/realtime: one session per episode,
+one chunk pushed per tick (or per N ticks so a window ≈ 1 s of game time), read the control token, and
+materialise an utterance only when the model itself decides to speak.</li>
+<li><b>Latency accounting that does not punish duplex.</b> Charge from chunk arrival to first
+<i>content</i> token; treat the control token as free. Under today's rule a model answering "listen"
+sixty times a minute would be billed for sixty replies.</li>
+<li><b>A two-stage output contract.</b> A duplex model will not emit our JSON flag inside a one-token
+window: the control token decides, then a short <b>grammar-constrained</b> generation produces the flag
+only when it speaks.</li>
+<li><b>Stop pasting history.</b> The session is the memory; re-sending frames costs prefill and creates
+the recency bias we measured.</li>
+<li><b>Per-model input specs</b>, not one global setting: MiniCPM-o 448×448 at 1 fps / 1 s windows;
+StreamingVLM 1 fps interleaved with sinks and windows; Qwen3-Omni <code>fps=2</code>.</li>
+</ol>
+<p>Order of work: fix the four API issues → refresh the model IDs (cheap, immediate) → run families A and B
+in both arms on the existing suite → then the local families, which cost GPU time and can follow.
+For family D: <b>MiniCPM-o 4.5 duplex first</b> (already stood up here, and its Listen–Speak token gives us
+the trigger for free), then StreamingVLM (text-out only, simplest session), then Streamo / Proact-VL for
+the learned-trigger comparison.</p>
+
+<h2 id="sources">6 · Sources</h2>
+<p class="note">
+Models —
+<a href="https://huggingface.co/Qwen/Qwen3.8-27B">Qwen3.8-27B</a> ·
+<a href="https://llm-stats.com/blog/research/qwen3-8-max-open-weights">Qwen3.8-Max open weights</a> ·
+<a href="https://secure.businesswire.com/news/home/20251216910167/en/Ai2-Releases-Molmo-2-State-of-the-Art-Open-Multimodal-Family-for-Video-and-Multi-Image-Understanding">Molmo 2</a> ·
+<a href="https://github.com/opengvlab/internvideo">InternVideo3</a> ·
+<a href="https://arxiv.org/html/2604.27393v1">MiniCPM-o 4.5 / Omni-Flow</a> ·
+<a href="https://github.com/QwenLM/Qwen3-Omni">Qwen3-Omni</a> ·
+<a href="https://arxiv.org/html/2510.09608v1">StreamingVLM</a> ·
+<a href="https://arxiv.org/html/2605.25621">StreamOV</a> ·
+<a href="https://github.com/sotayang/Awesome-Streaming-Video-Understanding">Streamo / Proact-VL / ThinkStream index</a> ·
+<a href="https://www.promptzone.com/ai-model-releases">2026 release timeline</a>.
+Protocol —
+<a href="https://arxiv.org/html/2604.07634v2">VSAS-Bench</a> ·
+<a href="https://arxiv.org/html/2605.27074">IPIBench</a> ·
+<a href="https://arxiv.org/html/2604.24317">Don't Pause! (Timeliness-F1)</a> ·
+<a href="https://arxiv.org/html/2608.05703v1">StreamArena</a>.
+APIs —
+<a href="https://ai.google.dev/gemini-api/docs/live-api/capabilities">Gemini Live capabilities</a> ·
+<a href="https://openai.com/index/introducing-gpt-realtime/">gpt-realtime</a> ·
+<a href="https://docs.livekit.io/agents/models/realtime/plugins/openai/">Realtime video via LiveKit</a> ·
+<a href="https://docs.vllm.ai/projects/vllm-omni/en/latest/">vLLM-Omni</a>.
+</p>
+</div>
