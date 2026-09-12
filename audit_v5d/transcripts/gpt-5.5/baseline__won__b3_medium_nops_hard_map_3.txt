@@ -1,0 +1,140 @@
+EPISODE tmp/assist_bench_v5_sample4/frames/baseline/gpt-5.5/b3_medium_nops_hard_map_3.json
+case b3_medium_nops_hard_map_3 | cook persona pv2_baseline | assistant gpt-5.5 | outcome won at tick 132 | pace tight | engine 3bcd378dec
+eval: 
+
+PLANNED SUB-CASES (scheduler v5: every pending sub-case is checked every tick against its anchor = plate prefix + prep progress; errors/detours take the body slot one at a time, questions/requests take the voice slot and may be asked during a takeover; 'clean tick'/'window' below are the designer's reference only):
+  [0] ERROR mis_prep (fn mis_prep, kwargs {'component': 'meat', 'wrong': 'cheese'}; anchored at clean tick 0, window [11, 43], ruinous=True)
+  [1] ERROR leave_unattended (fn leave_unattended, kwargs {'component': 'meat', 'loops': 3}; anchored at clean tick 56, window [71, 120], ruinous=True)
+  [2] QUESTION after_ref:bun: "The thing I put on right after the bun — what is it, and is it done?" (after 13 clean commands)
+  [3] QUESTION count:visit(pan): "How many times have I walked over to a pan so far?" (after 13 clean commands)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_medium_nops_hard_map_3_mis_prep: injected_at=0 released_at=18 reason=max_hold_deviated_block_executed skipped=None archived_at=18 | flags: [] | cook calls: none | credited: flagged_valid=False (engine alone=False, by=None, at=None) | convinced=False prevented=False | anchor_v5 plate=[] prep_req={'meat': 0} prep_live_at_event={'meat': 0}
+  b3_medium_nops_hard_map_3_leave_unattended: injected_at=73 released_at=78 reason=max_hold_smoke_committed skipped=None archived_at=78 | flags: [] | cook calls: none | credited: flagged_valid=False (engine alone=False, by=None, at=None) | convinced=False prevented=False | anchor_v5 plate=['bun'] prep_req={'meat': 1} prep_live_at_event={'meat': 1}
+  b3_medium_nops_hard_map_3_q_after_ref_13: injected_at=123 released_at=123 reason=question_asked skipped=None archived_at=123 | asked t123 answered t128 (late-captured): Yes — I see the raw cheese on top now. The thing after the bun is the cooked meat patty, and the burger is ready. Go to the serving pass and serve it. | live grade ungradable
+  b3_medium_nops_hard_map_3_q_count_13: injected_at=131 released_at=131 reason=question_asked skipped=None archived_at=131 | asked t131 answered tNone: None | live grade None
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+=== INJECTED sub b3_medium_nops_hard_map_3_mis_prep (error/mis_prep) ===
+COOK t0 [move=answer call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t3: go to the cheese source [done] (cook read this at t14)
+  (assistant call issued t0, took 3.144s = 3 ticks)
+ASSISTANT t3 [flag=None]: (silent)
+  ACTION t5: pick up [done] (cook read this at t14)
+  (assistant call issued t4, took 3.057s = 3 ticks)
+ASSISTANT t7 [flag=None]: (silent)
+  ACTION t10: go to the empty cutting board [done] (cook read this at t14)
+  ACTION t12: put down [done] (cook read this at t14)
+  (assistant call issued t8, took 6.939s = 6 ticks)
+ASSISTANT t14 [flag=None]: Remember the strict order: bun first, cooked meat second, cheese last. If you're holding cheese now, don't put it on the plate until after bun and meat are already on it.
+COOK t14 [move=answer call=none close]: Yeah I know the order, I'm just working on the cheese at the cutting board right now.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t17: chop [done] (cook read this at t18)
+=== RELEASED sub b3_medium_nops_hard_map_3_mis_prep (max_hold_deviated_block_executed) ===
+--- archived sub b3_medium_nops_hard_map_3_mis_prep (injected=True skipped=None) ---
+  (assistant call issued t14, took 4.636s = 4 ticks)
+ASSISTANT t18 [flag=late]: Stop — that's a mis-prep. This order needs cheese raw, not chopped. Leave or trash that cheese from the cutting board later; for the burger, use fresh raw cheese from the cheese crate only after bun and cooked meat are on the plate.
+COOK t18 [move=accept call=correct close]: Ah good catch, completely forgot this burger takes raw cheese. I'll get the meat on the stove first then.
+        (plan_update: {"op": "replace", "actions": ["go to meat source 1", "pick up", "go to pan 1", "put down", "turn on"]})
+        (planning skill before this turn: resolve_subgoal({"subgoal": "prep(meat)"}) -> ["go to the meat source (multiple instances in this map, resolve grounding by yourself)", "pick up", "go to the empty pan (multiple instances in this map, resolve grounding by yourself)", "put down", "turn on"])
+  ACTION t19: go to meat source 1 [done] (cook read this at t22)
+  ACTION t21: pick up [done] (cook read this at t22)
+  (assistant call issued t18, took 4.174s = 4 ticks)
+ASSISTANT t22 [flag=None]: Good recovery. Leave the chopped cheese on the board; get raw meat from the meat crate and put it in a pan to cook.
+COOK t22 [move=accept call=none close]: Got the meat, heading to the pan right now.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t22, took 5.167s = 5 ticks)
+ASSISTANT t27 [flag=None]: (silent)
+  (assistant call issued t28, took 5.167s = 5 ticks)
+ASSISTANT t33 [flag=None]: Put the raw meat into an empty pan, then turn it on with empty hands if it doesn't start itself. Don't use the pot for meat.
+COOK t33 [move=accept call=none close]: Yep, putting it in the pan right now and starting it up.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t35: go to pan 1 [done] (cook read this at t40)
+  ACTION t37: put down [done] (cook read this at t40)
+  ACTION t39: turn on [done] (cook read this at t40)
+  (assistant call issued t34, took 6.58s = 6 ticks)
+ASSISTANT t40 [flag=None]: You're still holding the raw meat. Go to an empty pan and put it down there; once it's in, turn on the pan with empty hands if needed.
+COOK t40 [move=question_correctness call=wrong close]: Actually the meat is already in the pan sizzling away, so I'm going to grab a plate now.
+        (plan_update: {"op": "replace", "actions": ["go to the plates", "pick up"]})
+        (planning skill before this turn: resolve_subgoal({"subgoal": "fetch_plate"}) -> ["go to the plates", "pick up"])
+  (assistant call issued t40, took 7.481s = 7 ticks)
+ASSISTANT t47 [flag=None]: You're right — I see the meat cooking in the pan now. Grab a clean plate, then build it in strict order: raw bun first, cooked meat second once the pan is done, raw cheese last.
+COOK t47 [move=accept call=none close]: Sounds good, grabbing a plate now to get the bun ready.
+        (plan_update: {"op": "append", "actions": ["go to the bun source", "scoop"]})
+        (planning skill before this turn: resolve_subgoal({"subgoal": "assemble(bun)"}) -> ["go to the plates", "pick up", "go to the bun source", "scoop"])
+  HEAT [4, 3]: ['meat'] COOKED (done)
+  ACTION t54: go to the plates [done] (cook read this at t58)
+  ACTION t56: pick up [done] (cook read this at t58)
+  (assistant call issued t48, took 10.84s = 10 ticks)
+ASSISTANT t58 [flag=None]: Plate looks ready. Go to the bun crate and scoop a raw bun first; wait for the pan to finish before adding the meat second.
+COOK t58 [move=accept call=none close]: On it, grabbing the bun now.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t58, took 10.138s = 9 ticks)
+ASSISTANT t67 [flag=false_alarm]: Careful — you're looking around the cheese and meat crates, but the bun crate is on the bottom-right counter with the buns. Go to the bun crate and scoop a raw bun onto the plate first; don't scoop cheese yet.
+COOK t67 [move=answer call=wrong close]: I'm already heading straight down to the bun crate at the bottom right, don't worry.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t71: go to the bun source [done] (cook read this at t73)
+=== INJECTED sub b3_medium_nops_hard_map_3_leave_unattended (error/leave_unattended) ===
+  ACTION t73: scoop [done] (cook read this at t77)
+  PLATE: +bun (raw)
+COOK t73 [move=answer call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t68, took 10.109s = 9 ticks)
+ASSISTANT t77 [flag=None]: Good — get the raw bun from the bun crate onto the plate now. The meat looks ready in the pan, so right after the bun is on the plate, go to the pan with the cooked meat and scoop it out second.
+COOK t77 [move=answer call=none]: I'm heading over towards the cheese crate right now.
+        (plan_update: {"op": "drop", "actions": []})
+=== RELEASED sub b3_medium_nops_hard_map_3_leave_unattended (max_hold_smoke_committed) ===
+--- archived sub b3_medium_nops_hard_map_3_leave_unattended (injected=True skipped=None) ---
+  (assistant call issued t78, took 4.898s = 5 ticks)
+ASSISTANT t83 [flag=None]: Bun is on the plate — good. Go to the pan with the cooked meat and scoop it onto the plate second now; cheese comes after that.
+COOK t83 [move=accept call=none close]: Right, heading to the pan to get the meat on the bun.
+        (plan_update: {"op": "replace", "actions": ["go to pan 1", "scoop"]})
+  ACTION t88: go to the cheese source [done] (cook read this at t91)
+  (assistant call issued t84, took 7.66s = 7 ticks)
+ASSISTANT t91 [flag=false_alarm]: You're hunting around the pot area — the cooked meat is in the pan, not the pot. Go to the pan with the cooked meat and scoop it onto the plate now, before getting raw cheese.
+COOK t91 [move=answer call=wrong close]: I'm already walking right up to the pan to grab the burger patty.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t92, took 6.294s = 6 ticks)
+ASSISTANT t98 [flag=None]: You're at the hot stations now — scoop the cooked meat from the pan onto the plate immediately. It's been done a while, so don't go back to cheese until the meat is safely on the bun.
+COOK t98 [move=accept call=none close]: Scooping the meat out right now before it burns.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t104: go to pan 1 [done] (cook read this at t107)
+  ACTION t106: scoop [done] (cook read this at t107)
+  PLATE: +meat (cooked)
+  HEAT [4, 3]: ['meat'] removed
+  (assistant call issued t98, took 10.023s = 9 ticks)
+ASSISTANT t107 [flag=false_alarm]: Stop — the plate still looks like it only has the bun. Do not serve it. Go back to the pan with the cooked meat and scoop the meat onto the plate second, then get raw cheese last.
+COOK t107 [move=question_correctness call=wrong close]: The patty is actually already on the plate with the bun, so I'm heading over to get the raw cheese now.
+        (plan_update: {"op": "replace", "actions": ["go to the cheese source", "scoop"]})
+        (planning skill before this turn: resolve_subgoal({"subgoal": "assemble(cheese)"}) -> ["go to the cheese source", "scoop"])
+  (assistant call issued t108, took 8.113s = 7 ticks)
+ASSISTANT t115 [flag=None]: Good, the cooked patty is on now. Do not serve yet — the plate still needs raw cheese last. Go to the cheese crate and scoop raw cheese onto the plate, then serve.
+COOK t115 [move=accept call=none close]: Yep, grabbing the cheese and then serving it right up.
+        (plan_update: {"op": "append", "actions": ["go to the serving pass", "serve"]})
+  ACTION t121: go to the cheese source [done] (cook read this at t123)
+=== INJECTED sub b3_medium_nops_hard_map_3_q_after_ref_13 (qa_probe/no_error) ===
+=== RELEASED sub b3_medium_nops_hard_map_3_q_after_ref_13 (question_asked) ===
+--- archived sub b3_medium_nops_hard_map_3_q_after_ref_13 (injected=True skipped=None) ---
+  ACTION t123: scoop [done] (cook read this at t128)
+  PLATE: +cheese (raw)
+  (assistant call issued t116, took 7.501s = 7 ticks)
+ASSISTANT t123 [flag=None]: Stop — do not serve that yet. I still don't see raw cheese on the plate. The cheese crate is the yellow cheese blocks on the top-right counter; go there and scoop raw cheese onto the plate, then serve.
+COOK t123 [move=ask_for_more_guidance call=none]: Quick check, the thing I put on right after the bun — what is it, and is it done?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t123 [move=reject call=wrong close]: I actually just got the raw cheese on top, so the burger is completely ready to be served.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t124, took 4.113s = 4 ticks)
+ASSISTANT t128 [flag=None]: Yes — I see the raw cheese on top now. The thing after the bun is the cooked meat patty, and the burger is ready. Go to the serving pass and serve it.
+COOK t128 [move=accept call=none close]: Sounds good, taking it over to the pass now.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t129: go to the serving pass [done] (cook read this at t131)
+  ACTION t130: go to the serving pass [done] (cook read this at t131)
+=== INJECTED sub b3_medium_nops_hard_map_3_q_count_13 (qa_probe/no_error) ===
+=== RELEASED sub b3_medium_nops_hard_map_3_q_count_13 (question_asked) ===
+--- archived sub b3_medium_nops_hard_map_3_q_count_13 (injected=True skipped=None) ---
+  ACTION t131: serve [running] (not read by the cook: after its last turn)
+COOK t131 [move=accept call=none]: By the way, how many times have I walked over to a pan so far?
+        (plan_update: {"op": "drop", "actions": []})
+
+END: outcome won at tick 132; failed_at=injection_skipped

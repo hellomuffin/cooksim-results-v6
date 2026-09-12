@@ -1,0 +1,154 @@
+EPISODE tmp/assist_bench_v5_sample4/frames/baseline/gemini-3.7-flash/b3_medium_nops_medium_map_4.json
+case b3_medium_nops_medium_map_4 | cook persona pv2_baseline | assistant gemini-3.7-flash | outcome won at tick 101 | pace tight | engine 3bcd378dec
+eval: 
+
+PLANNED SUB-CASES (scheduler v5: every pending sub-case is checked every tick against its anchor = plate prefix + prep progress; errors/detours take the body slot one at a time, questions/requests take the voice slot and may be asked during a takeover; 'clean tick'/'window' below are the designer's reference only):
+  [0] QUESTION past_done:heat: "Is anything on the heat already done and just sitting there?" (after 5 clean commands)
+  [1] QUESTION ready_in:meat: "How long until the meat is ready?" (after 5 clean commands)
+  [2] PROACTIVE REQUEST about meat (after 5 clean commands): Give me a shout the moment the meat is done, would you?
+  [3] ERROR leave_unattended (fn leave_unattended, kwargs {'component': 'meat', 'loops': 2}; anchored at clean tick 27, window [61, 110], ruinous=True)
+  [4] ERROR forget_next_step (fn forget_next_step, kwargs {'after': 'assemble(meat)'}; anchored at clean tick 40, window [48, 80], ruinous=False)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_medium_nops_medium_map_4_q_past_done_5: injected_at=11 released_at=11 reason=question_asked skipped=None archived_at=11 | asked t11 answered t15 (late-captured): No, nothing on the heat is done yet. | live grade ungradable
+  b3_medium_nops_medium_map_4_q_ready_in_5: injected_at=19 released_at=19 reason=question_asked skipped=None archived_at=19 | asked t19 answered t23 (late-captured): It will be ready in about 8 ticks. | live grade ungradable
+  b3_medium_nops_medium_map_4_p_ready_meat_5: injected_at=27 released_at=27 reason=request_made skipped=None archived_at=27 | asked t27 answered tNone: None | live grade None
+  b3_medium_nops_medium_map_4_leave_unattended: injected_at=27 released_at=39 reason=None skipped=None archived_at=40 | flags: [(39, 'wrong_order', 'wrong_name')] | cook calls: [(39, 'correct')] | credited: flagged_valid=True (engine alone=False, by=cook, at=39) | convinced=True prevented=True | anchor_v5 plate=['bun'] prep_req={'meat': 1} prep_live_at_event={'meat': 1}
+  b3_medium_nops_medium_map_4_forget_next_step: injected_at=45 released_at=87 reason=None skipped=None archived_at=88 | flags: [(61, 'forget_next_step', 'valid'), (87, 'forget_next_step', 'late')] | cook calls: [(87, 'correct')] | credited: flagged_valid=True (engine alone=True, by=both, at=61) | convinced=True prevented=True | anchor_v5 plate=['bun', 'meat'] prep_req={'meat': 1} prep_live_at_event={'meat': 1}
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+COOK t0 [move=accept call=none close]: 
+        (plan_update: {"op": "replace", "actions": ["go to meat source 1", "pick up", "go to pan 2", "put down", "turn on"]})
+        (planning skill before this turn: resolve_subgoal({"subgoal": "prep(meat)"}) -> ["go to the meat source (multiple instances in this map, resolve grounding by yourself)", "pick up", "go to the empty pan (multiple instances in this map, resolve grounding by yourself)", "put down", "turn on"])
+  (assistant call issued t0, took 2.233s = 2 ticks)
+ASSISTANT t2 [flag=None]: (silent)
+  ACTION t3: go to meat source 1 [done] (cook read this at t11)
+  (assistant call issued t2, took 2.345s = 2 ticks)
+ASSISTANT t4 [flag=None]: (silent)
+  ACTION t5: pick up [done] (cook read this at t11)
+  (assistant call issued t4, took 3.525s = 3 ticks)
+ASSISTANT t7 [flag=None]: (silent)
+  ACTION t9: go to pan 2 [done] (cook read this at t11)
+=== INJECTED sub b3_medium_nops_medium_map_4_q_past_done_5 (qa_probe/no_error) ===
+=== RELEASED sub b3_medium_nops_medium_map_4_q_past_done_5 (question_asked) ===
+--- archived sub b3_medium_nops_medium_map_4_q_past_done_5 (injected=True skipped=None) ---
+  ACTION t11: put down [done] (cook read this at t14)
+  (assistant call issued t8, took 2.971s = 3 ticks)
+ASSISTANT t11 [flag=None]: (silent)
+COOK t11 [move=ask_for_more_guidance call=none]: Quick question, is anything on the heat already done and just sitting there?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t13: turn on [done] (cook read this at t14)
+COOK t14 [move=accept call=none close]: 
+        (plan_update: {"op": "replace", "actions": ["go to the plates", "pick up"]})
+        (planning skill before this turn: resolve_subgoal({"subgoal": "fetch_plate"}) -> ["go to the plates", "pick up"])
+  (assistant call issued t12, took 2.927s = 3 ticks)
+ASSISTANT t15 [flag=None]: No, nothing on the heat is done yet.
+COOK t15 [move=accept call=none close]: Sounds good, grabbing a plate now.
+        (plan_update: {"op": "drop", "actions": []})
+=== INJECTED sub b3_medium_nops_medium_map_4_q_ready_in_5 (qa_probe/no_error) ===
+=== RELEASED sub b3_medium_nops_medium_map_4_q_ready_in_5 (question_asked) ===
+--- archived sub b3_medium_nops_medium_map_4_q_ready_in_5 (injected=True skipped=None) ---
+COOK t19 [move=ask_for_more_guidance call=none]: By the way, how long until the meat is ready?
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t20: go to the plates [done] (cook read this at t23)
+  (assistant call issued t16, took 3.632s = 4 ticks)
+ASSISTANT t20 [flag=None]: (silent)
+  ACTION t22: pick up [done] (cook read this at t23)
+  (assistant call issued t20, took 3.282s = 3 ticks)
+ASSISTANT t23 [flag=None]: It will be ready in about 8 ticks.
+COOK t23 [move=accept call=none close]: Got it, I'll start plating the bun first.
+        (plan_update: {"op": "replace", "actions": ["go to the bun source", "scoop"]})
+        (planning skill before this turn: resolve_subgoal({"subgoal": "assemble(bun)"}) -> ["go to the bun source", "scoop"])
+  ACTION t25: go to the bun source [done] (cook read this at t27)
+  (assistant call issued t24, took 2.221s = 2 ticks)
+ASSISTANT t26 [flag=None]: (silent)
+=== INJECTED sub b3_medium_nops_medium_map_4_p_ready_meat_5 (qa_proactive/no_error) ===
+=== RELEASED sub b3_medium_nops_medium_map_4_p_ready_meat_5 (request_made) ===
+--- archived sub b3_medium_nops_medium_map_4_p_ready_meat_5 (injected=True skipped=None) ---
+=== INJECTED sub b3_medium_nops_medium_map_4_leave_unattended (error/leave_unattended) ===
+  ACTION t27: scoop [done] (cook read this at t33)
+  PLATE: +bun (raw)
+  HEAT [2, 2]: ['meat'] COOKED (done)
+COOK t27 [move=ask_for_more_guidance call=none]: Could you give me a shout the moment the meat is done cooking?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t26, took 2.633s = 3 ticks)
+ASSISTANT t29 [flag=None]: (silent)
+  (assistant call issued t30, took 2.561s = 3 ticks)
+ASSISTANT t33 [flag=None]: The meat is done cooking!
+COOK t33 [move=answer call=none close]: Thanks for the heads up, I'm just heading over to the cheese crate right now.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t37: go to the cheese source [done] (cook read this at t39)
+=== RELEASED sub b3_medium_nops_medium_map_4_leave_unattended (None) ===
+  ACTION t39: wander/idle (thinking) [superseded] (not read by the cook: after its last turn)
+    [flag verdict] wrong_order -> wrong_name
+  (assistant call issued t34, took 5.215s = 5 ticks)
+ASSISTANT t39 [flag=wrong_name]: Wait, the cheeseburger requires the meat before the cheese! Scoop the cooked meat from the island pan first.
+COOK t39 [move=accept call=correct close]: Oh right, meat goes before cheese! Good catch, heading over to grab the patty now.
+        (plan_update: {"op": "replace", "actions": ["go to pan 2", "scoop"]})
+--- archived sub b3_medium_nops_medium_map_4_leave_unattended (injected=True skipped=None) ---
+  (assistant call issued t40, took 2.182s = 2 ticks)
+ASSISTANT t42 [flag=None]: (silent)
+  ACTION t43: go to pan 2 [done] (cook read this at t44)
+COOK t44 [move=accept call=none close]: 
+        (plan_update: {"op": "replace", "actions": ["scoop"]})
+  ~~ IDLE t45-t88 (43 ticks, pos (1, 2) holding {"contents": [{"kind": "ingredient", "name": "bun", "state": "raw"}, {"kind": "ingredient", "name": "meat", "state": "cooked"}], "dirty": false, "kind": "plate"}) ~~
+=== INJECTED sub b3_medium_nops_medium_map_4_forget_next_step (error/forget_next_step) ===
+  ACTION t45: scoop [done] (cook read this at t61)
+  PLATE: +meat (cooked)
+  HEAT [2, 2]: ['meat'] removed
+  (assistant call issued t42, took 3.278s = 3 ticks)
+ASSISTANT t45 [flag=None]: (silent)
+COOK t45 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t46, took 3.029s = 3 ticks)
+ASSISTANT t49 [flag=None]: (silent)
+  (assistant call issued t50, took 3.981s = 4 ticks)
+ASSISTANT t54 [flag=None]: (silent)
+  (assistant call issued t54, took 3.284s = 3 ticks)
+ASSISTANT t57 [flag=None]: (silent)
+    [flag verdict] forget_next_step -> valid
+  (assistant call issued t58, took 3.522s = 3 ticks)
+ASSISTANT t61 [flag=valid]: Now go to the cheese crate along the bottom wall and scoop a slice of cheese onto your plate.
+COOK t61 [move=answer call=none]: Just pausing for a second to get my bearings, then I'll look at the cheese.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t62, took 2.726s = 3 ticks)
+ASSISTANT t65 [flag=None]: (silent)
+  (assistant call issued t66, took 2.658s = 3 ticks)
+ASSISTANT t69 [flag=None]: (silent)
+  (assistant call issued t70, took 4.073s = 4 ticks)
+ASSISTANT t74 [flag=None]: (silent)
+  (assistant call issued t74, took 4.254s = 4 ticks)
+ASSISTANT t78 [flag=None]: Go to the cheese crate along the bottom counter and scoop a slice of cheese onto your plate.
+COOK t78 [move=answer call=none]: Still just taking a brief pause right here, getting ready.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t78, took 2.332s = 2 ticks)
+ASSISTANT t80 [flag=None]: (silent)
+  (assistant call issued t80, took 2.876s = 3 ticks)
+ASSISTANT t83 [flag=None]: (silent)
+=== RELEASED sub b3_medium_nops_medium_map_4_forget_next_step (None) ===
+  ACTION t87: wander/idle (thinking) [superseded] (not read by the cook: after its last turn)
+    [flag verdict] forget_next_step -> late
+  (assistant call issued t84, took 2.918s = 3 ticks)
+ASSISTANT t87 [flag=late]: You've been stopped for a while. Go to the cheese crate along the bottom counter and scoop cheese onto your plate to finish the burger.
+COOK t87 [move=accept call=correct close]: Right, snapped out of it—heading over to grab the cheese now.
+        (plan_update: {"op": "replace", "actions": ["go to cheese source 1", "scoop"]})
+--- archived sub b3_medium_nops_medium_map_4_forget_next_step (injected=True skipped=None) ---
+  ACTION t90: go to cheese source 1 [done] (cook read this at t92)
+  (assistant call issued t88, took 2.665s = 3 ticks)
+ASSISTANT t91 [flag=None]: (silent)
+COOK t92 [move=accept call=none close]: 
+        (plan_update: {"op": "replace", "actions": ["scoop"]})
+  ACTION t93: scoop [done] (cook read this at t94)
+  PLATE: +cheese (raw)
+COOK t94 [move=accept call=none close]: Got the cheese on there, heading over to serve the burger now.
+        (plan_update: {"op": "replace", "actions": ["go to the serving pass", "serve"]})
+        (planning skill before this turn: resolve_subgoal({"subgoal": "serve"}) -> ["go to the serving pass", "serve"])
+  (assistant call issued t92, took 2.939s = 3 ticks)
+ASSISTANT t95 [flag=None]: (silent)
+  ACTION t98: go to the serving pass [done] (not read by the cook: after its last turn)
+  ACTION t99: go to the serving pass [done] (not read by the cook: after its last turn)
+  (assistant call issued t96, took 3.191s = 3 ticks)
+ASSISTANT t99 [flag=None]: (silent)
+  ACTION t100: serve [running] (not read by the cook: after its last turn)
+
+END: outcome won at tick 101; failed_at=injection_skipped
