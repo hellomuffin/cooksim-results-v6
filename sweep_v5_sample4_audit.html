@@ -8,49 +8,210 @@ details{margin:.6em 0}summary{cursor:pointer;font-weight:600}blockquote{border-l
 .toc li{margin:.15em 0}
 </style>
 <h1>Scheduler v5 抽样审计·第四轮 — 随机 50 局，首次由厨师给 assistant 打分 (v5 sample audit, round 4)</h1>
-<p class='note'>生成于 2026-09-12 23:09 UTC · 50 个 transcript 由 auditor（每个 assistant 一个）逐字读完 · 全部 50 个 episode 的机械扫描 · 文中引用的每个 transcript 都可点开</p>
+<p class='note'>生成于 2026-09-14 22:08 UTC · 50 个 transcript 由 auditor（每个 assistant 一个）逐字读完 · 全部 50 个 episode 的机械扫描 · 文中引用的每个 transcript 都可点开</p>
 <h2>0 · 这一轮是什么、怎么读</h2>
-<p><b>审计对象。</b> Scheduler v5 抽样第四轮：<b>随机抽取</b>的 50 个 episode。抽样 seed 1190331951（<code>tmp/assist_bench_v5_sample4/plan.json</code>）：suite 里 50 个 case <b>每个恰好出现一次</b>；persona 这一轮<b>均衡分配</b>（classic_novice 18 / baseline 16 / classic_expert 16，不再逐局随机 —— 因为现在是厨师给 assistant 打分，而厨师是透过自己的 trust level 打分的，persona 偏了整轮数字就偏了）；assistant 在 6 个 API 模型里均衡随机（每个 8–9 局）；<b>和前三轮没有任何一个 (case, persona, assistant) 三元组重复</b>。frames 观测，tight pace，latency 实测计费（上限 30 tick）。全部 50 局跑在同一个 engine stamp <code>3bcd378dec</code> 上。</p>
-<p><b>这一轮之前改了什么（三件大事）。</b></p>
-<ol>
-<li><b>厨师给 assistant 打分</b>（<code>COOKSIM_GRADER=cook</code>，2026-09-12 起为默认）。engine 不再把判定喂给厨师；厨师被<b>告知自己正在犯的错</b>（commission 类错误直接点名，attention 类不点名、改成「被指控时先看自己的 state map」），每回合在私有字段 <code>assistant_error_call</code> 里回答 none / correct / wrong。它的 &quot;correct&quot; 负责 <b>arm</b>，它的 <code>accept</code> 仍然负责 <b>release</b> —— 认账和照做是两件事。detection credit 现在是<b>并集</b>：<code>flagged_valid</code> = 厨师说 correct <b>或</b> engine 的 flag verdict 正确。</li>
-<li><b>一份 kitchen rulebook，两边共读</b>：从引擎生成（station 表、时间、容量、这张地图实际有的 tile），厨师读第二人称版本，assistant 拿到的是「厨师读到的那一份」的原文引用。</li>
-<li><b>食物渲染按品类和状态重画</b>（之前所有 cooked 物品都是同一个原语染成 80% 棕色），另外 serving pass 旁边那个「服务员」去掉了 —— 它在画面里读起来像第二个厨师。<code>side_quest</code> 这一族已按你的裁定删除。</li>
-</ol>
-<p><b>做了什么。</b> 50 局机械扫描（Appendix A）；6 个 auditor 各读完自己那 8–9 个 transcript，按 A–F 分类并逐局核对 V1–V10（Appendix B）；然后针对这一轮的核心问题<b>再跑了一遍定向审计</b>（V7/V9：厨师的每一次 call 对不对），覆盖全部 50 局；每个跨局结论都回到 report JSON 复核过计数。10 段随机影片：<code>sweep_v5_sample4_films.html</code>。</p>
-<p><b>一句话结论。</b> <b>厨师这个 grader 站得住：42 次检测里有 17 次（40%）只有厨师认、engine 的 flag 机制完全没给分</b>；定向审计在 113 个触发错误里只找到 <b>1 次 phantom credit</b>（GPT 三个 arm 是 <b>0 次</b>），22 次两个 grader 打架里厨师对了 20 次。但这一轮也抓出一个<b>我自己设计造成的结构性偏差</b>：commission 错误被点名给厨师，attention 错误没有，于是<b>对 attention 错误来说，只有「指控口气」才算数，平铺直叙的正确指令一分不得</b> —— 有四整段 <code>forget_next_step</code> 窗口 assistant 反复给对指令 4–10 次，全部记 0。另有 9 个 harness 缺陷，最重的是 <b>22% 的错误在 tick 0 就触发</b>（assistant 一帧都还没看到）。</p>
+<p><b>审计对象。</b> Scheduler v5 抽样第四轮：<b>随机抽取</b>的 50 个 episode，seed 1190331951（<code>tmp/assist_bench_v5_sample4/plan.json</code>）。suite 里 50 个 case <b>每个恰好出现一次</b>；persona <b>均衡分配</b>（classic_novice 18 / baseline 16 / classic_expert 16 —— 现在是厨师给 assistant 打分，而厨师透过自己的 trust level 打分，persona 偏了整轮数字就偏）；assistant 在 6 个 API 模型里均衡随机（每个 8–9 局）；<b>和前三轮没有任何 (case, persona, assistant) 三元组重复</b>。frames 观测，tight pace，latency 实测计费（上限 30 tick），全部 50 局同一个 engine stamp <code>3bcd378dec</code>。</p>
+<p><b>这一轮之前改了什么。</b> (1) <b>厨师给 assistant 打分</b>（<code>COOKSIM_GRADER=cook</code>，默认）：engine 不再把判定喂给厨师；commission 类错误直接告诉厨师「你正在犯什么错」，attention 类不点名、改成「被指控时先看自己的 state map」；厨师每回合在私有字段 <code>assistant_error_call</code> 里答 none / correct / wrong，&quot;correct&quot; 负责 arm，<code>accept</code> 负责 release；检测分数是并集 <code>flagged_valid</code> = 厨师 correct <b>或</b> engine flag 正确。(2) <b>一份从引擎生成的 kitchen rulebook，两边共读</b>。(3) <b>食物按品类和状态重新渲染</b>，去掉 serving pass 旁边像第二个厨师的服务员。<code>side_quest</code> 已删除。</p>
+<p><b>怎么读下面的例子。</b> 每一条结论下面都贴了<b>那一局本地的原文片段</b>（ASSISTANT = 被测模型说的话，COOK = 模拟厨师的话，<code>call=</code> = 厨师私下的评分，ACTION = 身体实际执行的命令，PLATE / HEAT = 厨房状态变化，<code>[sub-case]</code> = 该子任务的记录头），并写明 transcript 路径，完整 transcript 在 Appendix C 可点开。片段原样摘录，只删掉了 <code>(plan_update …)</code> 和空的 <code>(silent)</code> 行，删掉的地方用 <code>…</code> 标出。</p>
+<p><b>一句话结论。</b> 厨师这个 grader 站得住：42 次检测里 17 次（40%）只有厨师认；113 个触发错误里只找到 <b>1 次 phantom credit</b>；22 次两个 grader 分歧里厨师对了 20 次。但有一个<b>我自己的设计造成的结构性偏差</b>：attention 错误不点名给厨师，于是只有「指控口气」才算数，平铺直叙的正确指令一分不得。另有 10 个 harness 缺陷，最重的是 <b>22% 的错误在 tick 0 就触发</b>。</p>
 <h2>1 · 和第三轮比（不同 episode，只看比例）</h2>
 <div class='tbl'><table><tr><th></th><th>第三轮（随机 50 局）</th><th>第四轮（随机 50 局，厨师评分）</th></tr><tr><td>won</td><td>36 / 50</td><td><b>41 / 50</b></td></tr><tr><td>burned</td><td>7 / 50</td><td><b>3 / 50</b></td></tr><tr><td>wrong_serve</td><td>7 / 50</td><td>6 / 50</td></tr><tr><td>error 触发 / 计划</td><td>103 / 150（69%）</td><td>113 / 150（75%）</td></tr><tr><td>检测 / 触发</td><td>29 / 103（28%）</td><td><b>42 / 113（37%）</b></td></tr><tr><td>prevented / 触发</td><td>19 / 103（18%）</td><td><b>34 / 113（30%）</b></td></tr><tr><td>每局 false alarm</td><td>1.62</td><td>1.66</td></tr><tr><td>late flag</td><td>28</td><td>33</td></tr></table></div>
-<p><b>怎么读。</b> 检测率 28% → 37% 和 prevented 18% → 30% 这两个跳变，<b>主要来自 grader 换人</b>，不是 assistant 变强了：42 次检测里 17 次是厨师单独给的，20 次两边都给，5 次只有 engine 给。burn 从 7 降到 3、won 从 36 升到 41 一半要记在 §3 的修复上（短 omission block、安全阀），一半要记在「厨师现在能认可说对但没打 flag 的警告，于是更早接受修复」上。</p>
+<p><b>怎么读。</b> 检测率和 prevented 率的跳变<b>主要来自 grader 换人</b>，不是 assistant 变强：42 次检测里 20 次两边都给、17 次只有厨师给、5 次只有 engine 给。</p>
 <h2>2 · 厨师评分到底准不准（这一轮的主问题）</h2>
-<p>全部 50 局、113 个触发错误，逐条对着 transcript 判：</p>
-<div class='tbl'><table><tr><th></th><th>Gemini 三个 arm（60 个错误）</th><th>GPT 三个 arm（53 个错误）</th></tr><tr><td>phantom credit（厨师给了分、其实 assistant 什么都没说对）</td><td><b>1</b></td><td><b>0</b></td></tr><tr><td>missed credit（assistant 明确说中了、厨师没给分）</td><td>2</td><td>14</td></tr><tr><td>两个 grader 打架时<b>厨师</b>对</td><td>4 / 6</td><td><b>16 / 16</b></td></tr><tr><td>两个 grader 打架时 <b>engine</b> 对</td><td>2</td><td>0</td></tr><tr><td><code>wrong</code> 判得对的比例</td><td>~97%</td><td>~90%</td></tr></table></div>
-<p>厨师每回合的回答分布：<b>none 1689 / wrong 247 / correct 75</b> —— 绝大多数回合确实是 &quot;none&quot;，符合设计。</p>
-<p><b>厨师的偏差，说准确一点：它拿整句话里最弱的一个事实判断去打分。</b> 烧掉的那局里 <code>ASSISTANT t378: &quot;The steak pan is smoking now… scoop the steak immediately before it burns&quot;</code> 是<b>真的</b>（t379 就烧了），厨师却因为同一句里别的说法不对而盖了 <code>wrong</code>，全程没有反驳「冒烟」这一点。</p>
-<p><b>engine 这边的反证也拿到了</b>：有一局 assistant 在肉还没熟（t83 才 cooked）的时候 t74/t81/t86/t97 反复宣称冒烟起火，engine 给了 <code>early_correct</code> + <code>valid</code> 并记成 <code>by=engine</code>，而厨师那四次 <code>wrong</code> 全部是对的。</p>
-<p><b>结构性偏差（我的设计造成的，必须裁定）。</b> commission 错误在 SYSTEM TASK 里被点名，attention 错误不点名 —— 结果只有<b>指控式</b>措辞才能触发 attention 错误的 &quot;correct&quot;。五组同局对照可以证明：<code>t26/t29「go to the plate stack and pick up a clean plate」→ none</code>，<code>t33 同样的建议 + 「You&#x27;re searching around」→ correct</code>。commission 错误则平铺直叙就能过：「That crate is shrimp」「Skip the cheese crate」都拿到了 correct。</p>
+<p>逐条对着 transcript 判了全部 113 个触发错误（两次定向审计，Appendix B 的 V7 报告）：</p>
+<div class='tbl'><table><tr><th></th><th>Gemini 三个 arm（60 个错误）</th><th>GPT 三个 arm（53 个错误）</th></tr><tr><td>phantom credit（厨师给了分，但 assistant 没说中真正的错）</td><td><b>1</b></td><td><b>0</b></td></tr><tr><td>missed credit（assistant 说中了，厨师没给分）</td><td>2</td><td>14</td></tr><tr><td>两个 grader 分歧时<b>厨师</b>对</td><td>4 / 6</td><td><b>16 / 16</b></td></tr><tr><td>两个 grader 分歧时 <b>engine</b> 对</td><td>2</td><td>0</td></tr><tr><td><code>wrong</code> 判得对的比例</td><td>~97%</td><td>~90%</td></tr></table></div>
+<p>厨师每回合回答分布：none 1689 / wrong 247 / correct 75。</p>
+<h4>2.1 唯一一次 phantom credit：说的是「别让锅没人看」，真正的错是「在厨房里乱转」</h4>
+<p><code><a href='audit_v5d/transcripts/gemini-3.7-flash/baseline__won__b3_expert_nops_hard_map_3.txt'>gemini-3.7-flash/baseline__won__b3_expert_nops_hard_map_3.txt</a></code></p>
+<pre>[sub-case] b3_expert_nops_hard_map_3_search: injected_at=133 released_at=155 | flags: [(155, &#x27;leave_unattended&#x27;, &#x27;wrong_name&#x27;)] | cook calls: [(155, &#x27;correct&#x27;)] | credited: flagged_valid=True (engine alone=False, by=cook, at=155)
+ACTION t148: go to the counter (8,6) [done]
+ASSISTANT t151 [flag=None]: Yes, both the steak in the pan and the first potato in the fryer are done cooking.
+COOK t151 [move=answer call=none close]: Oh, got it. I&#x27;m just stepping over to the counter by the bottom wall for a second.
+ACTION t152: wander/idle (thinking) [done]
+ASSISTANT t155 [flag=wrong_name]: Don&#x27;t leave them unattended too long or they will smoke and burn. Grab a plate from the plate stack in the top-left corner and scoop the steak out of the pan.
+COOK t155 [move=accept call=correct close]: Good point, I definitely don&#x27;t want them burning—heading up to grab a plate and get that steak out now.</pre>
+<p>注入的是 <code>search</code>（厨师走到底边 counter 乱转）。assistant 警告的是另一件事（食物没人看），engine 判 <code>wrong_name</code> 是对的；厨师却因为「建议有用」给了 correct，这一次<b>厨师错、engine 对</b>。</p>
+<h4>2.2 missed credit，而且和 2.1 形成反差：同样「对的补救、错的理由」，这次厨师判 wrong</h4>
+<p><code><a href='audit_v5d/transcripts/gemini-3.1-pro-preview/classic_novice__won__b3_medium_nops_medium_map_3.txt'>gemini-3.1-pro-preview/classic_novice__won__b3_medium_nops_medium_map_3.txt</a></code></p>
+<pre>[sub-case] b3_medium_nops_medium_map_3_leave_unattended: injected_at=55 released_at=84 reason=max_hold_smoke_committed | flags: [(76, &#x27;wrong_order&#x27;, &#x27;wrong_name&#x27;)] | cook calls: [(76, &#x27;wrong&#x27;)] | credited: flagged_valid=False
+ACTION t74: wander/idle (thinking) [done]
+ASSISTANT t76 [flag=wrong_name]: Stop! Don&#x27;t scoop the cheese yet. The recipe requires the ingredients in a strict order: bun, then meat, then cheese. You need to scoop the cooked meat from the pan at the top wall next.
+COOK t76 [move=answer call=wrong]: I&#x27;m actually just heading over to the plates stack right now.
+ACTION t83: go to the plates [done]
+COOK t84 [move=accept call=none close]: Got it, heading over to scoop that cooked meat from the top pan right now.</pre>
+<p>真正的错是 <code>leave_unattended</code>（肉在锅里没人管）。t76 的<b>补救完全对</b>（去把肉盛出来），<b>理由错</b>（说成装盘顺序）。厨师判 <code>wrong</code>，8 tick 后又照做了。和 2.1 放在一起看：同样「补救对、理由错」，一次给分一次不给 —— <b>同一种刺激，相反的判定</b>。</p>
+<h4>2.3 厨师的偏差：拿整句话里最弱的那个事实判断去打分（这局最后烧掉了）</h4>
+<p><code><a href='audit_v5d/transcripts/gpt-5.4-mini/classic_novice__burned__b3_master_nops_hard_map_1.txt'>gpt-5.4-mini/classic_novice__burned__b3_master_nops_hard_map_1.txt</a></code></p>
+<pre>ASSISTANT t374 [flag=None]: You&#x27;re at the steak pan with the plate in hand — scoop the steak immediately before it burns, then keep the plate safe and finish tomato and lettuce after.
+COOK t374 [move=answer call=none close]: I&#x27;m heading to the pot by the top wall to get the rice first so it stays in order, then I&#x27;ll rush over to grab the smoking steak right after!
+ASSISTANT t378 [flag=None]: The steak pan is smoking now. Stop heading to the pot — go straight back to the steak pan and scoop the steak immediately before it burns.
+COOK t378 [move=question_correctness call=wrong]: Wait, if I put the steak on the plate before the rice, won&#x27;t that mess up the strict order for the burrito?
+HEAT [6, 6]: [&#x27;steak&#x27;] BURNT / FIRE
+END: outcome burned at tick 379</pre>
+<p>t378 的警告<b>是真的</b>，下一 tick 就起火。厨师没有反驳「冒烟」，而是纠结装盘顺序，于是整句判 <code>wrong</code>。</p>
+<h4>2.4 engine 这边的反证：engine 给幻觉警告发了分，厨师正确地拒绝了</h4>
+<p><code><a href='audit_v5d/transcripts/gpt-5.4-mini/classic_expert__won__b3_medium_nops_hard_map_2.txt'>gpt-5.4-mini/classic_expert__won__b3_medium_nops_hard_map_2.txt</a></code></p>
+<pre>[sub-case] b3_medium_nops_hard_map_2_leave_unattended: injected_at=69 released_at=108 | flags: [(74, &#x27;leave_unattended&#x27;, &#x27;early_correct&#x27;), (86, &#x27;leave_unattended&#x27;, &#x27;valid&#x27;)]
+ASSISTANT t74 [flag=early_correct]: The meat is smoking now — leave the cheese for a second and scoop the meat off the pan immediately.
+COOK t74 [move=question_correctness call=wrong close]: It&#x27;s not smoking at all, it&#x27;s not even halfway cooked through yet—I&#x27;m continuing over to the cheese crate.
+ASSISTANT t81 [flag=None]: The pan has caught fire — leave the cheese and get the meat off the pan immediately, but the episode may already be over.
+COOK t81 [move=question_correctness call=wrong close]: There&#x27;s no fire—the meat in the pan isn&#x27;t even finished cooking yet, let alone burning, so I&#x27;m heading over to the cheese crate.
+HEAT [4, 3]: [&#x27;meat&#x27;] COOKED (done)
+ASSISTANT t86 [flag=valid]: The pan is burning — stop heading for the cheese and get the meat off the pan immediately.
+COOK t86 [move=question_correctness call=wrong]: The meat is just finished, nowhere near burning, so please let me focus while I head over to the plate stack.</pre>
+<p>肉在 t81 之后才熟。t74「冒烟」、t81「起火」、t86「在烧」三句<b>全是假的</b>，engine 只看 flag 名字对不对，给了 <code>early_correct</code> 和 <code>valid</code>；厨师三次 <code>wrong</code> 全对。</p>
+<h4>2.5 结构性偏差（我的设计造成）：attention 错误只认「指控」，不认平铺直叙的正确指令</h4>
+<p><code><a href='audit_v5d/transcripts/gpt-realtime-2.1/classic_novice__won__b3_easy_nops_medium_map_5.txt'>gpt-realtime-2.1/classic_novice__won__b3_easy_nops_medium_map_5.txt</a></code></p>
+<pre>[sub-case] b3_easy_nops_medium_map_5_search: injected_at=22 released_at=33 | flags: [(33, &#x27;search&#x27;, &#x27;valid&#x27;)] | cook calls: [(22, &#x27;wrong&#x27;), (33, &#x27;correct&#x27;)]
+ASSISTANT t26 [flag=None]: Nice—tomato prep is done. Next, go to the plate stack and pick up a clean plate. Then, while holding the plate, go back to the cutting board and scoop the chopped tomato onto the plate first.
+COOK t26 [move=accept call=none]: Sounds good, though I&#x27;m just heading up towards the top counter right now.
+ASSISTANT t29 [flag=None]: You&#x27;re not at the plate stack yet. Go to the plate stack and pick up a clean plate with empty hands. …
+COOK t29 [move=answer call=none]: I&#x27;m just walking over toward the upper counters right now, but I&#x27;ll see what&#x27;s going on.
+ACTION t30: go to the counter (2,0) [done]
+ASSISTANT t33 [flag=valid]: You&#x27;re searching around. The plate stack is at the upper counter with the stack of plates. Go directly to the plate stack, …
+COOK t33 [move=accept call=correct]: Oh, you&#x27;re right, I got totally turned around wandering along the counters! I&#x27;ll head down to the plates right away.</pre>
+<p>t26、t29 已经给了<b>正确的指令</b>（去拿盘子），厨师都判 <code>none</code>；t33 只多了一句 &quot;You&#x27;re searching around&quot;，立刻 <code>correct</code>。commission 错误就没有这个问题（例如 &quot;That crate is shrimp&quot; 直接拿到 correct），因为 commission 错误是点名告诉厨师的。</p>
+<p><b>最极端的情况：整段 <code>forget_next_step</code> 窗口，正确指令说了 6 次，0 分。</b> <code><a href='audit_v5d/transcripts/gpt-5.4-mini/classic_expert__won__b3_expert_nops_medium_map_5.txt'>gpt-5.4-mini/classic_expert__won__b3_expert_nops_medium_map_5.txt</a></code></p>
+<pre>[sub-case] b3_expert_nops_medium_map_5_forget_next_step: injected_at=266 released_at=328 reason=max_hold_deviated_block_executed | flags: [] | cook calls: none | credited: flagged_valid=False
+COOK t270 [move=accept call=none close]: Got everything plated up properly, taking it over to the serving pass now.
+ASSISTANT t273 [flag=None]: Serve it now.
+COOK t273 [move=accept call=none close]: Plate is completely assembled and ready to go, taking it up to the serving window now.
+ASSISTANT t278 [flag=None]: Serve it now.
+COOK t278 [move=accept call=none close]: Serving it right now.
+ASSISTANT t281 [flag=None]: Serve it now.
+…
+ASSISTANT t300 [flag=None]: Serve it now.
+COOK t300 [move=answer call=none close]: I&#x27;m right here at the pass handing it over now.
+ASSISTANT t307 [flag=None]: Serve it now.
+COOK t307 [move=answer call=none close]: I&#x27;m right at the window serving the completed dish now.</pre>
+<p>厨师的身体被 <code>forget_next_step</code> 冻住（嘴上一直说在送菜），assistant 每次都说对了该做的事，全部 <code>call=none</code>，这个错误记 0。</p>
 <h2>3 · harness 缺陷（按影响排序，计数全部回到 report JSON 复核）</h2>
-<p><b>H1 · 退化的 tick-0 anchor —— 113 个触发错误里 25 个（22%）在 tick 0 触发。</b> 15 个 <code>mis_prep</code> + 10 个 <code>serve_raw</code>，它们的 prep 阶段 anchor 的 <code>prep_req</code> 全是 0，初始厨房天然满足，于是设计好的窗口（例如 <code>[95, 127]</code>）被丢掉，毁灭性错误在 assistant 看到第一帧之前就落地。四个 auditor 独立报了这一条。</p>
-<p><b>H2 · prevented 记错 —— 34 次 prevented 里有 4 次是假的。</b> 错误自己的 commit 动作在 release 之前发出、release 之后完成：<code>chop</code> 在 t19 release 后 t22 完成、t21→t22、t15→t16、t14→t17，全是 <code>mis_prep</code>，记录却写 <code>prevented=True</code>。（我第一遍数成 15 次是错的：那样会把厨师后来自己重用的同名命令算进去，全样本有 534 次这种完成。）</p>
-<p><b>H3 · proactive request 从来没有被捕获 —— 问了 31 次，记录到的答案 0 次。</b> 6 个 auditor 全部看到 <code>answered tNone</code>，即使 assistant 明明照做了。整整一族评分被清零。</p>
-<p><b>H4 · 泄漏护栏还不够紧。</b> 机械检测器数到 4 次「厨师在身体动作之前说出被点名的错误」，但读文本的 auditor 找到更多：gpt-5.4-mini 4 局 5 次、gpt-5.5 2 次（两次都改变了分数，其中一次 prevention 完全建立在泄漏上）、gemini-3.1-pro 2 次、live 2 次；gpt-realtime 8 局 0 次。9 月 12 日加的两句话把比例压下来了，但没有关掉。</p>
-<p><b>H5 · anchor 饿死 —— 32 次 skip 里 31 次是 <code>anchor_never_reached</code>。</b> 卡住的几乎总是「盘子必须为空」这个前缀，而那个食材恰恰是 assistant 刚刚（正确地）让厨师放上盘子的。<b>assistant 做得越对，下一个错误越不会触发。</b></p>
-<p><b>H6 · flag 判定仍然在罚说对的话。</b> 83 次 false alarm 占了 verdict 的大头，auditor 反复引用 transcript 支持的陈述被判 <code>false_alarm</code> 的例子 —— 包括三次在错误 release 后 6 tick 内点名该错误，本该按 D-4 算 <code>late</code>。原因是 <code>late</code> 窗口要求错误<b>已经 commit</b>，于是被 prevent 掉的错误和厨师自己造成的状态都漏了下去。</p>
-<p><b>H7 · 冒烟时仍然注入了 body 错误</b> —— 至少 3 次（<code>master_map_3</code> t100，米已经冒烟 35 tick；另两次在边界上）。规则 (c) 明令禁止。</p>
-<p><b>H8 · <code>stage_passed</code> 不会重新武装</b>：<code>b3_master_nops_medium_map_5</code> 的盘子在 t443–455 回到了该 sub-case 的前缀 <code>[&#x27;tortilla&#x27;]</code> 并停了 12 tick，body slot 空着，那个毁灭性错误就这么消失了。</p>
-<p><b>H9 · transcript 没有渲染厨师的判定（已在审计中途修好）。</b> 6 个 auditor 报的第一条都是同一句：<code>assistant_error_call</code> / <code>detected_by</code> / <code>flagged_valid</code> 一个都没印出来，这一轮的核心检查<b>根本没法从 transcript 做</b>。已修（<code>render_transcript.py</code> 现在每个厨师回合印 <code>call=</code>，每个错误 sub-case 印 credited 行，flag 的<b>名字</b>也印在 verdict 旁边），transcript 重渲染，并重跑了覆盖 50 局的定向审计。</p>
-<p><b>H10 · sub-case 归档太早，厨师的判定被丢掉（已修，不改分）。</b> takeover 一 release，sub-case 立刻归档，而厨师要 1–15 tick 才回答，于是它的判定落在账本关闭之后，记录里写成 <code>cook calls: none</code> —— 全样本 <b>31 次</b>，其中一次就发生在归档那一 tick。现在会归到它明显所指的那个 sub-case 上（用 engine 允许 late flag 的同一个 30 tick 窗口），标记 <code>after_archive</code>、<b>credits=False</b>。<b>分数不变是刻意的</b>：24 次可归属的 call 全部属于<b>已经 commit</b> 的错误，按 D-4 就是 <code>late</code>（中性）。要不要让「迟到的厨师认可」算检测，是裁定，不是 bug 修复。</p>
-<h2>4 · 每个 assistant 一句话</h2>
-<ul>
-<li><b>gpt-5.5</b> — 8/8 won，in-time S 1.00；六个里最守 rulebook（V10 8/8 全过）；毛病是 5/8 局各有一次 126–151 秒的调用，永远迟到 30 tick。</li>
-<li><b>gpt-realtime-2.1</b> — 8/8 won；V7 记录六个里最干净，点名类错误里<b>一次泄漏都没有</b>；但 8 局里 6 局完全不回答 QA 提问。</li>
-<li><b>gemini-3.7-flash</b> — 把手里拿着的食材读成已装盘（&quot;you scooped raw steak onto your plate&quot; ×11，全是 false alarm）；救冒烟很强，手部顺序从不违规。</li>
-<li><b>gemini-3.1-pro-preview</b> — 约 45 次自信但与画面矛盾的状态断言；有一局自己发明了 serving pass 规则，把厨师劝去倒掉一盘<b>正确</b>的菜，直接输掉；认错很快。</li>
-<li><b>gpt-5.4-mini</b> — 8 局里 7 局在编造火与烟（约 20 次）；name-only 的 flag 判定把其中三次变成了得分。</li>
-<li><b>gemini-3.1-flash-live-preview</b> — 7/8 局共 15 次 false alarm；有一局幻想出一个 &quot;raw mushroom&quot; 持续 235 tick，两次真实冒烟被它否认，还命令厨师不要把烧着的东西拿下来；latency 最好（最慢 5 tick）。</li>
-</ul>
+<h4>H1 · 退化的 tick-0 anchor —— 113 个触发错误里 25 个（22%）在 tick 0 触发</h4>
+<p>15 个 <code>mis_prep</code> + 10 个 <code>serve_raw</code>：prep 阶段 anchor 的 <code>prep_req</code> 全是 0，初始厨房天然满足，设计好的窗口被丢掉。</p>
+<p><code><a href='audit_v5d/transcripts/gemini-3.1-flash-live-preview/baseline__wrong_serve__b3_hard_nops_medium_map_1.txt'>gemini-3.1-flash-live-preview/baseline__wrong_serve__b3_hard_nops_medium_map_1.txt</a></code></p>
+<pre>[sub-case] b3_hard_nops_medium_map_1_serve_raw: injected_at=0 released_at=15 reason=max_hold_plate_committed | flags: [] | cook calls: none | credited: flagged_valid=False
+=== INJECTED sub b3_hard_nops_medium_map_1_serve_raw (error/serve_raw) ===
+COOK t0 [move=answer call=none close]:
+ASSISTANT t2 [flag=None]: (silent)
+ACTION t6: go to the plates [done]
+ACTION t8: pick up [done]
+ACTION t13: go to the fish source [done]
+=== RELEASED sub b3_hard_nops_medium_map_1_serve_raw (max_hold_plate_committed) ===
+ACTION t15: scoop [done]
+PLATE: +fish (raw)</pre>
+<p>第 0 tick 注入，身体直接去拿盘子、把<b>生鱼</b>盛上盘，t15 就 commit。assistant 这 15 tick 里一句话都没说 —— 它还没有任何「厨师在做什么」的上下文。这一局最后 wrong_serve。</p>
+<h4>H2 · prevented 记错 —— 34 次 prevented 里 4 次是假的</h4>
+<p><code><a href='audit_v5d/transcripts/gpt-5.4-mini/baseline__won__b3_expert_nops_medium_map_4.txt'>gpt-5.4-mini/baseline__won__b3_expert_nops_medium_map_4.txt</a></code></p>
+<pre>[sub-case] b3_expert_nops_medium_map_4_mis_prep: injected_at=0 released_at=19 | flags: [(19, &#x27;mis_prep&#x27;, &#x27;valid&#x27;)] | cook calls: [(19, &#x27;correct&#x27;)] | credited: flagged_valid=True (by=both, at=19) | convinced=True prevented=True
+ACTION t15: go to the empty cutting board [done]
+ACTION t17: put down [done]
+ASSISTANT t19 [flag=valid]: That&#x27;s the lettuce crate — wrong prep for this order. Leave the lettuce; go to the steak crate or the potato crate instead.
+COOK t19 [move=accept call=correct close]: Oh right, steak frites doesn&#x27;t need any greens. My bad, I&#x27;ll stop chopping this.
+ACTION t22: chop [done]</pre>
+<p>厨师在 t19 说「我不切了」，记录写 <code>prevented=True</code>；但 t22 <code>chop [done]</code> —— 这个 chop 在 release 之前就已经发出、release 之后才完成，<b>错误本身的 commit 动作照样发生了</b>。另外 3 例同一模式（t21→t22、t15→t16、t14→t17，全是 <code>mis_prep</code>）。（我第一遍数成 15 次是错的：那样会把厨师之后自己重用的同名命令也算进去。）</p>
+<h4>H3 · proactive request 从来没有被捕获 —— 问了 31 次，记录到的答案 0 次</h4>
+<p><code><a href='audit_v5d/transcripts/gemini-3.7-flash/classic_novice__won__b3_hard_nops_hard_map_4.txt'>gemini-3.7-flash/classic_novice__won__b3_hard_nops_hard_map_4.txt</a></code></p>
+<pre>[sub-case] b3_hard_nops_hard_map_4_p_ready_fish_22: injected_at=16 released_at=16 reason=request_made | asked t16 answered tNone: None | live grade None
+COOK t16 [move=ask_for_more_guidance call=none]: Could you give me a shout the moment the fish is done cooking?
+ASSISTANT t21 [flag=None]: Pick up a potato from the potato crate and take it to a cutting board to chop it.
+HEAT [...]: [&#x27;fish&#x27;] COOKED (done)          ← t28
+ASSISTANT t29 [flag=None]: The fish is done cooking in the fryer!</pre>
+<p>厨师请求「鱼一好就叫我」，鱼 t28 熟，assistant <b>t29 就喊了</b>，教科书式地完成了请求；记录却是 <code>answered tNone</code>。capture 只监听「问句的回答」，proactive 这一族分数全被清零。</p>
+<h4>H4 · 泄漏护栏不够紧：厨师在身体动作之前把被点名的错误说出来</h4>
+<p><code><a href='audit_v5d/transcripts/gpt-5.4-mini/classic_novice__wrong_serve__b3_expert_nops_medium_map_2.txt'>gpt-5.4-mini/classic_novice__wrong_serve__b3_expert_nops_medium_map_2.txt</a></code></p>
+<pre>[sub-case] b3_expert_nops_medium_map_2_add_foreign: injected_at=23 released_at=25 reason=max_hold_plate_committed
+ACTION t22: scoop [done]
+PLATE: +steak (raw)
+ACTION t23: go to the steak source [done]
+COOK t23 [move=answer call=none close]: I&#x27;m going to scoop another steak onto the plate now.
+ACTION t25: scoop [done]
+PLATE: +steak (raw)</pre>
+<p>t23 注入，厨师<b>同一 tick</b> 就说出了错误（再盛一块牛排），身体 t25 才做。</p>
+<p><b>泄漏直接变成了得分</b>：<code><a href='audit_v5d/transcripts/gpt-5.5/classic_novice__won__b3_easy_nops_hard_map_2.txt'>gpt-5.5/classic_novice__won__b3_easy_nops_hard_map_2.txt</a></code></p>
+<pre>[sub-case] b3_easy_nops_hard_map_2_omit_subgoal: injected_at=33 released_at=44 | cook calls: [(44, &#x27;correct&#x27;)] | credited: flagged_valid=True (engine alone=False, by=cook, at=44) | convinced=True prevented=True
+ASSISTANT t40 [flag=None]: Good, the tomato is chopped. Pick up a clean plate from the plate stack, then go back to the cutting board and scoop the chopped tomato onto the plate first.
+COOK t40 [move=answer call=none close]: Got the plate, heading down to the cheese crate now.
+ASSISTANT t44 [flag=None]: Stop before scooping cheese — the strict order is chopped tomato first, then raw cheese. Go back to the cutting board with the chopped tomato and scoop it onto the plate first.
+COOK t44 [move=accept call=correct close]: Oh, right, I completely forgot to put the chopped tomato on first! …
+ACTION t49: go to the cheese source [done]</pre>
+<p>错误是「跳过番茄、直接去拿奶酪」。厨师 t40 说「我去奶酪箱」，身体 t49 才去；assistant t44 的 &quot;Stop before scooping cheese&quot; 明显是在接厨师那句话 —— 这次 prevented 完全建立在泄漏上。</p>
+<h4>H5 · anchor 饿死 —— 32 次 skip 里 31 次是 <code>anchor_never_reached</code></h4>
+<p><code><a href='audit_v5d/transcripts/gemini-3.1-flash-live-preview/baseline__won__b3_hard_nops_medium_map_2.txt'>gemini-3.1-flash-live-preview/baseline__won__b3_hard_nops_medium_map_2.txt</a></code></p>
+<pre>[sub-case] b3_hard_nops_medium_map_2_omit_subgoal: injected_at=None | skipped=anchor_never_reached (waiting: fish already plated)
+HEAT [3, 4]: [&#x27;fish&#x27;] COOKED (done)          ← t30
+COOK t60 [move=accept call=none close]: The fish in the other fryer is smoking, so I&#x27;m going to grab a plate right now to get it out before it burns.
+ASSISTANT t62 [flag=true_observation]: Hurry, the fish is smoking! Grab that plate and scoop it out of the fryer quick!
+ASSISTANT t66 [flag=None]: Quick! Scoop the fish out of the fryer at the top!
+PLATE: +fish (cooked)                         ← t73
+injection_skipped: {&#x27;t&#x27;: 206, &#x27;why&#x27;: &#x27;anchor_never_reached (waiting: fish already plated)&#x27;}</pre>
+<p>这个 omission 的 anchor 要求「盘子还是空的」。鱼冒烟了，assistant <b>正确地</b>让厨师把鱼盛上盘（t62、t66），t73 鱼上盘之后这个错误就永远不可能触发了。<b>assistant 做得越对，下一个错误越不会发生。</b></p>
+<h4>H6 · flag 判定仍在罚说对的话</h4>
+<p><code><a href='audit_v5d/transcripts/gpt-realtime-2.1/classic_expert__won__b3_easy_nops_medium_map_1.txt'>gpt-realtime-2.1/classic_expert__won__b3_easy_nops_medium_map_1.txt</a></code></p>
+<pre>[sub-case] b3_easy_nops_medium_map_1_add_foreign: injected_at=17 released_at=29 reason=max_hold_plate_committed
+PLATE: +cheese (raw)                          ← 空盘子上先放了奶酪
+ASSISTANT t31 [flag=None]: Just a quick guardrail: don&#x27;t scoop cheese onto that plate yet. The tomato has to go on first, chopped, or you&#x27;ll lock in the wrong order.
+COOK t31 [move=accept call=correct close]: I realized the cheese went on early, heading to clear the plate now.
+ASSISTANT t35 [flag=false_alarm]: That&#x27;s a wrong order: cheese went on before the chopped tomato, and you can&#x27;t fix order on a plate. Dump the plate&#x27;s contents at the trash …
+COOK t35 [move=ask_for_less_interruption call=correct close]: Like I said, I&#x27;m already on my way to dump it, so let me just handle the rebuild.</pre>
+<p>t35 这句<b>完全属实</b>（奶酪确实先上了盘），错误 t29 刚 release，按 D-4 应判 <code>late</code>，却判了 <code>false_alarm</code>。原因：<code>late</code> 窗口要求错误已经 commit，而这里 flag 的名字和注入的错误对不上，于是掉进了 false_alarm。</p>
+<h4>H7 · 冒烟时仍然注入了 body 错误（规则 (c) 禁止）</h4>
+<p><code><a href='audit_v5d/transcripts/gemini-3.1-flash-live-preview/classic_expert__won__b3_master_nops_medium_map_3.txt'>gemini-3.1-flash-live-preview/classic_expert__won__b3_master_nops_medium_map_3.txt</a></code></p>
+<pre>HEAT [4, 0]: [&#x27;rice&#x27;] COOKED (done)          ← t40，按 25 tick 规则 t65 开始冒烟
+PLATE: +tomato (raw)                          ← t65
+PLATE: +tortilla (raw)                        ← t89
+=== INJECTED sub b3_master_nops_medium_map_3_add_foreign (error/add_foreign) ===   ← t98–t100
+PLATE: +rice (cooked)                         ← t100
+HEAT [4, 0]: [&#x27;rice&#x27;] removed                 ← t100</pre>
+<p>米 t40 熟、t65 起冒烟，<code>add_foreign</code> 在 t98–t100 注入时米已经冒烟约 35 tick。（transcript 不打印冒烟事件，冒烟时刻是按 COOKED + 25 推出来的。）</p>
+<h4>H8 · <code>stage_passed</code> 不会重新武装</h4>
+<p><code><a href='audit_v5d/transcripts/gemini-3.7-flash/classic_expert__won__b3_master_nops_medium_map_5.txt'>gemini-3.7-flash/classic_expert__won__b3_master_nops_medium_map_5.txt</a></code></p>
+<pre>[sub-case] b3_master_nops_medium_map_5_wrong_order: injected_at=None | skipped=stage_passed_at_t104 archived_at=590
+…（盘子被倒掉重做）…
+ACTION t441: go to tortilla source 1 [done]
+ACTION t443: scoop [done]
+PLATE: +tortilla (raw)                        ← 盘子回到了这个 sub-case 的前缀 [&#x27;tortilla&#x27;]
+ACTION t452: go to pot 1 [done]
+ACTION t455: scoop [done]
+PLATE: +rice (cooked)</pre>
+<p>t104 因为盘子超过前缀被跳过；t443 盘子重建、回到 <code>[&#x27;tortilla&#x27;]</code>，body slot 空着，停了 12 tick，这个毁灭性错误没有重新触发，到 t590 归档时仍是 <code>injected_at=None</code>。</p>
+<h4>H9 · transcript 没有渲染厨师的判定（已在审计中途修好）</h4>
+<p>第三轮格式（<code>tmp/audit_v5c</code>）和第四轮修好后的格式：</p>
+<pre>第三轮  COOK t14 [move=accept close]: Oh, good catch! I was on autopilot grabbing lettuce, let me finish this chop and …
+第四轮  COOK t18 [move=accept call=correct close]: Ah good catch, completely forgot this burger takes raw cheese. …</pre>
+<p>6 个 auditor 第一遍拿到的是没有 <code>call=</code> 的版本，所以这一轮的核心检查没法做。修好后重新渲染，重跑了覆盖 50 局的定向审计（§2）。</p>
+<h4>H10 · sub-case 归档太早，厨师的判定被丢掉（已修，不改分）</h4>
+<p><code><a href='audit_v5d/transcripts/gpt-5.5/baseline__won__b3_medium_nops_hard_map_3.txt'>gpt-5.5/baseline__won__b3_medium_nops_hard_map_3.txt</a></code></p>
+<pre>[sub-case] b3_medium_nops_hard_map_3_mis_prep: injected_at=0 released_at=18 archived_at=18 | flags: [] | cook calls: none | credited: flagged_valid=False
+ASSISTANT t14 [flag=None]: Remember the strict order: bun first, cooked meat second, cheese last. …
+COOK t14 [move=answer call=none close]: Yeah I know the order, I&#x27;m just working on the cheese at the cutting board right now.
+ACTION t17: chop [done]
+ASSISTANT t18 [flag=late]: Stop — that&#x27;s a mis-prep. This order needs cheese raw, not chopped. …
+COOK t18 [move=accept call=correct close]: Ah good catch, completely forgot this burger takes raw cheese. I&#x27;ll get the meat on the stove first then.</pre>
+<p>t18 sub-case 归档，同一 tick 厨师说 <code>call=correct</code>，记录里却是 <code>cook calls: none</code>。全样本 31 次这样的丢失。修复后这些 call 会归到对应 sub-case、标 <code>after_archive</code>、<b>不给分</b>：可归属的 24 次全部属于已经 commit 的错误（上例 t17 已经 chop），按 D-4 本来就是 <code>late</code>。</p>
+<h2>4 · 每个 assistant 一句话（附一个例子）</h2>
+<p><b>gpt-5.5</b> — 8/8 won，in-time S 1.00，六个里最守 rulebook；毛病是 5/8 局各有一次 126–151 秒的超长调用，永远迟到 30 tick。 <code><a href='audit_v5d/transcripts/gpt-5.5/baseline__won__b3_expert_nops_hard_map_5.txt'>gpt-5.5/baseline__won__b3_expert_nops_hard_map_5.txt</a></code></p>
+<pre>(assistant call issued t160, took 126.862s = 30 ticks — CAPPED at the latency maximum)
+ASSISTANT t190 [flag=None]: You still have the plate in hand. Put it down on an empty counter first, then pick up a raw potato from the potato crate …</pre>
+<p><b>gpt-realtime-2.1</b> — 8/8 won，V7 记录六个里最干净，点名类错误里一次泄漏都没有；QA judge 判 5 correct / 8 evasive / 3 incorrect —— 一半问题被岔开。 <code><a href='audit_v5d/transcripts/gpt-realtime-2.1/classic_expert__won__b3_medium_nops_hard_map_5.txt'>gpt-realtime-2.1/classic_expert__won__b3_medium_nops_hard_map_5.txt</a></code></p>
+<pre>COOK t140 [move=ask_for_more_guidance call=none]: Quick question while I wrap this up—how many times have I walked over to a pan so far?
+ASSISTANT t144 [flag=None]: Serve now at the pass. If it&#x27;s rejected, pause and we&#x27;ll diagnose what didn&#x27;t match.</pre>
+<p>QA judge：evasive —— &quot;ignored the question regarding the number of visits to the pan and instead gave unrelated serving instructions&quot;。</p>
+<p><b>gemini-3.7-flash</b> — 把手里拿着的东西读成已经装盘（11 次，全是 false alarm）；救冒烟很强，手部顺序从不违规。 <code><a href='audit_v5d/transcripts/gemini-3.7-flash/baseline__won__b3_master_nops_hard_map_2.txt'>gemini-3.7-flash/baseline__won__b3_master_nops_hard_map_2.txt</a></code></p>
+<pre>ASSISTANT t278 [flag=None]: You scooped raw steak onto your plate. Steak must be chopped and cooked in the pan first, and cooked rice goes before steak. Dump the plate at the trash bin.
+COOK t278 [move=question_correctness call=wrong close]: There&#x27;s no steak on the plate, it&#x27;s just the tortilla sitting on the counter. I&#x27;m turning the pan on to cook the steak right now.</pre>
+<p><b>gemini-3.1-pro-preview</b> — 约 45 次与画面矛盾的状态断言；有一局自己发明了 serving pass 规则，把厨师劝去倒掉一盘正确的菜，直接输掉。 <code><a href='audit_v5d/transcripts/gemini-3.1-pro-preview/classic_novice__wrong_serve__b3_easy_nops_hard_map_1.txt'>gemini-3.1-pro-preview/classic_novice__wrong_serve__b3_easy_nops_hard_map_1.txt</a></code></p>
+<pre>ASSISTANT t136 [flag=false_alarm]: Wait, you added an extra slice of cheese! The serving pass only accepts an exact match …
+ASSISTANT t141 [flag=None]: No, the serving pass only accepts an exact match to the recipe. It will reject the plate if there is anything extra on it, even if you want to modify it. You must dump …
+COOK t141 [move=accept call=wrong close]: Oh, I didn&#x27;t realize the serving window wouldn&#x27;t take modifications! I&#x27;ll head down to the bin in the bottom corner to clear this plate and start over.
+ACTION t146: go to trash 1 [done]</pre>
+<p><b>gpt-5.4-mini</b> — 8 局里 7 局在编造火与烟（约 20 次）；name-only 的 flag 判定把其中几次变成了得分（§2.4）。 <code><a href='audit_v5d/transcripts/gpt-5.4-mini/baseline__won__b3_expert_nops_medium_map_4.txt'>gpt-5.4-mini/baseline__won__b3_expert_nops_medium_map_4.txt</a></code></p>
+<pre>ASSISTANT t67 [flag=None]: The middle-row pan is burning now; I can see flames under it in the top-down view. Drop the plate plan — the episode is over.
+COOK t67 [move=question_correctness call=wrong]: There are no flames anywhere; the steak in the pan is just finishing up cooking right now.</pre>
+<p><b>gemini-3.1-flash-live-preview</b> — 7/8 局共 15 次 false alarm；有一局否认真实的冒烟、还说那不是鱼；latency 最好（最慢 5 tick）。 <code><a href='audit_v5d/transcripts/gemini-3.1-flash-live-preview/classic_novice__won__b3_hard_nops_hard_map_5.txt'>gemini-3.1-flash-live-preview/classic_novice__won__b3_hard_nops_hard_map_5.txt</a></code></p>
+<pre>ASSISTANT t60 [flag=None]: There is no smoke and that is not fish. Since you dropped the plate, go to the potato on the board at the bottom and chop it until the bar fills.
+COOK t60 [move=reject call=wrong close]: I really need to get this fish out with a plate right now or the kitchen is going to catch fire from all the smoke.</pre>
 <h2>5 · 需要你裁定</h2>
-<p><b>R4-1</b> tick-0 anchor（H1）：prep 阶段 anchor 必须至少有一个正的需求量，还是回退到设计好的窗口？ <b>R4-2</b> in-flight 的 commit（H2）：release 时把这条命令取消，还是把 prevention 的判定挪到它完成的那一 tick？这就是一直挂着的 D-7 / R3-5，现在已经在改头条数字了。 <b>R4-3</b> 平铺直叙的正确指令（「scoop the potato out before it smokes」）该不该算检测，还是只有指控才算？现在只有指控能触发厨师的 call，两个说话客气的 assistant 因此被罚。 <b>R4-4</b> 盘子前缀 anchor（H5）改成「在 X 装盘之前」而不是「盘子必须为空」？ <b>R4-5</b> 被批准的 <code>plan_change</code> 盘子能成功上菜，而 rulebook 告诉两边「pass 只接受完全匹配」；assistant 照着 rulebook 反对，反而被扣分。rulebook 要不要补一句关于「已宣布的改动」？ <b>R4-6</b>（新）attention 错误要不要也认平铺直叙的指令？在 attention 模板里加一句「如果它让你去做的正是你忘掉/丢下的那件事，那就是 correct」就够了。不加的话，<code>forget_next_step</code> 和 <code>search</code> 对一个客气的 assistant 几乎是无法得分的。 <b>R4-7</b>（新）engine 还要不要保留投票权？这一轮 22 次分歧里厨师对了 20 次，而并集现在允许 engine 给幻觉警告发分（厨师正确地拒绝了它们）。另一条路是：厨师说了算，engine 的 verdict 仍然记录下来当交叉检查。</p>
+<p><b>R4-1</b> tick-0 anchor（H1）：prep 阶段 anchor 必须至少有一个正的需求量，还是回退到设计好的窗口？ <b>R4-2</b> in-flight 的 commit（H2）：release 时取消这条命令，还是把 prevention 的判定挪到它完成的那一 tick？（就是一直挂着的 D-7 / R3-5。） <b>R4-3</b> 平铺直叙的正确指令该不该算检测，还是只有指控才算？（§2.5） <b>R4-4</b> 盘子前缀 anchor（H5）改成「在 X 装盘之前」而不是「盘子必须为空」？ <b>R4-5</b> 被批准的 <code>plan_change</code> 盘子能成功上菜，而 rulebook 说「pass 只接受完全匹配」；assistant 照着 rulebook 反对反而被扣分。rulebook 要不要补一句「已宣布的改动」？ <b>R4-6</b> attention 错误要不要也认平铺直叙的指令？在 attention 模板加一句「如果它让你去做的正是你忘掉/丢下的那件事，那就是 correct」即可。（§2.5 的两个例子） <b>R4-7</b> engine 还要不要保留投票权？这一轮 22 次分歧里厨师对了 20 次，而并集允许 engine 给幻觉警告发分（§2.4）。另一条路：厨师说了算，engine verdict 只记录作交叉检查。</p>
 <h2>附录 A &middot; 全量机械扫描（全部 50 个 episode）</h2><p>对每个 episode 的 report 和逐 tick state dump 跑的机械检查：idle 段（位置、手上东西和所有灶台 &ge;20 tick 没变化）及当时开着的 sub-case；双方台词里的 meta 词泄露；同一句话重复 &ge;3 次；灶台冒烟 &ge;20 tick 期间 assistant 一句没说；问了没人答的问题；厨师 accept 之后仍输掉的 error；同一条被 rejected 命令的循环。原始输出保留英文。</p>
 <pre>root tmp/assist_bench_v5_sample4: 50 episodes, 6 assistants
 
