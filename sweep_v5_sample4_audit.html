@@ -8,12 +8,12 @@ details{margin:.6em 0}summary{cursor:pointer;font-weight:600}blockquote{border-l
 .toc li{margin:.15em 0}
 </style>
 <h1>Scheduler v5 抽样审计·第四轮 — 随机 50 局，首次由厨师给 assistant 打分 (v5 sample audit, round 4)</h1>
-<p class='note'>生成于 2026-09-14 22:08 UTC · 50 个 transcript 由 auditor（每个 assistant 一个）逐字读完 · 全部 50 个 episode 的机械扫描 · 文中引用的每个 transcript 都可点开</p>
+<p class='note'>生成于 2026-09-15 05:10 UTC · 50 个 transcript 由 auditor（每个 assistant 一个）逐字读完 · 全部 50 个 episode 的机械扫描 · 文中引用的每个 transcript 都可点开</p>
 <h2>0 · 这一轮是什么、怎么读</h2>
 <p><b>审计对象。</b> Scheduler v5 抽样第四轮：<b>随机抽取</b>的 50 个 episode，seed 1190331951（<code>tmp/assist_bench_v5_sample4/plan.json</code>）。suite 里 50 个 case <b>每个恰好出现一次</b>；persona <b>均衡分配</b>（classic_novice 18 / baseline 16 / classic_expert 16 —— 现在是厨师给 assistant 打分，而厨师透过自己的 trust level 打分，persona 偏了整轮数字就偏）；assistant 在 6 个 API 模型里均衡随机（每个 8–9 局）；<b>和前三轮没有任何 (case, persona, assistant) 三元组重复</b>。frames 观测，tight pace，latency 实测计费（上限 30 tick），全部 50 局同一个 engine stamp <code>3bcd378dec</code>。</p>
 <p><b>这一轮之前改了什么。</b> (1) <b>厨师给 assistant 打分</b>（<code>COOKSIM_GRADER=cook</code>，默认）：engine 不再把判定喂给厨师；commission 类错误直接告诉厨师「你正在犯什么错」，attention 类不点名、改成「被指控时先看自己的 state map」；厨师每回合在私有字段 <code>assistant_error_call</code> 里答 none / correct / wrong，&quot;correct&quot; 负责 arm，<code>accept</code> 负责 release；检测分数是并集 <code>flagged_valid</code> = 厨师 correct <b>或</b> engine flag 正确。(2) <b>一份从引擎生成的 kitchen rulebook，两边共读</b>。(3) <b>食物按品类和状态重新渲染</b>，去掉 serving pass 旁边像第二个厨师的服务员。<code>side_quest</code> 已删除。</p>
 <p><b>怎么读下面的例子。</b> 每一条结论下面都贴了<b>那一局本地的原文片段</b>（ASSISTANT = 被测模型说的话，COOK = 模拟厨师的话，<code>call=</code> = 厨师私下的评分，ACTION = 身体实际执行的命令，PLATE / HEAT = 厨房状态变化，<code>[sub-case]</code> = 该子任务的记录头），并写明 transcript 路径，完整 transcript 在 Appendix C 可点开。片段原样摘录，只删掉了 <code>(plan_update …)</code> 和空的 <code>(silent)</code> 行，删掉的地方用 <code>…</code> 标出。</p>
-<p><b>一句话结论。</b> 厨师这个 grader 站得住：42 次检测里 17 次（40%）只有厨师认；113 个触发错误里只找到 <b>1 次 phantom credit</b>；22 次两个 grader 分歧里厨师对了 20 次。但有一个<b>我自己的设计造成的结构性偏差</b>：attention 错误不点名给厨师，于是只有「指控口气」才算数，平铺直叙的正确指令一分不得。另有 10 个 harness 缺陷，最重的是 <b>22% 的错误在 tick 0 就触发</b>。</p>
+<p><b>一句话结论。</b> 厨师这个 grader 站得住：42 次检测里 17 次（40%）只有厨师认；113 个触发错误里只找到 <b>1 次 phantom credit</b>；22 次两个 grader 分歧里厨师对了 20 次。但有一个<b>我自己的设计造成的结构性偏差</b>：attention 错误不点名给厨师，于是只有「指控口气」才算数，平铺直叙的正确指令一分不得。另有 9 个 harness 缺陷（H3 审计后更正为误报），最重的是 <b>22% 的错误在 tick 0 就触发</b>。</p>
 <h2>1 · 和第三轮比（不同 episode，只看比例）</h2>
 <div class='tbl'><table><tr><th></th><th>第三轮（随机 50 局）</th><th>第四轮（随机 50 局，厨师评分）</th></tr><tr><td>won</td><td>36 / 50</td><td><b>41 / 50</b></td></tr><tr><td>burned</td><td>7 / 50</td><td><b>3 / 50</b></td></tr><tr><td>wrong_serve</td><td>7 / 50</td><td>6 / 50</td></tr><tr><td>error 触发 / 计划</td><td>103 / 150（69%）</td><td>113 / 150（75%）</td></tr><tr><td>检测 / 触发</td><td>29 / 103（28%）</td><td><b>42 / 113（37%）</b></td></tr><tr><td>prevented / 触发</td><td>19 / 103（18%）</td><td><b>34 / 113（30%）</b></td></tr><tr><td>每局 false alarm</td><td>1.62</td><td>1.66</td></tr><tr><td>late flag</td><td>28</td><td>33</td></tr></table></div>
 <p><b>怎么读。</b> 检测率和 prevented 率的跳变<b>主要来自 grader 换人</b>，不是 assistant 变强：42 次检测里 20 次两边都给、17 次只有厨师给、5 次只有 engine 给。</p>
@@ -109,14 +109,15 @@ ASSISTANT t19 [flag=valid]: That&#x27;s the lettuce crate — wrong prep for thi
 COOK t19 [move=accept call=correct close]: Oh right, steak frites doesn&#x27;t need any greens. My bad, I&#x27;ll stop chopping this.
 ACTION t22: chop [done]</pre>
 <p>厨师在 t19 说「我不切了」，记录写 <code>prevented=True</code>；但 t22 <code>chop [done]</code> —— 这个 chop 在 release 之前就已经发出、release 之后才完成，<b>错误本身的 commit 动作照样发生了</b>。另外 3 例同一模式（t21→t22、t15→t16、t14→t17，全是 <code>mis_prep</code>）。（我第一遍数成 15 次是错的：那样会把厨师之后自己重用的同名命令也算进去。）</p>
-<h4>H3 · proactive request 从来没有被捕获 —— 问了 31 次，记录到的答案 0 次</h4>
+<h4>H3 ·（更正：这一条是我审计时的误报）proactive request 其实都被评分了</h4>
+<p><b>原来写的是</b>「问了 31 次，记录到的答案 0 次」。<b>这是错的。</b> 请求（&quot;鱼一好就叫我&quot;）没有「回答」字段，它的评分在单独的 <code>proactive</code> 字段里，按提醒的时机打分；transcript 渲染器却对请求也打印了问题的字段 <code>answered tNone</code>，6 个 auditor 和我都被它误导了。真实结果：</p>
+<div class='tbl'><table><tr><th>verdict</th><th>次数</th><th>含义</th></tr><tr><td>in_window</td><td><b>22</b></td><td>在食物做好之后的窗口内提醒了</td></tr><tr><td>early</td><td>2</td><td>提醒得太早（还没做好就说好了）</td></tr><tr><td>pre_empted</td><td>3</td><td>厨师自己先处理了，没轮到 assistant</td></tr><tr><td>missed</td><td>4</td><td>窗口内没有提醒</td></tr></table></div>
+<p>31 次请求，平均得分 0.64。渲染器已修（<code>render_transcript.py</code>：请求类 sub-case 现在打印 <code>PROACTIVE grade</code>），transcript 已重新渲染：</p>
 <p><code><a href='audit_v5d/transcripts/gemini-3.7-flash/classic_novice__won__b3_hard_nops_hard_map_4.txt'>gemini-3.7-flash/classic_novice__won__b3_hard_nops_hard_map_4.txt</a></code></p>
-<pre>[sub-case] b3_hard_nops_hard_map_4_p_ready_fish_22: injected_at=16 released_at=16 reason=request_made | asked t16 answered tNone: None | live grade None
+<pre>[sub-case] b3_hard_nops_hard_map_4_p_ready_fish_22: injected_at=16 released_at=16 reason=request_made | requested t16: Could you give me a shout the moment the fish is done cooking? | PROACTIVE grade in_window score=1.0 alert t29 window=[29, 114]: The fish is done cooking in the fryer!
 COOK t16 [move=ask_for_more_guidance call=none]: Could you give me a shout the moment the fish is done cooking?
-ASSISTANT t21 [flag=None]: Pick up a potato from the potato crate and take it to a cutting board to chop it.
-HEAT [...]: [&#x27;fish&#x27;] COOKED (done)          ← t28
 ASSISTANT t29 [flag=None]: The fish is done cooking in the fryer!</pre>
-<p>厨师请求「鱼一好就叫我」，鱼 t28 熟，assistant <b>t29 就喊了</b>，教科书式地完成了请求；记录却是 <code>answered tNone</code>。capture 只监听「问句的回答」，proactive 这一族分数全被清零。</p>
+<p>鱼 t28 熟，assistant t29 提醒，引擎给了 <code>in_window</code> / 1.0 —— 捕获和评分都是对的，错的只是 transcript 印的字段。</p>
 <h4>H4 · 泄漏护栏不够紧：厨师在身体动作之前把被点名的错误说出来</h4>
 <p><code><a href='audit_v5d/transcripts/gpt-5.4-mini/classic_novice__wrong_serve__b3_expert_nops_medium_map_2.txt'>gpt-5.4-mini/classic_novice__wrong_serve__b3_expert_nops_medium_map_2.txt</a></code></p>
 <pre>[sub-case] b3_expert_nops_medium_map_2_add_foreign: injected_at=23 released_at=25 reason=max_hold_plate_committed
@@ -154,6 +155,8 @@ COOK t31 [move=accept call=correct close]: I realized the cheese went on early, 
 ASSISTANT t35 [flag=false_alarm]: That&#x27;s a wrong order: cheese went on before the chopped tomato, and you can&#x27;t fix order on a plate. Dump the plate&#x27;s contents at the trash …
 COOK t35 [move=ask_for_less_interruption call=correct close]: Like I said, I&#x27;m already on my way to dump it, so let me just handle the rebuild.</pre>
 <p>t35 这句<b>完全属实</b>（奶酪确实先上了盘），错误 t29 刚 release，按 D-4 应判 <code>late</code>，却判了 <code>false_alarm</code>。原因：<code>late</code> 窗口要求错误已经 commit，而这里 flag 的名字和注入的错误对不上，于是掉进了 false_alarm。</p>
+<p><b>先把规模说准。</b> 83 次 <code>false_alarm</code> 里，同一回合厨师自己判 <code>wrong</code> 的有 <b>61 次</b> —— 大多数确实是假警报（assistant 幻觉出冒烟、蘑菇、生牛排之类）。真正「罚了说对的话」的，集中在另外两类：厨师判 <code>correct</code> 的 9 次、没判的 13 次。时间上看：51 次发生时没有任何错误在进行或刚结束；<b>30 次落在某个错误归档之后 30 tick 以内</b>；2 次在错误进行中。这 30 次和 H10 是同一个根因：sub-case 一 release 就归档，之后的 flag 找不到它，于是既不能算 <code>late</code> 也不能算 <code>wrong_name</code>，只能掉进 <code>false_alarm</code>。例如 <code><a href='audit_v5d/transcripts/gpt-5.5/baseline__won__b3_hard_nops_hard_map_2.txt'>gpt-5.5/baseline__won__b3_hard_nops_hard_map_2.txt</a></code> 里 <code>mis_prep</code> 在 t14 归档，t19 的 flag 正是 <code>mis_prep</code>，原话 &quot;Yes, that is the wrong ingredient. Bin the shrimp at the trash, then get fish or potato.&quot;，厨师 <code>call=correct</code>，却记成 <code>false_alarm</code>。</p>
+<p><b>修法（两条，互补）：</b>（1）flag 和 H10 的厨师 call 一样，在 <code>COOKSIM_LATE_AFTER_RELEASE</code> 窗口内归到刚归档的 sub-case：名字对 → <code>late</code>，名字不对但确有错误刚发生 → <code>wrong_name</code>；（2）既然默认是厨师评分，<code>false_alarm</code> 应该要求厨师同一回合判 <code>wrong</code>，engine 的 verdict 只作记录 —— 这就是 R4-7。</p>
 <h4>H7 · 冒烟时仍然注入了 body 错误（规则 (c) 禁止）</h4>
 <p><code><a href='audit_v5d/transcripts/gemini-3.1-flash-live-preview/classic_expert__won__b3_master_nops_medium_map_3.txt'>gemini-3.1-flash-live-preview/classic_expert__won__b3_master_nops_medium_map_3.txt</a></code></p>
 <pre>HEAT [4, 0]: [&#x27;rice&#x27;] COOKED (done)          ← t40，按 25 tick 规则 t65 开始冒烟
