@@ -113,10 +113,10 @@ capability, so the fast tier is not a courtesy slot — it is the cell that carr
 most one as a "previous generation" reference line.</div>
 
 <h3>B · Streaming API</h3>
-<p>Say plainly in the paper that this family is a <b>duopoly</b>: only Google and OpenAI ship streaming
-<i>video</i>. Filling five slots with configurations rather than pretending there are five vendors turns
-a thin family into the sharpest experiment in the paper, because slots 1↔2 and 3↔4 hold the weights
-fixed and vary only the protocol.</p>
+<p>Three vendors ship a hosted streaming-<i>video</i> API: Google, OpenAI and Alibaba. Filling the slots
+with configurations as well as vendors turns a thin family into the sharpest experiment in the paper,
+because slots 1↔2 and 3↔4 hold the weights fixed and vary only the protocol. Open local streaming models
+live in family D only.</p>
 <div class="tablewrap"><table>
 <thead><tr><th>#</th><th>cell</th><th>what it isolates</th></tr></thead>
 <tbody>
@@ -124,7 +124,7 @@ fixed and vary only the protocol.</p>
 <tr><td>2</td><td>same model, <b>native</b>: proactive audio on, no forced turns</td><td>the model's own speak decision</td></tr>
 <tr><td>3</td><td><code>gpt-realtime</code>, <b>polled</b></td><td>what we do today</td></tr>
 <tr><td>4</td><td>same model, <b>native</b>: WebRTC video + semantic VAD + server-side turn detection</td><td>the model's own speak decision</td></tr>
-<tr><td>5</td><td><b>MiniCPM-o 4.5</b> served full-duplex through vLLM-Omni</td><td>the only streaming cell anyone can reproduce</td></tr>
+<tr><td>5</td><td><b><code>qwen3.5-omni-plus-realtime</code></b> (Alibaba Model Studio; 1 fps frames via <code>input_image_buffer.append</code>, <code>semantic_vad</code>)</td><td>the third vendor: a different weights lineage under the same streaming protocol. Like the other two, a reply is triggered by user audio or an explicit <code>response.create</code></td></tr>
 </tbody></table></div>
 
 <h3>C · Non-streaming local video VLM</h3>
@@ -137,7 +137,7 @@ fixed and vary only the protocol.</p>
 <tr><td>2</td><td><b>Molmo 2 8B</b> (+ <b>Molmo 2-O 7B</b>)</td><td>video pointing and tracking beat Gemini 3 on tracking; 2-O is open end-to-end on an Olmo backbone — the strongest open-science story available</td></tr>
 <tr><td>3</td><td><b>InternVideo3-8B</b> (2026-06)</td><td>video-specialist lineage, independent of the VL-generalist trend</td></tr>
 <tr><td>4</td><td><b>GLM-V / Kimi-VL thinking line</b></td><td>inference-time compute on video: does thinking help when the clock runs?</td></tr>
-<tr><td>5</td><td><b>MiniCPM-V/o 4.5 9B (INT4)</b></td><td>efficiency anchor — 212 tok/s at 11 GB is the only local class that meets a ~1 s budget</td></tr>
+<tr><td>5</td><td><b>Muse Glimmer 30B</b> (Meta, 2026-08-10, Apache 2.0; dense 29.6B LM + 1.8B perception encoder, interleaved text+image, 131K ctx; bf16 ≈ 64 GB fits one A100-80GB; vLLM / SGLang)</td><td>Meta's current open multimodal model, built for local agents. It reports no video results and takes video as frames, so it tests whether an agentic image model transfers to a live frame stream</td></tr>
 </tbody></table></div>
 
 <h3>D · Streaming / interactive open models</h3>
@@ -271,6 +271,8 @@ Models —
 <a href="https://secure.businesswire.com/news/home/20251216910167/en/Ai2-Releases-Molmo-2-State-of-the-Art-Open-Multimodal-Family-for-Video-and-Multi-Image-Understanding">Molmo 2</a> ·
 <a href="https://github.com/opengvlab/internvideo">InternVideo3</a> ·
 <a href="https://arxiv.org/html/2604.27393v1">MiniCPM-o 4.5 / Omni-Flow</a> ·
+<a href="https://huggingface.co/meta-models/Muse-Glimmer-30B">Muse Glimmer 30B</a> ·
+<a href="https://www.alibabacloud.com/help/en/model-studio/realtime">Qwen-Omni-Realtime</a> ·
 <a href="https://github.com/QwenLM/Qwen3-Omni">Qwen3-Omni</a> ·
 <a href="https://arxiv.org/html/2510.09608v1">StreamingVLM</a> ·
 <a href="https://arxiv.org/html/2605.25621">StreamOV</a> ·
