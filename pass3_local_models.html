@@ -1,0 +1,91 @@
+<meta charset='utf-8'><title>pass@3 本地+API 助手评测</title><style>
+body{font-family:Georgia,'Times New Roman',serif;max-width:1180px;margin:2em auto;padding:0 1.2em;color:#1a1a1a;line-height:1.5;background:#fff}
+h1{font-size:1.7em;margin-bottom:.2em}h2{font-size:1.3em;margin-top:2em;border-bottom:1px solid #ccc;padding-bottom:.2em}h3{font-size:1.1em;margin-top:1.4em}h4{font-size:1em;margin-top:1.1em}
+table{border-collapse:collapse;font-size:.88em;margin:.6em 0}th,td{border:1px solid #d8d8d8;padding:.3em .55em;text-align:left;vertical-align:top}th{background:#f3f3f3}
+.tbl{overflow-x:auto}code{font-family:Menlo,Consolas,monospace;font-size:.86em;background:#f4f4f4;padding:0 .2em}pre{background:#f7f7f7;border:1px solid #e3e3e3;padding:.6em .8em;overflow-x:auto;font-size:.82em;line-height:1.35}
+.note{color:#666;font-size:.9em}.warn{background:#fff3e0;border-left:4px solid #f0a000;padding:.6em .9em;margin:1em 0}.sev-high{color:#b02020;font-weight:700}.sev-medium{color:#b06a00;font-weight:600}
+details{margin:.6em 0}summary{cursor:pointer;font-weight:600}blockquote{border-left:3px solid #ccc;margin:.4em 0;padding:.1em .8em;color:#333}
+.toc li{margin:.15em 0}
+</style>
+<h1>同样的 10 局，每个模型跑 3 遍 — 九个 assistant 的 pass@3 评测 (local + API, pass@3)</h1>
+<p class='note'>生成于 2026-09-16 03:35 UTC · 9 个模型 × 10 个 episode × 3 遍 = <b>270 局</b>，无一局失败 · engine 固定在 <code>7ff3f03</code>（reference-free 注入时刻）· 报告原文 <code>tmp/local_pass3_logs/REPORT_DRAFT.md</code></p>
+
+<h2>0 · 这是什么、为什么跑三遍</h2>
+<p><b>评测对象。</b> 九个模型坐同一个 assistant 座位：看厨师做菜，可以随时说话，按四件事打分 —— 菜有没有做成、engine 注入的错误有没有被抓到、厨师的问题答得对不对、「好了叫我」这类 proactive request 报得及不及时。每个模型跑<b>同样的 10 局</b>（每个 recipe tier × map 各一局，persona 轮换），各跑三遍。</p>
+<p><b>为什么三遍。</b> 单跑一遍几乎说明不了 detection：同一个模型在同一局里，这一遍抓到两个错，下一遍一个都不抓。这次的重点是<b>离散度</b>，不是排行榜。per-model 的三遍展开（每个分数的 r1/r2/r3 均值、标准差、10 局里有几局三遍完全相同、以及 pass@3 / pass^3）在 <code>tmp/local_pass3_logs/FINAL_consistency.md</code>。</p>
+
+<h2>1 · 结果</h2>
+<div class='tbl'><table>
+<tr><th>model</th><th>runs</th><th>won</th><th>in-time S</th><th>fired</th><th>caught</th><th>prevented</th><th>FA/ep</th><th>FA invented</th><th>FA wrong moment</th><th>QA correct</th><th>proactive</th><th>latency (ticks)</th></tr>
+<tr><td>gpt-6-astra</td><td>30</td><td>0.97</td><td>0.80</td><td>0.88</td><td>0.36</td><td>0.33</td><td>0.50</td><td>0.33</td><td>0.17</td><td>0.79</td><td>0.73</td><td>6.27</td></tr>
+<tr><td>gemini-3.1-flash-live-preview</td><td>30</td><td>0.90</td><td>0.77</td><td>0.86</td><td>0.26</td><td>0.23</td><td>1.97</td><td>1.27</td><td>0.70</td><td>0.66</td><td>0.55</td><td>2.00</td></tr>
+<tr><td>gemini-3.8-flash</td><td>30</td><td>0.90</td><td>0.77</td><td>0.84</td><td>0.28</td><td>0.24</td><td>0.63</td><td>0.47</td><td>0.17</td><td>0.55</td><td>0.46</td><td>3.00</td></tr>
+<tr><td>gpt-realtime-2.1</td><td>30</td><td>0.90</td><td>0.80</td><td>0.89</td><td>0.48</td><td>0.46</td><td>0.97</td><td>0.37</td><td>0.60</td><td>0.38</td><td>0.46</td><td>4.57</td></tr>
+<tr><td>qwen3.8-27b</td><td>30</td><td>0.87</td><td>0.73</td><td>0.85</td><td>0.26</td><td>0.20</td><td>0.03</td><td>0.03</td><td>0.00</td><td>0.52</td><td>0.32</td><td>4.87</td></tr>
+<tr><td>molmo2-8b</td><td>30</td><td>0.80</td><td>0.67</td><td>0.86</td><td>0.04</td><td>0.03</td><td>0.13</td><td>0.13</td><td>0.00</td><td>0.04</td><td>0.15</td><td>4.03</td></tr>
+<tr><td>museglimmer</td><td>30</td><td>0.80</td><td>0.63</td><td>0.86</td><td>0.39</td><td>0.32</td><td>0.50</td><td>0.23</td><td>0.27</td><td>0.48</td><td>0.29</td><td>3.40</td></tr>
+<tr><td>gemini-3.1-pro-preview</td><td>30</td><td>0.77</td><td>0.53</td><td>0.84</td><td>0.26</td><td>0.22</td><td>1.77</td><td>0.90</td><td>0.87</td><td>0.45</td><td>0.49</td><td>7.43</td></tr>
+<tr><td>minicpmo</td><td>30</td><td>0.77</td><td>0.63</td><td>0.84</td><td>0.32</td><td>0.23</td><td>1.03</td><td>0.80</td><td>0.23</td><td>0.12</td><td>0.29</td><td>2.10</td></tr>
+</table></div>
+<p class='note'>caught = 触发的错误里被正确 flag 的比例；prevented = 助手说话之后厨师<b>没有</b>犯下这个错的比例（<b>不要求</b>助手说中，见第 3 节）；FA invented = 指控了一个这一局根本没触发的错；FA wrong moment = 指控的错确实触发了，但 flag 落在评分窗口之外；latency = 计入游戏时钟的回复延迟中位数（1 tick = 1.2 s）。</p>
+
+<h3>读法</h3>
+<ul>
+<li><b>GPT-6 Astra 把任务做成得最好、问题答得最好</b>（won 0.97、QA 0.79、proactive 0.73），但延迟倒数第二（6.3 tick），detection 只算中游（0.36）。</li>
+<li><b>gpt-realtime-2.1（polled 模式）是全场最强的 detector</b>：caught 0.48，其它模型 0.26–0.39；in-time success 与 Astra 并列第一；代价是 API 模型里最差的答题能力（QA 0.38）。</li>
+<li><b>Muse Glimmer 30B（本地）的 detection 超过除 gpt-realtime 外的所有 API 模型</b>（caught 0.39），延迟只有 Astra 的一半。</li>
+<li><b>Qwen3.8-27B 是「话少但准」的那个</b>：30 局里只有 1 次误指控（0.03/局），同时在 20 局里都 flag 过。</li>
+<li><b>Gemini 3.1 Pro 是 false alarm 的异常值</b>（1.77/局），也是最慢的（7.4 tick）。</li>
+<li><b>Molmo2-8B 基本不参与 detection</b>（caught 0.04、QA 0.04），与它 setup bench 的表现一致。</li>
+<li><b>fired 在所有模型都是 0.84–0.89</b>：benchmark 注入的错误与谁在看无关，差异来自模型和厨师。</li>
+</ul>
+
+<h2>2 · 两个 streaming 模型（都跑 polled）恰好是两个极端</h2>
+<p>两个都用 polled 模式跑（harness 主动问，它们自己的 speak decision 还没接上），结果落在同一根轴的两端：</p>
+<ul>
+<li><b>gpt-realtime-2.1</b>：caught 0.48 / prevented 0.46，全场最高；代价是 0.97 FA/局（0.37 invented + 0.60 wrong-moment）和 API 模型里最弱的 QA（0.38）。</li>
+<li><b>gemini-3.1-flash-live-preview</b>：全场最快（2.0 tick，30 局完全一致），won 0.90；但话最松 —— 30 局 137 个 flag、<b>1.97 FA/局</b>（1.27 invented + 0.70 wrong-moment），整轮只有 4 个 flag 被判 <code>valid</code>，caught 只有 0.26。它拿到的检测分大多是 <code>early_correct</code> 或 <code>late</code>：说对了事、说错了时候。（它在前 15 局看起来 in-time success 0.92 全场第一，跑满 30 局后回落到 0.77 —— 所以中途的数字从不当结果发布。）</li>
+</ul>
+<p>这一对正好是<b>把 native arm 做完</b>的理由：polled 协议已经能产出全场最强的 detector 和最爱乱说的那个，而「什么时候该说话」本来就该由 native speak decision 管。</p>
+
+<h2>3 · 必须一起读的 caveat</h2>
+<ol>
+<li><b>detection 是最不可复现的分数。</b> 多数模型在同一局的三遍里 catch rate 都不一样，只有三遍均值有意义。</li>
+<li><b>false alarm 其实是两件事。</b> flag 指的错确实触发过、只是落在窗口外，今天也判 <code>false_alarm</code>。各模型 invented / wrong-moment：Live 38/21、Gemini 3.1 Pro 27/26、MiniCPM-o 24/7、Gemini 3.8 Flash 14/5、gpt-realtime 11/18、Astra 10/5、Muse 7/8、Molmo2 4/0、Qwen 1/0。永远读拆开的两列。</li>
+<li><b><code>prevented</code> 比字面弱。</b> 它只表示助手说话之后厨师没犯这个错，<b>不要求</b>助手指出了什么。逐条读了三个案例：一个是真的（gpt-realtime 把卡住的厨师劝动了）；一个是厨师被同一句话重复七遍后妥协（MiniCPM-o，全程没有任何 flag）；一个跟在助手<b>自己说错</b>的指令后面（Molmo2 让厨师去拿 Steak Frites 不需要的 bun，厨师反问，错误就此作废）。三例的 error entry 都没有 flag。</li>
+<li><b>benchmark 侧与模型无关</b>：同样的错误在每一遍都触发（fired 0.84–0.89，10 局里 9–10 局三遍完全相同）。</li>
+<li><b>这一轮做的评分修正</b>（全部离线、对所有模型一视同仁、每一条都对着 transcript 逐条核过并写了回归测试）：回复归属到它真正回答的那个问题；episode 最后 10 tick 内才问、来不及答的问题不计分；「我是先切的 X 吗」的 ground truth 改从逐 tick 状态记录重算；对 recipe 根本不会切的食材问「切没切」的问题不计分；三类不是 alert 的句子不再算 proactive alert（带 scoop 的承诺、点名熟食的否认、计划步骤/前缀）。</li>
+<li><b>顺带查出的 suite 缺陷</b>（这次之后再修）：448 个问题里 <b>114 个不可评分</b> —— 60 个问在 episode 最后 10 tick（落在助手自己的延迟里），54 个是对不会切的食材问「切没切」。其余 334 个：correct 131 / partial 12 / incorrect 70 / evasive 110 / 未答 11。</li>
+<li><b>我自己造成、已修复的一个瑕疵</b>：有约一小时我把 model server 钉在固定 CPU core 上，Qwen 和 Molmo2 的图像预处理因此每次回复慢了约 1 个计费 tick。受影响的 10 局全部在窗口外重跑：<b>没有一局变慢</b>，4 局更快，3 局少花 1 个 tick；被丢弃的原始记录连同逐 tick 状态留在 <code>tmp/local_pass3_quarantine_pinwindow/</code>。</li>
+<li><b>没跑的模型</b>：GLM-4.6V-Flash（权重和 serve 脚本都就绪，但在三台 model server 占满 /weka 的情况下 12 分钟连模型都没加载完，硬截止前停掉，GPU 留空而不是拖慢正在计时的 lane）；Proact-VL（权重需要账号本人接受学术条款）；Streamo（只有代码没有权重）；Claude Opus 5 与阿里系（本机还没有 key）。两个 streaming 模型只跑了 polled，native arm 设计好了但还没做。</li>
+</ol>
+
+<h2>4 · 接下来该做什么</h2>
+<ol>
+<li><b>把 native streaming arm 做完。</b> polled 模式下已经出现「最强 detector」和「最爱乱说」两端，而这正是 native speak decision 该管的行为。</li>
+<li><b>修两个 suite 缺陷</b>：问题被排在 episode 末尾；prep 问题一律写成「did I chop X」。两个都是 question generator 的改动。</li>
+<li><b>决定「说对了错、但落在窗口外」算不算 false alarm。</b> 今天算。改判会移动每个模型的 catch rate，所以需要单独一轮核对，不能顺手改。</li>
+<li><b>补跑 GLM-4.6V-Flash</b>（机器空闲时是个小活），以及拿到 key 之后的 Claude Opus 5 和阿里系模型。</li>
+<li><b>detection 永远报三遍均值</b>，不要报单跑 —— 这是这次最主要的方法学结论。</li>
+</ol>
+
+<h2>5 · 怎么跑的、数据在哪</h2>
+<div class='tbl'><table>
+<tr><th>lane</th><th>怎么跑</th></tr>
+<tr><td>GPT-6 Astra · Gemini 3.8 Flash · Gemini 3.1 Pro</td><td>API，一次 4 局并行</td></tr>
+<tr><td>gpt-realtime-2.1 · gemini-3.1-flash-live-preview</td><td>API，<b>polled</b> 模式（native turn-taking 未接）</td></tr>
+<tr><td>Qwen3.8-27B · Muse Glimmer 30B · MiniCPM-o 4.5 · Molmo2-8B</td><td>本地，一张 A100 一个模型，<b>一次只跑一局</b></td></tr>
+</table></div>
+<p>本地 lane 必须串行：assistant 的实测延迟会计入游戏时钟，两局共用一张卡就会互相把对方的计算时间算进去。API lane 用<b>另一台 render server 和另一组 CPU core</b>，并用 vLLM 的 per-token prefill/decode 指标验证过不会干扰本地模型的计时。</p>
+<p>九条 lane 跑在 5 个不同 commit 上，但<b>episode engine 完全相同</b>：<code>7ff3f03</code> 之后的每个 commit 只动了 lane runner、request profile、离线 grader 或报告工具（<code>git diff 7ff3f03 HEAD -- cooksim/ tools/e2e_stepin_rollout.py bench/v5/cases_composite_v4.json tools/run_v5_sample.py</code> 为空）。每条 lane 启动时工作区都是干净的，commit 记在各自的 <code>run_meta_&lt;model&gt;.json</code> 里。</p>
+<div class='tbl'><table>
+<tr><th>内容</th><th>路径（都在 <code>cook-bench-engine/</code> 下）</th></tr>
+<tr><td>每一局的记录</td><td><code>tmp/assist_bench_local_pass3/frames/&lt;persona&gt;/&lt;model&gt;__r&lt;1-3&gt;/&lt;case&gt;.json</code></td></tr>
+<tr><td>每 tick 的厨房状态</td><td>同路径的 <code>.states.jsonl</code></td></tr>
+<tr><td>问题评分（judge 判定 + 理由 + 归属说明）</td><td><code>tmp/assist_bench_local_pass3/qa_regrade.json</code></td></tr>
+<tr><td>proactive alert 评分</td><td><code>tmp/assist_bench_local_pass3/proactive_v2.json</code></td></tr>
+<tr><td>每局分数</td><td><code>tmp/assist_bench_local_pass3/eval_v2.json</code></td></tr>
+<tr><td>被丢弃的 pin-window 记录</td><td><code>tmp/local_pass3_quarantine_pinwindow/</code></td></tr>
+<tr><td>本地模型的 serve 配置与调优</td><td><code>local_models/pass3_setup/SETUP_REPORT.md</code></td></tr>
+</table></div>
+<p class='note'>表格由 <code>tools/pass3_summary_table.py</code> 和 <code>tools/pass3_consistency.py</code> 生成；两个 grader 都带版本戳（问题归属与 ground truth 规则 <code>attr-v5-2026-09-15</code>，proactive 用 alert 规则源码的哈希），规则一改就会自动重评受影响的条目。</p>
