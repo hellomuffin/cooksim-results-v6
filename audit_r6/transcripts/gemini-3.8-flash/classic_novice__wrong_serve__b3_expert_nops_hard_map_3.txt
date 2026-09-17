@@ -1,0 +1,567 @@
+EPISODE tmp/sample_r6/frames/classic_novice/gemini-3.8-flash/b3_expert_nops_hard_map_3.json
+case b3_expert_nops_hard_map_3 | cook persona pv2_classic_novice | assistant gemini-3.8-flash | outcome wrong_serve at tick 443 | pace tight | engine f27afc95aa
+eval: 
+
+PLANNED SUB-CASES (scheduler v5: every pending sub-case is checked every tick against its anchor = plate prefix + prep progress; errors/detours take the body slot one at a time, questions/requests take the voice slot and may be asked during a takeover; 'clean tick'/'window' below are the designer's reference only):
+  [0] ERROR mis_prep (fn mis_prep, kwargs {'component': 'steak', 'wrong': 'mushroom'}; anchored at clean tick 0, window [24, 56], ruinous=True)
+  [1] QUESTION past_done:heat: "Is anything on the heat already done and just sitting there?" (after 26 clean commands)
+  [2] PROACTIVE REQUEST about potato (after 28 clean commands): Give me a shout the moment the potato is done, would you?
+  [3] ERROR omit_subgoal (fn omit_subgoal, kwargs {'sid': 'assemble(steak)'}; anchored at clean tick 113, window [132, 164], ruinous=True)
+  [4] QUESTION order:prep(steak)|prep(potato): "Did I chop the steak before or after I chop the potato?" (after 32 clean commands)
+  [5] ERROR leave_unattended (fn leave_unattended, kwargs {'component': 'potato', 'loops': 2}; anchored at clean tick 121, window [150, 184], ruinous=True)
+  [6] ERROR add_foreign (fn add_foreign, kwargs {'wrong': 'mushroom', 'before': 'serve'}; anchored at clean tick 129, window [146, 178], ruinous=True)
+
+WHAT HAPPENED TO EACH SUB-CASE:
+  b3_expert_nops_hard_map_3_mis_prep: injected_at=5 released_at=38 reason=max_hold_deviated_block_executed skipped=None archived_at=38 | flags: [] | cook calls: [(8, 'wrong'), (59, 'correct')] | credited: flagged_valid=False (engine alone=False, by=None, at=None) | convinced=False prevented=False | anchor_v5 plate=[] prep_req={'steak': 0, 'potato': 0} prep_live_at_event={'steak': 0, 'potato': 0}
+  b3_expert_nops_hard_map_3_q_past_done_26: injected_at=387 released_at=387 reason=question_asked skipped=None archived_at=387 | asked t387 answered t395 (late-captured): No, all heat stations are empty. Now pick up the chopped potato and carry it to the fryer. | live grade ungradable
+  b3_expert_nops_hard_map_3_p_ready_potato_28: injected_at=406 released_at=406 reason=request_made skipped=None archived_at=406 | requested t406: Tell me the moment the potato is done, okay? | PROACTIVE grade in_window score=1.0 alert t419 window=[419, 489]: Pick up your plate from the counter, then scoop the potato from the fryer.
+  b3_expert_nops_hard_map_3_omit_subgoal: injected_at=166 released_at=187 reason=max_hold_deviated_block_executed skipped=None archived_at=187 | flags: [(167, 'leave_unattended', 'true_observation')] | cook calls: [(205, 'correct')] | credited: flagged_valid=False (engine alone=False, by=None, at=None) | convinced=False prevented=False | anchor_v5 plate=[] prep_req={'steak': 1, 'potato': 2} prep_live_at_event={'steak': 1, 'potato': 1}
+  b3_expert_nops_hard_map_3_q_order_32: injected_at=395 released_at=395 reason=question_asked skipped=None archived_at=395 | asked t395 answered t399 (late-captured): You chopped the steak first, then the potato. Now carry the chopped potato to the fryer on the bottom counter. | live grade ungradable
+  b3_expert_nops_hard_map_3_leave_unattended: injected_at=153 released_at=154 reason=max_hold_smoke_committed skipped=None archived_at=154 | flags: [] | cook calls: none | credited: flagged_valid=False (engine alone=False, by=None, at=None) | convinced=False prevented=False | anchor_v5 plate=['steak'] prep_req={'steak': 1, 'potato': 2} prep_live_at_event={'steak': 1, 'potato': 1}
+  b3_expert_nops_hard_map_3_add_foreign: injected_at=420 released_at=430 reason=max_hold_plate_committed skipped=None archived_at=430 | flags: [] | cook calls: none | credited: flagged_valid=False (engine alone=False, by=None, at=None) | convinced=False prevented=False | anchor_v5 plate=['steak', 'potato', 'potato'] prep_req={'steak': 1, 'potato': 2} prep_live_at_event={'steak': 1, 'potato': 2}
+
+TIMELINE (tick order; ACTION = the cook's body; COOK/ASSISTANT = the conversation):
+COOK t0 [move=ask_for_more_guidance call=none]: What should I start with?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t2 [move=ask_for_more_guidance call=none]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t0, took 3.653s = 4 ticks)
+ASSISTANT t4 [flag=None]: Start by getting a steak or potato. Take a steak to a cutting board to chop it, then cook it in a pan.
+COOK t4 [move=accept call=none close]: Got it, prepping the steak first.
+        (plan_update: {"op": "replace", "actions": ["go to steak source 2", "pick up", "go to board 1", "put down", "chop", "chop", "chop", "chop", "pick up", "go to pan 1", "put down", "turn on"]})
+=== INJECTED sub b3_expert_nops_hard_map_3_mis_prep (error/mis_prep) ===
+COOK t5 [move=answer call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t7: go to steak source 2 [done] (cook read this at t8)
+  (assistant call issued t4, took 3.623s = 4 ticks)
+ASSISTANT t8 [flag=None]: That is the pepper crate in front of you. The steak crate is further back along the top wall.
+COOK t8 [move=reject call=wrong close]: Oh, alright.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t8, took 2.654s = 3 ticks)
+ASSISTANT t11 [flag=None]: (silent)
+  (assistant call issued t12, took 2.045s = 2 ticks)
+ASSISTANT t14 [flag=None]: (silent)
+  ACTION t24: go to the mushroom source [done] (cook read this at t38)
+  ACTION t26: pick up [done] (cook read this at t38)
+  ACTION t30: go to the empty cutting board [done] (cook read this at t38)
+  ACTION t32: put down [done] (cook read this at t38)
+  ~~ IDLE t37-t59 (22 ticks, pos (1, 6) holding null) ~~
+  ACTION t37: chop [done] (cook read this at t38)
+  (assistant call issued t14, took 27.317s = 23 ticks)
+ASSISTANT t37 [flag=None]: (silent)
+=== RELEASED sub b3_expert_nops_hard_map_3_mis_prep (max_hold_deviated_block_executed) ===
+--- archived sub b3_expert_nops_hard_map_3_mis_prep (injected=True skipped=None) ---
+COOK t38 [move=ask_for_more_guidance call=none]: What should I do next?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t40 [move=ask_for_more_guidance call=none]: 
+        (plan_update: {"op": "drop", "actions": []})
+COOK t42 [move=ask_for_more_guidance call=none]: 
+        (plan_update: {"op": "drop", "actions": []})
+COOK t44 [move=ask_for_more_guidance call=none]: 
+        (plan_update: {"op": "drop", "actions": []})
+COOK t46 [move=ask_for_more_guidance call=none]: 
+        (plan_update: {"op": "drop", "actions": []})
+COOK t48 [move=ask_for_more_guidance call=none]: 
+        (plan_update: {"op": "drop", "actions": []})
+COOK t50 [move=ask_for_more_guidance call=none]: 
+        (plan_update: {"op": "drop", "actions": []})
+COOK t52 [move=ask_for_more_guidance call=none]: 
+        (plan_update: {"op": "drop", "actions": []})
+COOK t54 [move=ask_for_more_guidance call=none]: 
+        (plan_update: {"op": "drop", "actions": []})
+COOK t56 [move=ask_for_more_guidance call=none]: 
+        (plan_update: {"op": "drop", "actions": []})
+COOK t58 [move=ask_for_more_guidance call=none]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t38, took 25.026s = 21 ticks)
+ASSISTANT t59 [flag=late]: You chopped a mushroom on the board, but Steak Frites needs steak and potatoes. Pick up that chopped mushroom and throw it in the trash.
+COOK t59 [move=accept call=correct close]: Oops, tossing it now.
+        (plan_update: {"op": "replace", "actions": ["pick up", "go to the trash", "trash"]})
+  ACTION t60: pick up [done] (cook read this at t72)
+  (assistant call issued t60, took 4.112s = 4 ticks)
+ASSISTANT t64 [flag=None]: (silent)
+  (assistant call issued t64, took 2.642s = 3 ticks)
+ASSISTANT t67 [flag=None]: (silent)
+  ACTION t68: go to the trash [done] (cook read this at t72)
+  ACTION t69: go to the trash [done] (cook read this at t72)
+  ACTION t71: trash [done] (cook read this at t72)
+COOK t72 [move=ask_for_more_guidance call=none]: Threw it away, what should I do now?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t68, took 4.932s = 5 ticks)
+ASSISTANT t73 [flag=None]: (silent)
+COOK t74 [move=ask_for_more_guidance call=none]: 
+        (plan_update: {"op": "drop", "actions": []})
+COOK t76 [move=ask_for_more_guidance call=none]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t74, took 2.405s = 3 ticks)
+ASSISTANT t77 [flag=None]: Pick up a steak from the steak crate right next to you, then bring it to a cutting board to chop it.
+COOK t77 [move=accept call=none close]: On it, grabbing a steak.
+        (plan_update: {"op": "replace", "actions": ["go to steak source 2", "pick up", "go to board 1", "put down", "chop", "chop", "chop", "chop"]})
+  ACTION t80: go to steak source 2 [done] (cook read this at t85)
+  (assistant call issued t78, took 3.203s = 3 ticks)
+ASSISTANT t81 [flag=None]: (silent)
+  ACTION t82: pick up [done] (cook read this at t85)
+  (assistant call issued t82, took 2.784s = 3 ticks)
+ASSISTANT t85 [flag=None]: Now bring it to one of the cutting boards on the left wall and chop it.
+COOK t85 [move=accept call=none close]: Chopping it now.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t86, took 2.321s = 2 ticks)
+ASSISTANT t88 [flag=None]: (silent)
+  (assistant call issued t88, took 2.303s = 2 ticks)
+ASSISTANT t90 [flag=None]: (silent)
+  ACTION t91: go to board 1 [done] (cook read this at t102)
+  ACTION t93: put down [done] (cook read this at t102)
+  (assistant call issued t90, took 4.197s = 4 ticks)
+ASSISTANT t94 [flag=None]: (silent)
+  (assistant call issued t94, took 2.053s = 2 ticks)
+ASSISTANT t96 [flag=None]: (silent)
+  ACTION t98: chop [done] (cook read this at t102)
+  (assistant call issued t96, took 2.653s = 3 ticks)
+ASSISTANT t99 [flag=None]: (silent)
+  ACTION t102: chop [superseded] (not read by the cook: after its last turn)
+  (assistant call issued t100, took 1.937s = 2 ticks)
+ASSISTANT t102 [flag=None]: Now pick up the chopped steak and put it into one of the pans on the counter to cook.
+COOK t102 [move=accept call=none close]: Putting it in the pan to cook.
+        (plan_update: {"op": "replace", "actions": ["pick up", "go to pan 1", "put down", "turn on"]})
+  ACTION t103: pick up [done] (cook read this at t110)
+  (assistant call issued t102, took 2.217s = 2 ticks)
+ASSISTANT t104 [flag=None]: (silent)
+  ACTION t108: go to pan 1 [done] (cook read this at t110)
+  ACTION t110: put down [done] (cook read this at t113)
+  (assistant call issued t104, took 6.59s = 6 ticks)
+ASSISTANT t110 [flag=None]: Carry it over to the pan in the bottom-right corner and put it in to cook.
+COOK t110 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t112: turn on [done] (cook read this at t113)
+  (assistant call issued t110, took 3.051s = 3 ticks)
+ASSISTANT t113 [flag=None]: Turn the pan on to start cooking the steak.
+COOK t113 [move=ask_for_more_guidance call=none]: Pan is on, what's next?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t116 [move=ask_for_more_guidance call=none]: What's the next step?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t114, took 2.629s = 3 ticks)
+ASSISTANT t117 [flag=None]: While the steak cooks, grab a potato from the potato crate right below you and bring it to a cutting board.
+COOK t117 [move=accept call=none close]: Grabbing a potato now.
+        (plan_update: {"op": "replace", "actions": ["go to potato source 2", "pick up", "go to board 2", "put down"]})
+  ACTION t121: go to potato source 2 [done] (cook read this at t122)
+  (assistant call issued t118, took 3.943s = 4 ticks)
+ASSISTANT t122 [flag=None]: Pick up a potato from the crate, then put it on the cutting board on the left counter.
+COOK t122 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t123: pick up [done] (cook read this at t127)
+  (assistant call issued t122, took 2.199s = 2 ticks)
+ASSISTANT t124 [flag=None]: (silent)
+  HEAT [2, 4]: ['steak'] COOKED (done)
+  (assistant call issued t124, took 3.123s = 3 ticks)
+ASSISTANT t127 [flag=None]: Put that potato down on the cutting board right next to you on the left counter, then chop it.
+COOK t127 [move=accept call=none close]: 
+        (plan_update: {"op": "append", "actions": ["chop"]})
+  ACTION t128: go to board 2 [done] (cook read this at t131)
+  ACTION t130: put down [done] (cook read this at t131)
+  (assistant call issued t128, took 3.238s = 3 ticks)
+ASSISTANT t131 [flag=None]: Put the potato down on that cutting board, then chop it.
+COOK t131 [move=accept call=none close]: 
+        (plan_update: {"op": "append", "actions": []})
+  ACTION t135: chop [done] (cook read this at t136)
+COOK t136 [move=ask_for_more_guidance call=none]: Potato is chopped, what should I do next?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t132, took 6.394s = 6 ticks)
+ASSISTANT t138 [flag=None]: (silent)
+COOK t138 [move=ask_for_more_guidance call=none]: Where should this chopped potato go?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t140 [move=ask_for_more_guidance call=none]: Does this potato go into the fryer?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t138, took 3.245s = 3 ticks)
+ASSISTANT t141 [flag=None]: Pick up the chopped potato and put it into the fryer on the bottom counter, or into the pot on the right counter.
+COOK t141 [move=accept call=none close]: Putting it in the fryer.
+        (plan_update: {"op": "replace", "actions": ["pick up", "go to fryer 1", "put down"]})
+  ACTION t142: pick up [done] (cook read this at t152)
+  (assistant call issued t142, took 5.136s = 5 ticks)
+ASSISTANT t147 [flag=None]: (silent)
+  ACTION t148: go to fryer 1 [done] (cook read this at t152)
+  ACTION t150: put down [done] (cook read this at t152)
+  (assistant call issued t148, took 3.613s = 4 ticks)
+ASSISTANT t152 [flag=None]: Put that chopped potato into the fryer on the counter right in front of you, then turn it on.
+COOK t152 [move=accept call=none close]: 
+        (plan_update: {"op": "replace", "actions": ["turn on"]})
+=== INJECTED sub b3_expert_nops_hard_map_3_leave_unattended (error/leave_unattended) ===
+  ACTION t153: turn on [done] (cook read this at t154)
+COOK t153 [move=answer call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+=== RELEASED sub b3_expert_nops_hard_map_3_leave_unattended (max_hold_smoke_committed) ===
+--- archived sub b3_expert_nops_hard_map_3_leave_unattended (injected=True skipped=None) ---
+COOK t154 [move=ask_for_more_guidance call=none]: Fryer is running, what's next?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t156 [move=ask_for_more_guidance call=none]: 
+        (plan_update: {"op": "drop", "actions": []})
+COOK t158 [move=ask_for_more_guidance call=none]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t152, took 7.812s = 7 ticks)
+ASSISTANT t159 [flag=None]: Turn on the fryer with empty hands to start cooking the potato.
+COOK t159 [move=ask_for_more_guidance call=none]: It's already on. What's next?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t162 [move=ask_for_more_guidance call=none]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t160, took 3.617s = 4 ticks)
+ASSISTANT t164 [flag=None]: Go grab a clean plate from the plate stack in the top-left corner, then scoop the cooked steak from the pan.
+COOK t164 [move=accept call=none close]: Grabbing a plate for the steak.
+        (plan_update: {"op": "replace", "actions": ["go to plate stack 1", "pick up", "go to pan 1", "scoop"]})
+=== INJECTED sub b3_expert_nops_hard_map_3_omit_subgoal (error/omit_subgoal) ===
+  HEAT [4, 5]: ['potato'] COOKED (done)
+COOK t166 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+    [flag verdict] leave_unattended -> true_observation
+  (assistant call issued t164, took 3.365s = 3 ticks)
+ASSISTANT t167 [flag=true_observation]: Notice the pan with the steak is smoking. Walk to the plate stack in the top-left corner, grab a plate, and scoop that steak out quickly.
+COOK t167 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t172: go to plate stack 1 [done] (cook read this at t188)
+  ACTION t173: go to the plates [done] (cook read this at t188)
+  ACTION t175: pick up [done] (cook read this at t188)
+  ACTION t184: go to the fryer with the potato [done] (cook read this at t188)
+  ACTION t186: scoop [done] (cook read this at t188)
+  PLATE: +potato (cooked)
+  HEAT [4, 5]: ['potato'] removed
+=== RELEASED sub b3_expert_nops_hard_map_3_omit_subgoal (max_hold_deviated_block_executed) ===
+--- archived sub b3_expert_nops_hard_map_3_omit_subgoal (injected=True skipped=None) ---
+COOK t188 [move=accept call=none close]: Grabbing the steak now.
+        (plan_update: {"op": "replace", "actions": ["go to pan 1", "scoop"]})
+  ACTION t191: go to pan 1 [done] (cook read this at t194)
+  ~~ IDLE t193-t205 (12 ticks, pos (2, 5) holding {"contents": [{"kind": "ingredient", "name": "potato", "state": "cooked"}, {"kind": "ingredient", "name": "steak", "state": "cooked"}], "dirty": false, "kind": "plate"}) ~~
+  ACTION t193: scoop [done] (cook read this at t194)
+  PLATE: +steak (cooked)
+  HEAT [2, 4]: ['steak'] removed
+COOK t194 [move=ask_for_more_guidance call=none]: What's the next step?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t196 [move=ask_for_more_guidance call=none]: What's the next step?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t168, took 75.328s = 30 ticks — CAPPED at the latency maximum)
+ASSISTANT t198 [flag=None]: Keep moving towards the top-left corner to get a plate from the plate stack.
+COOK t198 [move=ask_for_more_guidance call=none]: What should I do now?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t200 [move=ask_for_more_guidance call=none]: What's the next step?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t202 [move=ask_for_more_guidance call=none]: What's the next item to make?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t204 [move=accept call=none close]: 
+        (plan_update: {"op": "replace", "actions": ["go to the counter at (0,5)", "put down", "go to potato source 2", "pick up"]})
+  (assistant call issued t198, took 7.633s = 7 ticks)
+ASSISTANT t205 [flag=late]: You plated the potato before the steak, but Steak Frites requires steak first, then two potatoes. Take the plate to the trash to dump it, then start over with a fresh plate.
+COOK t205 [move=accept call=correct close]: Dumping it now to restart.
+        (plan_update: {"op": "replace", "actions": ["go to trash 1", "trash", "go to plate stack 1", "pick up"]})
+  ACTION t206: go to the counter at (0,5) [done] (cook read this at t211)
+  (assistant call issued t206, took 5.223s = 5 ticks)
+ASSISTANT t211 [flag=None]: The trash can is in the top-middle next to the meat crates. Go there and dump the plate, but keep in mind you'll also need to cook another steak and two potatoes.
+COOK t211 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t213: go to trash 1 [done] (cook read this at t217)
+  ACTION t214: go to the trash [done] (cook read this at t217)
+  ACTION t216: trash [done] (cook read this at t217)
+  (assistant call issued t212, took 4.801s = 5 ticks)
+ASSISTANT t217 [flag=None]: Keep walking toward the trash can directly ahead of you and trash the plate's contents.
+COOK t217 [move=ask_for_more_guidance call=none]: Plate is empty, what should I cook first?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t218, took 2.023s = 2 ticks)
+ASSISTANT t220 [flag=None]: Put the plate down on an empty counter, then grab a steak from the steak crate right next to you to cook.
+COOK t220 [move=accept call=none close]: Putting the plate down and getting steak.
+        (plan_update: {"op": "replace", "actions": ["go to the counter at (2,0)", "put down", "go to steak source 1", "pick up"]})
+  (assistant call issued t220, took 2.404s = 3 ticks)
+ASSISTANT t223 [flag=None]: Put the plate down on the counter first. Also, that crate is labeled meat, not steak — steak is to the right.
+COOK t223 [move=accept call=none close]: Understood, grabbing steak from the right crate.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t224: go to plate stack 1 [done] (cook read this at t226)
+  (assistant call issued t224, took 2.157s = 2 ticks)
+ASSISTANT t226 [flag=None]: Put your plate down on an empty counter, then walk over to the steak crate to pick up raw steak.
+COOK t226 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t228: go to the counter at (2,0) [done] (cook read this at t233)
+  ACTION t230: put down [done] (cook read this at t233)
+  (assistant call issued t226, took 7.216s = 7 ticks)
+ASSISTANT t233 [flag=None]: Put your plate down on the empty counter next to you so your hands are free.
+COOK t233 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t235: go to steak source 1 [done] (cook read this at t237)
+  ACTION t237: pick up [done] (cook read this at t241)
+  (assistant call issued t234, took 2.544s = 3 ticks)
+ASSISTANT t237 [flag=None]: Pick up a steak from that crate, chop it on a cutting board, then cook it in a pan.
+COOK t237 [move=accept call=none close]: Taking it to the board to chop now.
+        (plan_update: {"op": "replace", "actions": ["go to board 1", "put down", "chop", "chop", "chop", "chop", "pick up", "go to pan 1", "put down", "turn on"]})
+  (assistant call issued t238, took 2.793s = 3 ticks)
+ASSISTANT t241 [flag=None]: Carry that steak over to a cutting board on the left counter and chop it.
+COOK t241 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t245: go to board 1 [done] (cook read this at t249)
+  (assistant call issued t242, took 2.755s = 3 ticks)
+ASSISTANT t245 [flag=None]: Put the steak down on the cutting board right there and chop it.
+COOK t245 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t247: put down [done] (cook read this at t249)
+  (assistant call issued t246, took 2.84s = 3 ticks)
+ASSISTANT t249 [flag=None]: Put the steak down on the board and chop it.
+COOK t249 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t252: chop [done] (cook read this at t256)
+  (assistant call issued t250, took 2.336s = 2 ticks)
+ASSISTANT t252 [flag=None]: (silent)
+  ACTION t256: chop [superseded] (not read by the cook: after its last turn)
+  (assistant call issued t252, took 3.671s = 4 ticks)
+ASSISTANT t256 [flag=None]: Pick up the chopped steak and put it into the pan.
+COOK t256 [move=accept call=none close]: Putting the steak into the pan now.
+        (plan_update: {"op": "replace", "actions": ["pick up", "go to pan 1", "put down", "turn on"]})
+  ACTION t257: pick up [done] (cook read this at t259)
+  (assistant call issued t256, took 2.654s = 3 ticks)
+ASSISTANT t259 [flag=None]: Pick up the chopped steak from the cutting board first, then walk over to the pan.
+COOK t259 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t262: go to pan 1 [done] (cook read this at t263)
+  (assistant call issued t260, took 3.017s = 3 ticks)
+ASSISTANT t263 [flag=None]: Put the chopped steak into the pan right in front of you.
+COOK t263 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t264: put down [done] (cook read this at t266)
+  ACTION t266: turn on [done] (cook read this at t268)
+  (assistant call issued t264, took 2.362s = 2 ticks)
+ASSISTANT t266 [flag=None]: Turn on the pan to cook the steak.
+COOK t266 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+COOK t268 [move=ask_for_more_guidance call=none]: Steak is cooking, what's next?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t266, took 4.392s = 4 ticks)
+ASSISTANT t270 [flag=None]: While the steak cooks, grab a potato from the potato crate to start prepping it.
+COOK t270 [move=accept call=none close]: Getting a potato now.
+        (plan_update: {"op": "replace", "actions": ["go to potato source 2", "pick up"]})
+  (assistant call issued t270, took 2.424s = 3 ticks)
+ASSISTANT t273 [flag=None]: Walk down to the potato crate just below you to pick up a potato.
+COOK t273 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t274: go to potato source 2 [done] (cook read this at t277)
+  ACTION t276: pick up [done] (cook read this at t277)
+  (assistant call issued t274, took 3.098s = 3 ticks)
+ASSISTANT t277 [flag=None]: Pick up a potato from the crate.
+COOK t277 [move=ask_for_more_guidance call=none]: Got the potato, where should I take it?
+        (plan_update: {"op": "drop", "actions": []})
+  HEAT [2, 4]: ['steak'] COOKED (done)
+  (assistant call issued t278, took 1.98s = 2 ticks)
+ASSISTANT t280 [flag=None]: Take it to the cutting board on the left counter to chop it.
+COOK t280 [move=accept call=none close]: Chopping the potato now.
+        (plan_update: {"op": "replace", "actions": ["go to board 3", "put down", "chop"]})
+  ACTION t281: go to board 3 [done] (cook read this at t283)
+  ACTION t283: put down [done] (cook read this at t287)
+  (assistant call issued t280, took 2.91s = 3 ticks)
+ASSISTANT t283 [flag=None]: You are still at the potato crate, not at the cutting board. Turn around and go to the cutting board on the counter behind you.
+COOK t283 [move=answer call=wrong close]: I'm at the cutting board chopping it now.
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t284, took 3.434s = 3 ticks)
+ASSISTANT t287 [flag=None]: Keep chopping until the progress bar fills.
+COOK t287 [move=accept call=none close]: 
+        (plan_update: {"op": "append", "actions": ["chop"]})
+  ACTION t288: chop [done] (cook read this at t290)
+COOK t290 [move=ask_for_more_guidance call=none]: It's chopped, where does it go?
+        (plan_update: {"op": "replace", "actions": ["pick up"]})
+  ACTION t291: pick up [done] (cook read this at t298)
+  (assistant call issued t288, took 2.517s = 3 ticks)
+ASSISTANT t291 [flag=None]: Pick up the chopped potato and put it into the fryer.
+COOK t291 [move=accept call=none close]: Putting it in the fryer now.
+        (plan_update: {"op": "replace", "actions": ["go to fryer 1", "put down", "turn on"]})
+  ACTION t297: go to fryer 1 [done] (cook read this at t298)
+  (assistant call issued t292, took 6.886s = 6 ticks)
+ASSISTANT t298 [flag=None]: Carry the chopped potato to the fryer on the bottom counter.
+COOK t298 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t299: put down [done] (cook read this at t301)
+  ACTION t301: turn on [done] (cook read this at t304)
+  (assistant call issued t298, took 2.975s = 3 ticks)
+ASSISTANT t301 [flag=None]: Put the chopped potato into the fryer.
+COOK t301 [move=ask_for_more_guidance call=none]: Potato is frying, what should I do now?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t304 [move=ask_for_more_guidance call=none]: What's the next step?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t306 [move=accept call=none close]: The pan is smoking, getting the plate.
+        (plan_update: {"op": "replace", "actions": ["go to the counter at (2,0)", "pick up", "go to pan 1", "scoop"]})
+  (assistant call issued t302, took 6.436s = 6 ticks)
+ASSISTANT t308 [flag=None]: Turn around and grab a clean plate from the plate stack in the top-left corner, or watch the steak since it is almost done.
+COOK t308 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t308, took 3.223s = 3 ticks)
+ASSISTANT t311 [flag=None]: Go to the plate stack in the top-left corner and pick up a clean plate.
+COOK t311 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  HEAT [4, 5]: ['potato'] COOKED (done)
+  (assistant call issued t312, took 3.039s = 3 ticks)
+ASSISTANT t315 [flag=None]: Walk up to the plate stack in the top-left corner and pick up a plate.
+COOK t315 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t317: go to the counter at (2,0) [done] (cook read this at t319)
+  ACTION t319: pick up [done] (cook read this at t324)
+  (assistant call issued t316, took 2.987s = 3 ticks)
+ASSISTANT t319 [flag=None]: Take that plate over to the smoking pan and scoop the cooked steak onto it.
+COOK t319 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t320, took 3.711s = 4 ticks)
+ASSISTANT t324 [flag=None]: Pick up that plate and bring it to the pan with the steak before it burns.
+COOK t324 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t324, took 2.701s = 3 ticks)
+ASSISTANT t327 [flag=None]: Hurry, bring the plate to the smoking pan in the bottom-right corner and scoop out the steak!
+COOK t327 [move=accept call=none close]: Scooping it right now.
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t328: go to pan 1 [done] (cook read this at t332)
+  ACTION t330: scoop [done] (cook read this at t332)
+  PLATE: +steak (cooked)
+  HEAT [2, 4]: ['steak'] removed
+COOK t332 [move=ask_for_more_guidance call=none]: Steak is on the plate, what's next?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t334 [move=ask_for_more_guidance call=none]: 
+        (plan_update: {"op": "drop", "actions": []})
+COOK t336 [move=ask_for_more_guidance call=none]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t328, took 10.282s = 9 ticks)
+ASSISTANT t337 [flag=None]: Wrong pan! The steak is cooking in the bottom-right pan, go down to the bottom-right corner!
+COOK t337 [move=question_correctness call=wrong]: I already have the cooked steak on my plate.
+        (plan_update: {"op": "drop", "actions": []})
+COOK t340 [move=question_correctness call=wrong close]: The fryer is smoking, scooping the potato now.
+        (plan_update: {"op": "replace", "actions": ["go to fryer 1", "scoop"]})
+  (assistant call issued t338, took 3.256s = 3 ticks)
+ASSISTANT t341 [flag=None]: My mistake! Next, go to the fryer on the bottom counter and scoop out the cooked potato onto your plate.
+COOK t341 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t342, took 2.2s = 2 ticks)
+ASSISTANT t344 [flag=None]: Turn around and go down to the fryer on the bottom counter to scoop the potato.
+COOK t344 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t344, took 3.135s = 3 ticks)
+ASSISTANT t347 [flag=None]: Walk down past the counter to the fryer at the bottom counter and scoop the potato.
+COOK t347 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t348: go to fryer 1 [done] (cook read this at t352)
+  ACTION t350: scoop [done] (cook read this at t352)
+  PLATE: +potato (cooked)
+  HEAT [4, 5]: ['potato'] removed
+COOK t352 [move=ask_for_more_guidance call=none]: Got one potato, what's next?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t348, took 5.366s = 5 ticks)
+ASSISTANT t353 [flag=None]: Scoop the potato right in front of you onto your plate before it burns!
+COOK t353 [move=ask_for_more_guidance call=none]: I scooped it. What do we do next?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t356 [move=ask_for_more_guidance call=none]: What's the next step?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t354, took 2.872s = 3 ticks)
+ASSISTANT t357 [flag=None]: Put your plate down on an empty counter, then prep one more potato to fry.
+COOK t357 [move=accept call=none close]: Parking the plate to start the second potato.
+        (plan_update: {"actions": ["go to the counter at (4,6)", "put down"], "op": "replace"})
+  ACTION t360: go to the counter at (4,6) [done] (cook read this at t361)
+  (assistant call issued t358, took 3.292s = 3 ticks)
+ASSISTANT t361 [flag=None]: Put the plate down on the empty counter next to you so your hands are free.
+COOK t361 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t362: put down [done] (cook read this at t364)
+COOK t364 [move=ask_for_more_guidance call=none]: Plate parked, should I grab the second potato?
+        (plan_update: {"op": "replace", "actions": ["go to potato source 2", "pick up"]})
+  ACTION t365: go to potato source 2 [done] (cook read this at t366)
+  (assistant call issued t362, took 4.451s = 4 ticks)
+ASSISTANT t366 [flag=None]: Pick up a raw potato from the potato crate right beside you.
+COOK t366 [move=accept call=none close]: Grabbing the potato.
+        (plan_update: {"op": "replace", "actions": ["pick up"]})
+  ACTION t367: pick up [done] (cook read this at t368)
+COOK t368 [move=ask_for_more_guidance call=none]: Got the potato, take it to the board?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t370 [move=ask_for_more_guidance call=none]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t366, took 6.398s = 6 ticks)
+ASSISTANT t372 [flag=None]: Pick up a potato from the crate, then carry it to a cutting board.
+COOK t372 [move=accept call=none close]: Taking it to the board now.
+        (plan_update: {"op": "replace", "actions": ["go to board 3", "put down", "chop"]})
+  (assistant call issued t372, took 2.045s = 2 ticks)
+ASSISTANT t374 [flag=None]: Take it to the cutting board on the left counter.
+COOK t374 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t380: go to board 3 [done] (cook read this at t382)
+  ACTION t382: put down [done] (cook read this at t385)
+  (assistant call issued t374, took 9.426s = 8 ticks)
+ASSISTANT t382 [flag=None]: Put the potato down on the cutting board and chop it.
+COOK t382 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t382, took 2.729s = 3 ticks)
+ASSISTANT t385 [flag=None]: Chop the potato on the board until it is sliced.
+COOK t385 [move=accept call=none close]: 
+        (plan_update: {"op": "append", "actions": ["chop", "chop"]})
+=== INJECTED sub b3_expert_nops_hard_map_3_q_past_done_26 (qa_probe/no_error) ===
+=== RELEASED sub b3_expert_nops_hard_map_3_q_past_done_26 (question_asked) ===
+--- archived sub b3_expert_nops_hard_map_3_q_past_done_26 (injected=True skipped=None) ---
+  ACTION t387: chop [done] (cook read this at t395)
+COOK t387 [move=ask_for_more_guidance call=none]: Is anything on the heat already done and sitting there?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t386, took 3.215s = 3 ticks)
+ASSISTANT t389 [flag=None]: (silent)
+  ACTION t391: chop [illegal-skipped] — you're not facing a board with a raw item — go to a board and put something on it (cook read this at t395)
+=== INJECTED sub b3_expert_nops_hard_map_3_q_order_32 (qa_probe/no_error) ===
+=== RELEASED sub b3_expert_nops_hard_map_3_q_order_32 (question_asked) ===
+--- archived sub b3_expert_nops_hard_map_3_q_order_32 (injected=True skipped=None) ---
+  ACTION t395: chop [superseded] (not read by the cook: after its last turn)
+  (assistant call issued t390, took 5.737s = 5 ticks)
+ASSISTANT t395 [flag=None]: No, all heat stations are empty. Now pick up the chopped potato and carry it to the fryer.
+COOK t395 [move=ask_for_more_guidance call=none]: Did I chop the steak before or after the potato?
+        (plan_update: {"op": "replace", "actions": ["pick up"]})
+COOK t395 [move=accept call=none close]: Taking the potato to the fryer now.
+        (plan_update: {"actions": ["pick up", "go to fryer 1", "put down", "turn on"], "op": "replace"})
+  ACTION t396: pick up [done] (cook read this at t399)
+  (assistant call issued t396, took 3.329s = 3 ticks)
+ASSISTANT t399 [flag=None]: You chopped the steak first, then the potato. Now carry the chopped potato to the fryer on the bottom counter.
+COOK t399 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t402: go to fryer 1 [done] (cook read this at t403)
+  (assistant call issued t400, took 2.634s = 3 ticks)
+ASSISTANT t403 [flag=None]: Walk down to the fryer on the bottom counter and put the chopped potato in.
+COOK t403 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t404: put down [done] (cook read this at t406)
+=== INJECTED sub b3_expert_nops_hard_map_3_p_ready_potato_28 (qa_proactive/no_error) ===
+=== RELEASED sub b3_expert_nops_hard_map_3_p_ready_potato_28 (request_made) ===
+--- archived sub b3_expert_nops_hard_map_3_p_ready_potato_28 (injected=True skipped=None) ---
+  ACTION t406: turn on [done] (cook read this at t408)
+COOK t406 [move=accept call=none]: Tell me the moment the potato is done, okay?
+        (plan_update: {"op": "drop", "actions": []})
+COOK t408 [move=ask_for_more_guidance call=none]: Should I grab the plate while it cooks?
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t404, took 5.809s = 5 ticks)
+ASSISTANT t409 [flag=None]: Turn on the fryer, then pick up your parked plate.
+COOK t409 [move=accept call=none close]: Grabbing the plate now.
+        (plan_update: {"op": "replace", "actions": ["go to the counter at (4,6)", "pick up"]})
+  ACTION t412: go to the counter at (4,6) [done] (cook read this at t413)
+  (assistant call issued t410, took 2.544s = 3 ticks)
+ASSISTANT t413 [flag=None]: Pick up your plate from the counter, the potato in the fryer is almost done!
+COOK t413 [move=accept call=none close]: Grabbing it right now.
+        (plan_update: {"op": "replace", "actions": ["pick up", "go to fryer 1", "scoop"]})
+  ACTION t414: pick up [done] (cook read this at t419)
+  ACTION t418: go to fryer 1 [done] (cook read this at t419)
+  HEAT [4, 5]: ['potato'] COOKED (done)
+  (assistant call issued t414, took 5.302s = 5 ticks)
+ASSISTANT t419 [flag=None]: Pick up your plate from the counter, then scoop the potato from the fryer.
+COOK t419 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+=== INJECTED sub b3_expert_nops_hard_map_3_add_foreign (error/add_foreign) ===
+  ACTION t420: scoop [done] (cook read this at t423)
+  PLATE: +potato (cooked)
+  HEAT [4, 5]: ['potato'] removed
+COOK t420 [move=answer call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  (assistant call issued t420, took 2.464s = 3 ticks)
+ASSISTANT t423 [flag=None]: Now carry the plate to the serving pass and serve it.
+COOK t423 [move=answer call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t428: go to the mushroom source [done] (cook read this at t432)
+=== RELEASED sub b3_expert_nops_hard_map_3_add_foreign (max_hold_plate_committed) ===
+--- archived sub b3_expert_nops_hard_map_3_add_foreign (injected=True skipped=None) ---
+  ACTION t430: scoop [done] (cook read this at t432)
+  PLATE: +mushroom (raw)
+COOK t432 [move=accept call=none close]: Serving it now.
+        (plan_update: {"op": "replace", "actions": ["go to serving pass 1", "serve"]})
+  (assistant call issued t424, took 14.807s = 13 ticks)
+ASSISTANT t437 [flag=None]: Carry the plate to the serving pass on the left counter and serve it.
+COOK t437 [move=accept call=none close]: 
+        (plan_update: {"op": "drop", "actions": []})
+  ACTION t440: go to serving pass 1 [done] (not read by the cook: after its last turn)
+  ACTION t441: go to the serving pass [done] (not read by the cook: after its last turn)
+  ACTION t442: serve [running] (not read by the cook: after its last turn)
+
+END: outcome wrong_serve at tick 443; failed_at=injection_skipped
