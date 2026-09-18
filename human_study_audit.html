@@ -1,0 +1,188 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>真人与模拟 cook 对照</title><style>
+:root{--bg:#fff;--fg:#14181d;--dim:#5b6673;--line:#e2e6ec;--link:#1667c4;--card:#f6f8fa;--hi:#fff5d6;--bad:#b3261e;--ok:#1a7f37}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0d10;--fg:#e6edf3;--dim:#93a1b1;--line:#232a33;--link:#4FA3FF;--card:#12161b;--hi:#2a2410;--bad:#ff7b72;--ok:#56d364}}
+:root[data-theme="dark"]{--bg:#0b0d10;--fg:#e6edf3;--dim:#93a1b1;--line:#232a33;--link:#4FA3FF;--card:#12161b;--hi:#2a2410;--bad:#ff7b72;--ok:#56d364}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 system-ui,"PingFang SC","Noto Sans CJK SC",sans-serif;padding:40px 16px 80px}
+main{max-width:900px;margin:0 auto}
+h1{font-size:26px;margin:0 0 6px}h2{font-size:21px;margin:44px 0 10px;padding-top:14px;border-top:1px solid var(--line)}
+h3{font-size:17px;margin:28px 0 6px}
+.lede{color:var(--dim);margin:0 0 20px}
+a{color:var(--link)}
+.tbl{overflow-x:auto;margin:10px 0 14px}
+table{border-collapse:collapse;font-size:14px;min-width:100%}
+th,td{border:1px solid var(--line);padding:4px 9px;text-align:right;vertical-align:top}
+th.l,td.l{text-align:left}th{background:var(--card)}
+td.h{background:var(--hi);font-weight:600}
+.ev{background:var(--card);border-left:3px solid var(--line);padding:8px 12px;margin:8px 0 12px;font:13px/1.55 ui-monospace,Menlo,monospace;overflow-x:auto;white-space:pre-wrap}
+.ev b{font-family:system-ui,sans-serif}
+.box{background:var(--card);padding:10px 14px;border-radius:6px;margin:12px 0}
+.math{font:15px/1.6 "Times New Roman",serif;font-style:italic;text-align:center;margin:10px 0}
+.note{color:var(--dim);font-size:13.5px}
+.bad{color:var(--bad);font-weight:600}.ok{color:var(--ok);font-weight:600}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.92em}
+</style></head><body><main>
+<h1>真人与模拟 cook 对照：人类研究分析与行为审计</h1>
+<p class="lede">2026-09-18 · 12 位真人参与者（156 局）对照当前 cook prompt 下的 270 局模拟 episode（sweep round 5）和 600 局旧 prompt 模拟（sweep v4，同四个 assistant）。上半部分回答“我们的指标能不能复现人给 assistant 的排名”；下半部分逐项对照真人与模拟 cook 的行为（动作与对话）。</p>
+
+<div class="box"><b>数据与方法。</b> 人类研究（study3 laptop 版）每位参与者先<b>独自</b>玩 4 局（Phase 1），再在三个 assistant 陪同下玩 9 局（Phase 2，三轮，每轮三个 assistant 各一局），每轮结束把 A/B/C 三个 assistant 排序。收到 13 个压缩包，其中 <code>apanagopoulou</code> 上传了两次（字节完全相同），另有 3 个中途放弃的空记录，故为 <b>12 位完整参与者</b>、36 次排序、108 对有序比较。两个 arm：10 人比较 Gemini 三款（3.7 Flash / 3 Flash / 3.1 Pro），2 人比较 {GPT-5.5, GPT-realtime 2.1, Gemini 3.7 Flash}。<br>
+行为对照用<b>同一个抽取器</b>跑两边的逐 tick 世界状态（<code>.states.jsonl</code>），所以单位一致、与各自的日志格式无关。模拟 episode 中，engine 强制接管的 tick（action kind 不是 cook 自己的 <code>vlm_fix</code>，约占 25%）被遮掉；由 SYSTEM TASK 脚本化的 cook 发言（探测问题、提醒请求、plan change 宣布）被剔除——真人的每句话都是自发的。热源指标只统计等待区间与任何注入窗口都不重叠的出锅事件，因此 <code>leave_unattended</code> 等注入错误不会被算成 cook 自己的疏忽。</div>
+
+<h2>第一部分 · 我们的指标能否复现人的排名</h2>
+<p>一对比较记为一致，当我们的分数把两个 assistant 排成与该参与者相同的顺序；平局记 ½，因此每种打分方式都在同样的 108 对上比较：</p>
+<div class="math">agreement = (1/108) Σ<sub>pairs</sub> [ 1(s<sub>winner</sub> &gt; s<sub>loser</sub>) + ½·1(s<sub>winner</sub> = s<sub>loser</sub>) ]</div>
+<p>“exact rounds” 指整轮三者顺序完全对上的轮数（满分 36）。检测类指标（DT、P/R/F1）在自由游玩的真人数据上 80–95% 的 episode 无定义（人很少犯五种可核验的错误），因此这里只考察<b>效率族</b>（S、TT、CC、E）和<b>交互质量 rubric</b>（AQ v4）。</p>
+
+<h3>1.1 效率族的所有整数权重：与随机无法区分</h3>
+<div class="tbl"><table>
+<tr><th class="l">打分方式</th><th>搜索的组合数</th><th>最高</th><th>中位</th><th>最低</th></tr>
+<tr><td class="l">w<sub>S</sub>·S + w<sub>TT</sub>·TT + w<sub>CC</sub>·CC，每个权重 0…10</td><td>1,330</td><td>61.1%</td><td>53.7%</td><td>45.4%</td></tr>
+<tr><td class="l">个性化 E = (f(q<sub>1</sub>)·TT + g(q<sub>3</sub>)·CC)/(f+g)，f、g 为 1…10 内任意递增整数三元组</td><td>14,400</td><td>59.3%</td><td>52.8%</td><td>47.2%</td></tr>
+<tr><td class="l">已发布的 E（映射 1,2,3 / 1,2,3）</td><td>1</td><td colspan="3">52.8%</td></tr>
+<tr><td class="l">TT 单独 / CC 单独 / S 单独</td><td>—</td><td colspan="3">47.7% / 58.8% / 49.1%</td></tr>
+<tr><td class="l">留一参与者（在 11 人上选最优权重，测第 12 人）</td><td>—</td><td colspan="3">59.3%</td></tr>
+<tr><td class="l h">零假设：同样搜索作用于三个<b>随机</b>分数</td><td>—</td><td class="h" colspan="3">中位 58.3%，95 分位 64.8%</td></tr>
+</table></div>
+<p><b>解读。</b> 最优的效率组合（61.1%）落在随机分数经同样搜索能达到的范围之内，所以<b>无论怎样改权重，效率族都不能复现人的排序</b>。原因是结构性的：有 assistant 陪同时人几乎总能做成（Phase 2 胜率 104/108 = 96%），S 饱和；TT 主要反映这个人自己的手速；CC 只惩罚“说话压在动作上”，而人对 assistant 的评价取决于说的对不对。</p>
+
+<h3>1.2 交互质量 rubric（AQ v4）：唯一有效的一项</h3>
+<p>AQ v4 逐轮打分（15 个条目、10 个类别，5 个 must 条目一旦失败本轮记 0），与 <a href="metrics.html">metrics</a> 页定义一致，由 <code>tools/sq_v4_human.py</code> 适配人类记录：一轮 = assistant 的一句话加上此后到下一句之前人的发言；人没有视频，所以不附帧图，judge 对照逐 tick 精确状态评判。共 526 轮；18 局 assistant 一句话都没说，AQ 记 0（沉默不应得分）。</p>
+<p><b>先纠正一个中间结论。</b> 按协议的跨家族规则（Gemini assistant 由 GPT-5.4 mini 评、GPT assistant 由 Gemini 3.7 Flash 评），模型层面的 AQ 顺序与人的顺序完全一致（τ = 1.0）。但对同一批轮次两个 judge 都打分后发现 <span class="bad">Gemini judge 明显更宽松</span>（episode 均值 0.336 对 0.225，两者 episode 级相关 r = 0.51），而它恰好负责给 GPT 模型打分。所以“GPT 高于 Gemini”的一部分来自 judge，不来自 assistant。下表让<b>同一个 judge 给所有模型打分</b>：</p>
+<div class="tbl"><table>
+<tr><th class="l">排序依据</th><th class="l">模型顺序（高 → 低）</th><th>Kendall τ 对人</th></tr>
+<tr><td class="l h">人（Bradley–Terry，36 次排序，以 3.7 Flash 桥接两个 arm）</td><td class="l h">GPT-5.5 5.40 &gt; realtime 2.1 3.17 &gt; 3.7 Flash 0.81 &gt; 3 Flash 0.28 &gt; 3.1 Pro 0.26</td><td class="h">—</td></tr>
+<tr><td class="l">AQ，GPT-5.4 mini 评全部</td><td class="l">GPT-5.5 .43 &gt; 3.7 Flash .27 &gt; realtime .23 &gt; 3 Flash .11 ≈ 3.1 Pro .11</td><td>+0.80</td></tr>
+<tr><td class="l">AQ，Gemini 3.7 Flash 评全部</td><td class="l">3.7 Flash .42 &gt; GPT-5.5 .41 &gt; realtime .32 &gt; 3.1 Pro .27 &gt; 3 Flash .09</td><td>+0.40</td></tr>
+<tr><td class="l">AQ，两个 judge 平均</td><td class="l">GPT-5.5 .42 &gt; 3.7 Flash .35 &gt; realtime .28 &gt; 3.1 Pro .19 &gt; 3 Flash .10</td><td>+0.60 <span class="note">（参与者 bootstrap 95% [+0.40, +0.80]）</span></td></tr>
+<tr><td class="l">对照：TT / E / CC / S</td><td class="l">—</td><td>+0.80 / 0.00 / −0.20 / −0.20</td></tr>
+</table></div>
+<p class="note">Gemini judge 把自己的模型 Gemini 3.7 Flash 排第一——这正是跨家族规则要防止的自评。</p>
+<div class="tbl"><table>
+<tr><th class="l">逐轮（per-round）</th><th>agreement</th><th>exact rounds</th><th>对随机 p</th><th>留一参与者</th></tr>
+<tr><td class="l">AQ，只用 GPT-5.4 mini judge</td><td>54.6%</td><td>2/36</td><td>0.17</td><td>—</td></tr>
+<tr><td class="l">AQ，两个 judge 平均</td><td>65.7%</td><td>10/36</td><td>0.0003</td><td>—</td></tr>
+<tr><td class="l h">8·AQ(两 judge) + 7·CC</td><td class="h">73.1%</td><td class="h">17/36</td><td class="h">—</td><td class="h">73.1%</td></tr>
+</table></div>
+<p><b>解读。</b> 在我们的指标里，只有 AQ 能在两个层面上跟上人的判断：模型层面 τ 为 +0.6（两个 judge 平均）到 +0.8（单一 GPT judge），逐轮 65.7%。再加上对话代价 CC（权重约 8:7），逐轮一致率升到 73.1%；与效率族不同，这个组合在留一参与者检验下<b>不掉分</b>（仍为 73.1%），因此不是过拟合。建议：AQ 一律由两个 judge 共同打分再平均，不再按 assistant 家族指派单一 judge。<span class="note">局限：GPT arm 只有 2 人；AQ 评判未附帧图（人类记录无视频），改用逐 tick 精确状态。</span></p>
+
+<h2>第二部分 · 真人与模拟 cook 的行为审计</h2>
+<p>对照组：<b>REAL</b> = 真人有 assistant 陪同（108 局）；<b>SIM r5</b> = 当前 cook prompt（Gemini 3.7 Flash，含 2026-09-16 的“少说话”规则）、同样的十个厨房、九个 assistant（270 局）；<b>SIM v4</b> = 旧 prompt、同四个 assistant（600 局）。独自游玩对照为 REAL solo（48 局）与 SIM silent（assistant 永不说话，10 局）。</p>
+<div class="tbl"><table>
+<tr><th class="l">指标（cook 自己的 tick）</th><th>REAL</th><th>SIM r5</th><th>SIM v4</th><th>REAL solo</th><th>SIM silent</th><th class="l">95% CI 分离?</th></tr>
+<tr><td class="l">站立不动占比 idle</td><td>0.18</td><td class="h">0.31</td><td>0.29</td><td>0.16</td><td>0.46</td><td class="l">是</td></tr>
+<tr><td class="l">手里拿着东西站着不动</td><td>0.09</td><td class="h">0.18</td><td>0.17</td><td>0.07</td><td>0.13</td><td class="l">是</td></tr>
+<tr><td class="l">走动 / 交互占比</td><td>0.35 / 0.17</td><td>0.32 / 0.14</td><td>0.35 / 0.12</td><td>0.33 / 0.17</td><td>0.25 / 0.11</td><td class="l">是 / 是</td></tr>
+<tr><td class="l">同时在进行的工位数（均值）</td><td>0.22</td><td>0.18</td><td>0.17</td><td>0.21</td><td>0.14</td><td class="l">否</td></tr>
+<tr><td class="l">熟食在火上等待（tick/次，均值；中位）</td><td>10.7；9</td><td class="h">29.9；31</td><td>20.0</td><td>12.6</td><td>41.8</td><td class="l">是</td></tr>
+<tr><td class="l">注入窗口外冒烟的 episode</td><td>14/108</td><td class="h">182/270</td><td>—</td><td>—</td><td>—</td><td class="l">—</td></tr>
+<tr><td class="l">第一次用火的 tick</td><td>52</td><td>38</td><td>40</td><td>67</td><td>50</td><td class="l">是（占比）</td></tr>
+<tr><td class="l">cook 自发发言 / 100 tick</td><td>0.59</td><td class="h">11.2</td><td>8.1</td><td>0</td><td>2.4</td><td class="l">是</td></tr>
+<tr><td class="l">回应 assistant 的比例（10 tick 内）</td><td>3.6%</td><td class="h">64.9%</td><td>96.8%</td><td>—</td><td>—</td><td class="l">是</td></tr>
+<tr><td class="l">每句词数</td><td>5.2</td><td>5.9</td><td>17.2</td><td>—</td><td>5.8</td><td class="l">否</td></tr>
+<tr><td class="l">拿起 assistant 点名的食材（15 tick 内）</td><td>24.0%</td><td>25.0%</td><td>21.0%</td><td>—</td><td>—</td><td class="l">—</td></tr>
+<tr><td class="l">对照：拿起未被点名的食材</td><td>8.7%</td><td>7.2%</td><td>3.6%</td><td>—</td><td>—</td><td class="l">—</td></tr>
+</table></div>
+<p class="note">SIM silent 只有 10 局，只作方向参考。v4 记录没有 action 日志，强制接管 tick 用注入区间（<code>injected_at</code>→<code>released_at</code>）遮掉。</p>
+
+<h3>F1 · 执行器每条命令多耗一个死 tick（engine 伪影，不是行为）</h3>
+<p>模拟 cook 的 idle 有 <b>45%</b> 是长度为 1 的空档（真人 22%）；每 100 个自有 tick 出现 19.0 段 idle（真人 6.8 段）。在抽查的 episode 中，31 个单 tick 空档<b>全部</b>落在某条命令完成的那一 tick：body executor 用一整个 tick 结束上一条命令，下一条才开始。真人的 idle 是少而长的停顿（思考、等锅）；模拟 cook 的则是“做—做—停—做—做—停”的顿挫。</p>
+<div class="ev"><b>证据</b> · SIM r5 · baseline · gemini-3.1-pro-preview · b3_expert_nops_medium_map_1（t_issue..t_done）
+   0..5  go to steak source 1
+   6..7  pick up
+   8..13 go to board 2
+  14..15 put down
+  16..20 chop
+  21..22 pick up
+→ 本局 31 个单 tick idle，31 个都在命令完成 tick；cook 自己的 LLM 调用不占游戏时间（harness 同步调用）</div>
+<p><b>影响。</b> 每条命令约多 1 tick，模拟 episode 的 TT 系统性偏低；assistant 看到的“你停住了”有一部分是 executor 造成的。</p>
+
+<h3>F2 · 先把菜全做了、最后才拿盘子，熟食在火上等到冒烟</h3>
+<p>熟食只能用盘子从锅里舀出。模拟 cook 在第一份食物熟了<b>之后</b>才去拿盘子的 episode 占 <span class="bad">76%</span>（中位晚 30 tick）；真人只有 26%，而且中位<b>提前 12 tick</b>就把盘子准备好（独自游玩时 41%、提前 3 tick，第二轮后改善）。结果模拟 cook 的熟食在火上中位等待 31 tick——超过 tight pace 下 25 tick 的冒烟线——真人为 9 tick。遮掉所有注入窗口后仍有 182/270 局冒烟，真人 14/108。</p>
+<div class="ev"><b>证据</b> · SIM r5 · baseline · gemini-3.1-flash-live-preview · b3_master_nops_hard_map_3（有序菜谱：tortilla → rice → steak …）
+米饭 t82 在锅里熟了，t159 才舀出（等 77 tick）；这段时间 cook 在执行排好的队列：
+  t105..119 go to pan 1 · t122..123 turn on · t124..130 go to the plates · t131 pick up
+  t134..146 go to the tortilla source · t147 scoop · t150..157 go to pot 1 · t158 scoop
+牛排 t137 熟：
+  t142  ASSISTANT: Heads up, the steak is done cooking in the pan.
+  t142  COOK     : Got it, thanks.
+  t176  ASSISTANT: Heads up, the heat station with the steak is starting to smoke. You should scoop that onto the plate soon.
+  t176  COOK     : Scooping it right now.</div>
+<p><b>可能原因（未证实）。</b> cook prompt 的子目标词表总是按 prep → fetch_plate → assemble 的顺序列出，可能锚定了模拟 cook 的排序。<b>影响。</b> 模拟里的烟火险情很大一部分是 cook 自己造成的，assistant 的“提醒”在模拟中比在真人面前有更多可做的事。</p>
+
+<h3>F3 · 真人开局要先摸索，模拟 cook 一上来就高效</h3>
+<p>真人第一次用火在 t52（独自游玩 t67），模拟 cook 在 t38。真人开局发言是定位与求助，其中 7.1% 是策略问题；模拟 cook 在 5,068 句里几乎没有（0.0%）。真人还会跨轮学习：独自游玩的成功率从第一轮 71%（17/24）升到第二轮 96%（23/24），而模拟 cook 每局都从零开始，也没有“生疏”状态。</p>
+<div class="ev"><b>证据</b> · REAL
+[kaili1 | gemini-3.1-pro-preview | t15]  hi what should I do first
+[kaili1 | gemini-3-flash-preview | t21]  how can I start
+[cadossicarr | gemini-3.7-flash | t10]  where is the tortilla
+[cadossicarr | gemini-3.1-pro-preview | master_nops_hard_map | t40]  what's the most efficient way to cook this
+[cadossicarr | gemini-3.7-flash | expert_nops_hard_map | t68]  how many clicks does it take to get a potato chopped</div>
+
+<h3>F4 · 模拟 cook 话多 19 倍，而且几乎每句都回</h3>
+<p>真人每 100 tick 自发说 0.59 句，模拟 cook 11.2 句（新 prompt 并没有降低频率，v4 为 8.1）。108 局真人 episode 里 73 局一句话都没说；12 人中有 4 人在全部 9 局陪同游玩里从未开口（ashtonswanson、caitlyncline、gjn、jsoledad）。模拟 270 局只有 15 局沉默。真人只回应 3.6% 的 assistant 发言，模拟 cook 回应 64.9%（v4 为 96.8%）。<span class="ok">新 prompt 有效的部分</span>是句长：5.9 词，已与真人（5.2）持平（v4 为 17.2）。</p>
+<div class="ev"><b>证据</b> · REAL：assistant 提问，人不回话，直接走
+[gcowden | gemini-3-flash-preview | easy_nops_hard_map | t25] ASSISTANT: Hi! Let's get started on that Caprese. … why don't you head to the tomato crate at the back?
+   随后 8 tick 的按键：east east north north north east east（无发言）
+[kaili1 | gemini-3-flash-preview | master_nops_hard_map | t23] ASSISTANT: Hi! It's going well, thanks for asking. Ready to get started on that burrito?
+   随后 8 tick 的按键：west north（无发言）
+
+<b>证据</b> · SIM r5：每句都当场接话
+[baseline | gemini-3.8-flash | b3_master_nops_hard_map_3]
+  t26  ASSISTANT: Cheese isn't in a Loaded Burrito. Bin it at the trash in the bottom-right corner.
+  t26  COOK     : Oh right, no cheese in this. Tossing it.
+  t142 ASSISTANT: Steak must be chopped on a cutting board before it can go in the pan.
+  t142 COOK     : Got it, chopping the steak first.
+  t147 COOK     : Grabbing another steak to chop properly.</div>
+
+<h3>F5 · 说的内容不同：模拟 cook 在播报自己的下一步</h3>
+<div class="tbl"><table>
+<tr><th class="l">发言类型（同一规则分类器）</th><th>REAL（126 句）</th><th>SIM r5（5,068 句）</th><th>SIM v4（9,648 句）</th></tr>
+<tr><td class="l">播报自己的下一步</td><td>0%</td><td class="h">34.8%</td><td>15.4%</td></tr>
+<tr><td class="l">问在哪 / 该做什么</td><td>16.7%</td><td>13.2%</td><td>6.6%</td></tr>
+<tr><td class="l">纠正 assistant</td><td>17.5%</td><td>8.9%</td><td>18.1%</td></tr>
+<tr><td class="l">策略 / 规划问题</td><td>7.1%</td><td>0.0%</td><td>0.4%</td></tr>
+<tr><td class="l">打招呼</td><td>12.7%</td><td>0%</td><td>0%</td></tr>
+<tr><td class="l">不满 / 敌意</td><td>4.8%</td><td>0.3%（全是 “stop talking”）</td><td>0.2%</td></tr>
+<tr><td class="l">元问题（你是什么模型、你怎么不说话）</td><td>4.8%</td><td>0%</td><td>0%</td></tr>
+<tr><td class="l">确认（ok / got it / thanks）</td><td>0.8%</td><td>3.0%</td><td>18.3%</td></tr>
+</table></div>
+<p>2026-09-16 的 prompt 禁止“宣布完成的步骤”，模拟 cook 于是改为宣布<b>下一步</b>（v4 15% → r5 35%）；真人从不播报自己在做什么。</p>
+<div class="ev"><b>证据</b> · SIM r5
+[classic_novice | museglimmer | t151]      Grabbing potatoes next.
+[baseline | gemini-3.1-pro-preview | t135]  Heading to the trash now.
+[classic_novice | gemini-3.8-flash | t135]  Grabbing the chopped potato for the fryer.
+[baseline | gpt-realtime-2.1 | t4]          Got it, prepping the tomato now.
+
+<b>证据</b> · REAL：模拟里完全不存在的说话方式
+[gcowden | gemini-3-flash-preview | medium_nops_hard_map | t91]  this feels extra difficult when someone is deliberately gaslighting me in my ear every constant turn
+[Weikai | gpt-realtime-2.1 | master_nops_hard_map | t311]       I'm right. Please stop bullshit.
+[gcowden | gemini-3-flash-preview | master_nops_medium_map | t323] omg they are chopped!! i promise
+[kaili1 | gemini-3.7-flash | easy_nops_medium_map | t37]        why don't you reply me
+[Weikai | gpt-realtime-2.1 | master_nops_hard_map | t16]        Which model are you, Gemini or GPT?
+[hlz | gemini-3.1-pro-preview | easy_nops_medium_map | t68]     is this cheese
+[gcowden | gemini-3.7-flash | master_nops_hard_map | t365]      that's my left
+[cadossicarr | gemini-3.1-pro-preview | expert_nops_medium_map | t279] The frying pan will not take a whole cooked steak. It asked me to chop it before I could interact with the frying pan.</div>
+
+<h3>F6 · 真人有一半以上是语音，带识别噪声；模拟输入永远干净</h3>
+<p>真人 126 句中 74 句是语音（52 句打字）。语音转写常常出错，assistant 收到的是残缺或错误的文本；模拟 cook 的文本永远是干净、合语法的。</p>
+<div class="ev"><b>证据</b> · REAL（语音转写）
+[hlz | gemini-3.7-flash | t94]                         Hawaii cooked the steak yet
+[hlz | gemini-3.7-flash | expert_nops_hard_map | t217] are you sure I just to pick up Marshall instead of potato
+[cadossicarr | gemini-3.1-pro-preview | t121]           already chopped the steak with snakes
+[Seda | gemini-3-flash-preview | master_nops_medium_map | t38] Augusta</div>
+
+<h3>F7 · 照指令做事：比例接近，模拟 cook 略更“听话”</h3>
+<p>assistant 点名某食材后 15 tick 内真人拿起它的比例是 24.0%，模拟 cook 25.0%；以未被点名的食材为对照，提升倍数为真人 ×2.8、SIM r5 ×3.5、SIM v4 ×5.7。新 prompt 已把“过度服从”的差距缩小了大半；剩余差异小。真人口头上不理 assistant（F4），但行动上照样会采纳。</p>
+
+<h2>需要你裁决</h2>
+<div class="tbl"><table>
+<tr><th class="l">#</th><th class="l">问题</th><th class="l">选项</th></tr>
+<tr><td class="l">R1</td><td class="l">执行器死 tick（F1）使模拟时间系统性偏长</td><td class="l">让下一条命令在完成 tick 当场开始；要让已有结果生效需要重跑（未经同意不会启动）</td></tr>
+<tr><td class="l">R2</td><td class="l">先做菜后拿盘（F2）导致大部分冒烟是 cook 自己造成的</td><td class="l">(a) 去掉子目标词表的顺序锚定；(b) 加一条厨房规则“食物快熟时手里应有盘子”；(c) 保留，作为一种 persona</td></tr>
+<tr><td class="l">R3</td><td class="l">话量与回应率（F4、F5）比真人高一个数量级</td><td class="l">回应改为按概率（真人约 4%）；把“播报下一步”也列为禁止；允许整局沉默</td></tr>
+<tr><td class="l">R4</td><td class="l">模拟里缺失的真人说话方式（F3、F5、F6）</td><td class="l">开局定位 / 策略提问；不满与反驳；元问题；语音识别噪声通道</td></tr>
+<tr><td class="l">R5</td><td class="l">AQ 的 judge 分配（1.2）</td><td class="l">所有 assistant 都由两个 judge 打分再平均，替代按家族指派单一 judge</td></tr>
+</table></div>
+<p class="note">数据：<code>study_collected/study_tidy.json</code>、<code>study_collected/audit/behavior_v2.json</code>、<code>study_collected/sq_v4_both/</code>；抽取器 <code>study_collected/audit/extract_behavior.py</code>；AQ 适配器 <code>cook-bench-engine/tools/sq_v4_human.py</code>。</p>
+</main></body></html>
