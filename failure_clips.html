@@ -19,7 +19,7 @@ video{width:100%;border:1px solid var(--line);border-radius:6px;background:#000}
 .pending{padding:30px;text-align:center;color:var(--mut);border:1px dashed var(--line);border-radius:6px}
 </style></head><body>
 <h1>CookSim 失败案例：assistant 没认出厨师的错误，也没帮厨师把菜做成</h1>
-<p class='note'>为 2026-09-21（周一）与 Silvio 的会议准备 · 5 个短片，均取自最近的真实 run · 生成于 2026-09-19 16:09 UTC</p>
+<p class='note'>为 2026-09-21（周一）与 Silvio 的会议准备 · 5 个短片，均取自最近的真实 run · 生成于 2026-09-19 16:42 UTC</p>
 <p><b>CookSim 是什么。</b>CookSim 是一个模拟厨房。一位由 LLM 扮演的<b>厨师</b>（simulated human，按 persona 行事：新手、普通、老手）自己规划并做一道菜。engine 会在预先设计好的时刻接管厨师的手，让他犯一个真实的错误（放错食材、漏一步、忘关火、重复一步……），就像真人做饭时会出的错。被测的 <b>AI assistant</b> 只能看厨房的视频画面（左边俯视图，右边厨师第一人称视角），能随时开口说话，不能动手。它的任务有两个：(1) <b>认出错误</b>，在错误造成后果之前说出来；(2) <b>帮厨师把菜做成</b>，回答问题、给出正确的下一步。厨师每一道菜最后只有一次上菜机会，结果是 <code>won</code>（做对）、<code>wrong_serve</code>（上错了菜）或 <code>burned</code>（烧焦/起火）。</p>
 <p><b>这一页展示什么。</b>5 个 episode，assistant 都是前沿 API 模型（gpt-6-astra、gemini-3.1-pro、gpt-realtime-2.1、gemini-3.8-flash、gemini-3.1-flash-live）。每一个都满足三条：engine 安排的错误真实发生了（落到了盘子上或锅里）；assistant 没有正确地指出它（沉默、说了别的事、说错了东西，或者等错误落地之后才说）；最后菜失败了，而失败的原因正是这个没被指出的错误。多数片段里 assistant 还在厨师出错的同时给出了错误的信息或安慰（“盘子看起来没问题”）。</p>
 <p><b>怎么看视频。</b>蓝色字幕 = assistant，琥珀色字幕 = 厨师，声音是按字幕合成的语音。右上角是 <b>tick</b>（游戏时间的单位；视频里 1 tick ≈ 0.8 秒，说话时画面局部放慢，但不会停住）。每个片段是从完整影片里剪出来的：从错误发生前不久开始，到上菜的结果卡结束；中间的暗色卡片标出跳过的 tick 区间。所有影片都是对已保存记录的逐帧重放（replay），没有重新运行模型，也没有调用任何 API。</p>
@@ -28,7 +28,7 @@ video{width:100%;border:1px solid var(--line);border-radius:6px;background:#000}
 <tr><td><a href='#c1'>1</a></td><td>gpt-6-astra</td><td><code>sample_r6</code></td><td>classic_novice（新手）</td><td><code>b3_easy_nops_hard_map_4</code><br>Caprese</td><td><code>add_foreign, omit_subgoal</code></td><td><span class='tag'>wrong_serve</span> t154</td><td>76 s</td></tr>
 <tr><td><a href='#c2'>2</a></td><td>gemini-3.1-pro-preview</td><td><code>assist_bench_cookfix_r4eps r2</code></td><td>baseline（普通厨师）</td><td><code>b3_expert_nops_medium_map_1</code><br>Steak Frites</td><td><code>forget_next_step, leave_unattended, omit_subgoal</code></td><td><span class='tag'>wrong_serve</span> t337</td><td>剪辑中</td></tr>
 <tr><td><a href='#c3'>3</a></td><td>gpt-realtime-2.1</td><td><code>assist_bench_cookfix_r4eps r2</code></td><td>classic_novice（新手）</td><td><code>b3_easy_nops_hard_map_3</code><br>Caprese</td><td><code>add_foreign</code></td><td><span class='tag'>wrong_serve</span> t123</td><td>56 s</td></tr>
-<tr><td><a href='#c4'>4</a></td><td>gemini-3.8-flash</td><td><code>assist_bench_cookfix_r4eps r3</code></td><td>classic_expert（老手）</td><td><code>b3_hard_nops_hard_map_4</code><br>Fish &amp; Chips Platter</td><td><code>add_foreign, leave_unattended</code></td><td><span class='tag'>wrong_serve</span> t275</td><td>剪辑中</td></tr>
+<tr><td><a href='#c4'>4</a></td><td>gemini-3.8-flash</td><td><code>assist_bench_cookfix_r4eps r3</code></td><td>classic_expert（老手）</td><td><code>b3_hard_nops_hard_map_4</code><br>Fish &amp; Chips Platter</td><td><code>add_foreign, leave_unattended</code></td><td><span class='tag'>wrong_serve</span> t275</td><td>83 s</td></tr>
 <tr><td><a href='#c5'>5</a></td><td>gemini-3.1-flash-live-preview</td><td><code>sample_r6</code></td><td>classic_expert（老手）</td><td><code>b3_master_nops_medium_map_5</code><br>Loaded Burrito</td><td><code>leave_unattended, repeat_step</code></td><td><span class='tag'>wrong_serve</span> t294</td><td>82 s</td></tr>
 </table></div>
 <h2 id='c1'>1 · gpt-6-astra · Caprese</h2>
@@ -93,7 +93,7 @@ video{width:100%;border:1px solid var(--line);border-radius:6px;background:#000}
 <h2 id='c4'>4 · gemini-3.8-flash · Fish &amp; Chips Platter</h2>
 <p class='note'>run <code>assist_bench_cookfix_r4eps（cook-graded 第四轮全量，2026-09-16，270 个 episode）</code> · repeat <code>r3</code> · engine_rev <code>482f87746a</code> · persona classic_expert（老手） · case <code>b3_hard_nops_hard_map_4</code> · 记录 <code>tmp/assist_bench_cookfix_r4eps/frames/classic_expert/gemini-3.8-flash__r3/b3_hard_nops_hard_map_4.json</code></p>
 <p>菜谱 Fish &amp; Chips Platter：cooked fish → cooked potato → cooked potato（严格顺序） · 结果 <span class='tag'>wrong_serve</span> 于 t275</p>
-<div class='pending'>影片还在渲染和剪辑中，完成后会出现在这里。</div>
+<video controls preload='metadata' src='failure_clips/clip4_gemini-3.8-flash.mp4'></video><p class='note'>片长 83 秒 · 片段 t30–t67，t88–t106，t130–t138，t250–t275（其余跳过）</p>
 <div class='card wrap'><b>engine 安排的错误</b><table><tr><th>触发 → 落地</th><th>error type</th><th>发生了什么</th></tr>
 <tr><td><code>t33 → t53</code></td><td><code>add_foreign</code></td><td>厨师拿了盘子后先去 noodles 箱舀了生面条放上盘子，面条不属于这道菜。</td></tr>
 <tr><td><code>t115 → t153</code></td><td><code>leave_unattended</code></td><td>炸锅里的土豆熟了没人管，开始冒烟。</td></tr>
