@@ -35,7 +35,16 @@ footer{margin-top:70px;padding-top:20px;border-top:1.5px solid var(--rule-strong
 
 main h1{font-size:clamp(30px,4.6vw,46px);line-height:1.06;font-weight:500;letter-spacing:-.018em;margin:48px 0 18px}
 main table{font-size:14px}main p{max-width:78ch}</style>
-<div class="wrap"><main><h1 id="suite-v3-a-harder-assistant-benchmark">Suite v3: a harder assistant benchmark</h1>
+<div class="wrap">
+<div style="border-left:4px solid #b45309;background:#fffbeb;padding:12px 16px;margin:0 0 18px;border-radius:6px">
+<b>Superseded (2026-09-20).</b> This page describes the suite as designed on 2026-08-27. The pre-formal-run audit
+(2026-09-18 to 09-20) changed it: master now carries 3 errors per case, not 4; "at least half the errors ruinous" is
+relaxed to "at least one robust ruinous error" on hard, expert and master; leaving food on the heat is no longer
+labelled ruinous; the ten error types are balanced across the suite (serve_raw, repeat_step and wrong_order had fallen
+to 0, 0 and 1); errors fire from the live kitchen rather than a reference trajectory; and the firing rules gained a
+10-tick gap between takeovers, a ban on questions inside takeovers and a serve ceiling. A current design page follows
+once the suite is locked.</div>
+<main><h1 id="suite-v3-a-harder-assistant-benchmark">Suite v3: a harder assistant benchmark</h1>
 <p><em>This page introduces the third version of the CookSim assistant-benchmark suite, designed on 2026-08-27 from three rulings: more forced errors on harder recipes, with at least half of them able to ruin the dish; fire timers tight enough that leaving food on the heat actually burns it; and a question set that is no longer a list of one-glance state look-ups. Every proposal below is tied to what the engine can already do, to what the 2,473-episode v2.2 sweep measured, and to what the streaming-video QA literature has found hard (<code>docs/STREAMING_VQA_SURVEY.md</code>). Terms first, then the design, then the concrete examples, then the implementation order and what is already running.</em></p>
 <h2 id="0-terms">0. Terms</h2>
 <ul><li><strong>Episode.</strong> One cook (an LLM playing a persona) makes one dish in one kitchen while the assistant watches every tick; the engine forces the cook's hands into scheduled mistakes (hard-soft takeover) and asks scheduled questions through the cook's mouth. A <strong>cell</strong> is a recipe × map: five recipes (caprese, cheeseburger, fish &amp; chips, steak frites, burrito — tiers <em>easy</em> … <em>master</em>) × two maps (medium, hard) = 10 cells; five episodes per cell = 50 episodes.</li><li><strong>Forced error.</strong> A scripted deviation spliced into the cook's action queue at an <strong>anchor</strong> (a plate state). It is <strong>prevented</strong> if the assistant names it and the cook accepts before any of its steps execute; otherwise it <strong>commits</strong>, and the outcome depends on the error type. In v2.2 every episode had 2 errors and 2 questions.</li><li><strong>Ruinous type.</strong> An error type whose committed form loses the dish by itself: wrong plate contents (<code>wrong_serve</code>) or a hazard (<code>burned</code>). A <strong>harmless type</strong> costs time only.</li><li><strong>Tick.</strong> The engine's unit of action time; conversation does not consume ticks. The flawless clean plan takes 43 (caprese, medium map) to 237 ticks (burrito, hard map).</li></ul>
