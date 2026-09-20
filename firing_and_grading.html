@@ -1,0 +1,1294 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Firing and Grading</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,500;0,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--paper:#f6f7f9;--card:#ffffff;--ink:#161a20;--muted:#5b6673;--faint:#8a93a0;--rule:#dfe3e8;
+ --accent:#2c4bb8;--accent-soft:#e9edfb;--ok:#2f7a4f;--ok-soft:#e7f2ec;--warn:#9a5b12;--warn-soft:#f7f0e2;
+ --bad:#b3402f;--bad-soft:#faeae7;--measure:46rem;--wide:64rem}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#12151a;--card:#171b21;--ink:#e7ebf1;
+ --muted:#98a2ae;--faint:#727d8a;--rule:#252b33;--accent:#8ba4ff;--accent-soft:#1c2333;--ok:#61b98a;--ok-soft:#122019;
+ --warn:#d6a94a;--warn-soft:#241f14;--bad:#e58076;--bad-soft:#2a1614}}
+:root[data-theme="dark"]{--paper:#12151a;--card:#171b21;--ink:#e7ebf1;--muted:#98a2ae;--faint:#727d8a;--rule:#252b33;
+ --accent:#8ba4ff;--accent-soft:#1c2333;--ok:#61b98a;--ok-soft:#122019;--warn:#d6a94a;--warn-soft:#241f14;
+ --bad:#e58076;--bad-soft:#2a1614}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:16px;line-height:1.62}
+.wrap{max-width:var(--wide);margin:0 auto;padding:3.2rem 1.4rem 5rem}
+.wrap>p,.wrap>ul,.wrap>ol,.wrap>h2,.wrap>h3,.lede,.toc{max-width:var(--measure)}
+.wrap>p{margin:0 0 .95rem}
+h1,h2,h3,h4{font-family:Spectral,Georgia,serif;text-wrap:balance;margin:0}
+h1{font-size:2.1rem;font-weight:600;line-height:1.15}
+h2{font-size:1.32rem;font-weight:600;margin:2.6rem 0 .7rem;padding-top:.85rem;border-top:1px solid var(--rule)}
+h3{font-size:1.06rem;font-weight:600;margin:1.9rem 0 .5rem}
+h4{font-size:.93rem;font-weight:600;margin:1.15rem 0 .3rem;color:var(--muted);font-family:"IBM Plex Sans",sans-serif;
+ text-transform:uppercase;letter-spacing:.06em;font-size:.7rem}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);margin-bottom:.8rem}
+.lede{font-size:1.02rem;color:var(--muted);margin:.9rem 0 1.4rem}
+a{color:var(--accent)}
+ul,ol{margin:.2rem 0 1rem;padding-left:1.25rem}li{margin-bottom:.4rem}
+code{font-family:"IBM Plex Mono",monospace;font-size:.85em;background:var(--accent-soft);padding:.05em .32em;border-radius:2px}
+pre{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:.8rem 1rem;overflow-x:auto;
+ font-family:"IBM Plex Mono",monospace;font-size:.78rem;line-height:1.5;max-width:var(--wide);white-space:pre-wrap}
+.stamp{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:.8rem 1rem;margin:1.2rem 0 1.8rem;
+ font-family:"IBM Plex Mono",monospace;font-size:.75rem;line-height:1.8;color:var(--muted);max-width:var(--wide)}
+.stamp b{color:var(--ink);font-family:"IBM Plex Sans",sans-serif;font-weight:600;font-size:.82rem}
+.toc{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:.9rem 1.1rem;margin:1.4rem 0 2rem;font-size:.9rem}
+.toc a{display:block;color:var(--muted);text-decoration:none;padding:.1rem 0}.toc a:hover{color:var(--accent)}
+.tbl{margin:1.2rem 0 1.6rem;max-width:var(--wide)}
+.tcap{font-size:.83rem;color:var(--muted);margin-bottom:.6rem;max-width:var(--measure)}.tcap b{color:var(--ink)}
+.tablewrap{overflow-x:auto;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:.79rem;line-height:1.45}
+th{font-weight:500;text-align:left;color:var(--muted);padding:.42rem .55rem;font-size:.71rem;letter-spacing:.03em;
+ text-transform:uppercase;border-bottom:1px solid var(--rule);vertical-align:bottom}
+td{padding:.4rem .55rem;vertical-align:top;border-bottom:1px solid var(--rule)}
+tbody tr:last-child td{border-bottom:none}
+td:first-child{font-weight:500}
+td.n{text-align:right;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pass{color:var(--ok);font-weight:600}.fail{color:var(--bad);font-weight:600}.warnc{color:var(--warn);font-weight:600}
+.find{border:1px solid var(--rule);border-left:3px solid var(--bad);background:var(--bad-soft);border-radius:0 3px 3px 0;
+ padding:.9rem 1.1rem;margin:1.3rem 0;max-width:var(--wide)}
+.find.med{border-left-color:var(--warn);background:var(--warn-soft)}
+.find.ok{border-left-color:var(--ok);background:var(--ok-soft)}
+.find h3{margin:0 0 .45rem;font-size:1rem}
+.find .tag{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--bad)}
+.find.med .tag{color:var(--warn)}.find.ok .tag{color:var(--ok)}
+.find p{margin:.45rem 0;font-size:.93rem;max-width:var(--measure)}
+.quote{font-family:"IBM Plex Mono",monospace;font-size:.755rem;background:var(--card);border:1px solid var(--rule);
+ border-radius:2px;padding:.55rem .75rem;margin:.55rem 0;color:var(--ink);white-space:pre-wrap;max-width:var(--wide);line-height:1.55}
+.quote i{color:var(--muted);font-style:normal}
+.etype{border:1px solid var(--rule);border-radius:3px;background:var(--card);padding:1rem 1.15rem;margin:1.6rem 0}
+.etype h3{margin-top:0}
+.etype p{font-size:.93rem;margin:.5rem 0;max-width:var(--measure)}
+.etype ol,.etype ul{font-size:.9rem;max-width:var(--measure)}
+.badge{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:.63rem;letter-spacing:.08em;
+ text-transform:uppercase;padding:.12rem .42rem;border-radius:2px;margin-left:.45rem;vertical-align:.15em}
+.badge.ruin{background:var(--bad-soft);color:var(--bad)}
+.badge.soft{background:var(--ok-soft);color:var(--ok)}
+.badge.name{background:var(--warn-soft);color:var(--warn)}
+footer{border-top:1px solid var(--rule);margin-top:3rem;padding-top:1.3rem;font-size:.85rem;color:var(--muted);max-width:var(--measure)}
+</style></head><body>
+<div class="wrap">
+<div class="eyebrow">CookSim · reference · firing conditions, templates, grading</div>
+<h1>What makes each sub-case fire, and how it is scored</h1>
+<p class="lede">A CookSim episode is not one event. It is a sequence of <i>sub-cases</i>: mistakes the engine forces the
+cook to make, questions the cook asks out loud, standing requests it hands to the assistant, and legitimate changes of
+plan it announces. Every kind has its own condition for firing, its own moment at which the harm lands, and its own way
+of being graded. This page states all of them in one place, read out of the code that actually runs — never out of the
+older design documents, which the last audit found stale — with every template quoted verbatim and a worked example
+from the most recent full run.</p>
+
+<div class="stamp">
+<b>Provenance</b>
+engine_rev              feb18ee046   (tools/engine_stamp.py, 2026-09-20)
+suite                   bench/v5/cases_composite_v5.json
+suite sha256            accc06ac51bb3df550c5f0ecf6f905135af150fd5ce734afd2e5f2b237f7a62c
+examples from           tmp/suite_v5r4/llm_final3 — 100 episodes, engine_rev feb18ee046 on every record,
+                        scheduler v5, window_rule live, grader cook, pace tight, obs text_state_map,
+                        2 cook personas (baseline, classic_expert) x the same 50 cases
+grading examples from   tmp/assist_bench_v5_sample4 (engine_rev 3bcd378dec, 2026-09-12) — see the note in §4,
+                        because no run at the current engine rev has a speaking assistant
+page written            2026-09-20
+</div>
+
+<div class="toc">
+  <a href="#mech">1 · Sub-cases, slots, gaps, ceilings, commits and the grading window</a>
+  <a href="#errors">2 · The ten error types, one by one</a>
+  <a href="#intent">3 · Intentions: the announced change of plan</a>
+  <a href="#questions">4 · Question families Q1–Q9: template, truth, screen, rubric</a>
+  <a href="#proactive">5 · Q10, the standing request: window, verdicts, score</a>
+  <a href="#defects">6 · Known defects, open right now</a>
+</div>
+
+<h2 id="mech">1 · Sub-cases, slots, gaps, ceilings, commits and the grading window</h2>
+
+<h3>1.1 What a sub-case is</h3>
+<p>A <b>case</b> is one episode of one dish on one kitchen map. A <b>sub-case</b> is one testable event inside it. The
+suite file lists them explicitly: fifty cases, two hundred and seventy-four sub-cases, of four families.</p>
+<div class="tbl"><div class="tcap"><b>The locked suite, by family.</b> Counted from <code>bench/v5/cases_composite_v5.json</code>. Each case runs in
+both cook-persona arms, so the run contains twice these numbers of records.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>family</th><th>what it is</th><th class="n">sub-cases</th><th class="n">records in the run</th><th class="n">fired</th></tr></thead>
+<tbody>
+<tr><td>error</td><td>a mistake the engine forces the cook's hands to make</td><td class="n">140</td><td class="n">280</td><td class="n">238</td></tr>
+<tr><td>qa_probe</td><td>a question the cook asks the assistant out loud</td><td class="n">94</td><td class="n">188</td><td class="n">150 asked</td></tr>
+<tr><td>qa_proactive</td><td>a standing request: "tell me the moment X is done"</td><td class="n">29</td><td class="n">58</td><td class="n">49 asked</td></tr>
+<tr><td>plan_change</td><td>the cook announces a legal change to the order</td><td class="n">11</td><td class="n">22</td><td class="n">20 announced</td></tr>
+</tbody></table></div></div>
+<p>Each sub-case carries an <b>anchor</b>, derived once before the episode starts by <code>derive_spec()</code>: the plate
+prefix and the prep-progress set that a clean scripted run reaches at the sub-case's own divergence point. Under
+scheduler v5 the anchor is never a tick and never an exact match to be waited for — it is a <i>progress floor</i>. Every
+pending sub-case is then re-checked on every tick against the live kitchen. Each spec records what it is waiting for in
+a <code>wait_history</code>, so a sub-case that never fires says why at every stage rather than only at the end.</p>
+
+<h3>1.2 The body slot and the voice slot</h3>
+<p>The cook has one pair of hands and one mouth, and the scheduler treats them as two independent resources.</p>
+<div class="tbl"><div class="tcap"><b>The two slots.</b> <code>derive_spec()</code>: <code>"slot": ("voice" if fam in ("qa_probe","qa_proactive") else "body")</code>.
+A plan change occupies the body slot even though it is carried out by the cook itself.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>slot</th><th>who uses it</th><th>exclusive?</th><th>rules</th></tr></thead>
+<tbody>
+<tr><td>body</td><td>errors, plan changes</td><td>yes — one at a time</td>
+<td>A body sub-case takes the cook's queue. Of the sub-cases ready on the same tick, the one that became ready
+<i>first</i> goes first; a tie is broken in favour of a mistake that changes the plate over one that only costs time
+(<code>forget_next_step</code>), then by index.</td></tr>
+<tr><td>voice</td><td>questions, standing requests</td><td>one open at a time</td>
+<td>May open while a body takeover is running — but not on the takeover's own injection tick, and not while an
+<i>error</i> takeover is live. <code>VOICE_GAP = 8</code> ticks between two asks. <code>VOICE_QUIET = 3</code> ticks
+clear of any injection, commit, release or assistant flag. A next-step question never opens while a
+<code>forget_next_step</code> is pending or live. If the cook is prompted three times and still does not ask, the
+sub-case is skipped with <code>cook_did_not_ask</code>.</td></tr>
+</tbody></table></div></div>
+<p>When a voice sub-case opens, the cook is handed an urgent instruction for that turn only, and the line it then speaks
+<i>is</i> the ask — whatever words it chooses. The instruction is quoted in full in §4.</p>
+
+<h3>1.3 The takeover gap G</h3>
+<p>Two forced mistakes must not run into each other, or the assistant's correction of the first can never reach the
+cook before the second takes its hands. The scheduler therefore enforces a gap after every release. Its value is not a
+guess; the comment that sets it records the measurement.</p>
+<pre>TAKEOVER_GAP = int(os.environ.get("COOKSIM_TAKEOVER_GAP", 10))
+
+# G = 10, from the 216 API-assistant episodes of v5 samples 1-4 (10,098 replies, COOKSIM_ASSIST_LATENCY=measured):
+#   the assistant's next poll after the release        &lt;= 1 tick  (POLL = 2)
+#   its reply latency                                   p50 4, p75 6, p90 8 ticks (Flash p75 4; Pro / gpt-5.5 p75 9-10)
+#   correct flag -&gt; the cook's first corrective command p50 3 ticks (206 flags; p75 8)
+# 1 + 6 + 3 = 10 lets a p75-latency assistant's correction reach the cook and the median cook act on it before the
+# next takeover; a larger gap starts to push narrow moments out (leave_unattended fires within 6 ticks of done).</pre>
+<p>The same tick count shuts the voice slot after a release, so a question is never asked in the window in which the
+cook is supposed to be acting on a correction.</p>
+
+<h3>1.4 The serve ceiling</h3>
+<p>A question, a request or a plan change asked on the tick the dish goes to the pass is not a test of anything: the
+episode ends before an answer can arrive. A ceiling closes the voice slot and the plan-change slot for exactly that
+reason. It is one function, and it reads the plate and the cook's own queue:</p>
+<pre>def serve_ceiling_note(goal, plate_items_, queue):
+    """F7 (round-3 review): why no question, request or plan change may open now (None when one may): the plate
+    already holds every goal item by name, or the cook's own queue reaches the serve with no scoop left before it."""
+    if names_complete(goal, plate_items_):
+        return "ceiling: the plate holds every goal item (the serve is next)"
+    for c in queue or []:
+        if str(c).strip() == "scoop":
+            return None
+        if str(c).strip() == "serve" or "serving pass" in str(c):
+            return "ceiling: the cook's serve is queued"
+    return None</pre>
+<p>Errors have no ceiling: a forced mistake may still fire on a nearly finished plate, and several types are designed to.
+The ceiling is also a cost — see §6.</p>
+
+<h3>1.5 How a mistake is forced, and how the cook gets its hands back</h3>
+<p>The engine does not ask the cook to make a mistake and hope. At the firing moment it <b>composes the mistake against
+the plan that remains in the live kitchen</b> (<code>live_dev_block()</code>), splices the resulting block of commands
+into the cook's queue in place of what it was about to do, and saves the displaced commands. The cook's own words stay
+its own: it is told, through a system task, that its body is already committed and that its job is its voice.</p>
+<p>The block is made executable before it is spliced. If the block will scoop or serve, <code>_ensure_plate_for_block()</code>
+simulates the cook's hands through it and inserts the plate fetch immediately before the walk that leads to the block's
+first <code>scoop</code> — after any parking or chopping the block does first, not before it. If the block needs empty
+hands, a park is prefixed. If it lights a station, a wait is inserted after the <code>turn on</code>.</p>
+<p>The takeover ends — <i>releases</i> — at the first of these: the cook is genuinely convinced and accepts; the block
+runs out; or the <b>maximum hold</b> fires. The maximum hold exists because once the mistake has landed in the world the
+takeover has done its job, and holding the cook's hands any longer only makes its accepted repairs vanish.</p>
+<div class="tbl"><div class="tcap"><b>Release reasons, and what each one means.</b> Measured over the 238 fired error sub-cases of the run:
+every single one released for exactly the reason its type predicts.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>reason</th><th>fires when</th><th>types</th><th class="n">in the run</th></tr></thead>
+<tbody>
+<tr><td><code>plate_committed</code></td><td>the plate ledger already proves the harm</td><td>add_foreign, misidentify_assemble, serve_raw</td><td class="n">79</td></tr>
+<tr><td><code>deviated_block_executed</code></td><td>the executor has moved past every command of the block</td><td>mis_prep, wrong_order, repeat_step, omit_subgoal, premature_serve, forget_next_step</td><td class="n">119</td></tr>
+<tr><td><code>smoke_committed</code></td><td>the walked-away food has begun to smoke</td><td>leave_unattended</td><td class="n">21</td></tr>
+<tr><td><code>block_unexecutable</code></td><td>eight consecutive block commands were refused</td><td>any</td><td class="n">0</td></tr>
+<tr><td>(none)</td><td>the block ended in the serve, which ended the episode</td><td>premature_serve, omit_subgoal</td><td class="n">19</td></tr>
+</tbody></table></div></div>
+<p><code>stop_hands()</code> then decides what happens to the commands the block displaced. If the mistake did
+<i>not</i> commit, the whole saved queue goes back behind the dropped block — a prevented walk-away must not cost the
+cook the ignition it had planned. If it <i>did</i> commit, the saved queue is stale: putting it back would silently
+repair the mistake. For five commission types the queue is then cut into walk-segments and only the segments that are
+independent of the mistake are restored; for the rest it is dropped whole and the cook re-plans from the live kitchen on
+a fresh turn it is given at the release itself. This partial restore is where one of the open defects lives (§6).</p>
+
+<h3>1.6 What "commits" means</h3>
+<p>A mistake <b>commits</b> at the tick the harm becomes real in the world. It is not a matter of compliance — a cook
+running the clean plan matched the old set-membership test 963 times out of 968 — but of what physically landed, in what
+order and in what state. <code>plate_verdict()</code> decides it, per type, and its answer is what closes the grading
+window, what the maximum hold releases on, and what the detection-timing score is measured against.</p>
+<div class="tbl"><div class="tcap"><b>The commit test, per realization.</b> Every test is applied to the <i>current plate build</i> (a trash starts a new
+build) and only to events strictly after the injection, so a cook's own earlier slip cannot make a sub-case commit on
+its injection tick.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>type</th><th>committed when</th></tr></thead>
+<tbody>
+<tr><td>add_foreign / misidentify_assemble</td><td>a <i>new</i> unit of the wrong item reached the plate after the injection. If the wrong item is itself a recipe item, its mere presence proves nothing: the build must hold more units than the recipe needs, or (ordered dish) first diverge from the recipe with it.</td></tr>
+<tr><td>serve_raw</td><td>a unit of the component reached the plate after the injection in a state other than the one the recipe wants.</td></tr>
+<tr><td>wrong_order</td><td>some build received <code>b</code> before <code>a</code> — or holds <code>b</code> with no <code>a</code> under it.</td></tr>
+<tr><td>mis_prep</td><td>the wrong ingredient was processed. If it is also a recipe component: an excess beyond the recipe's need, or processing off its own path (chopped where its recipe path never chops, cooked at a station its path never uses).</td></tr>
+<tr><td>repeat_step</td><td>an <i>assemble</i> repeat: more units of the component on one build than the recipe needs. A <i>prep</i> repeat: more units in processing than the recipe needs, counted uncapped.</td></tr>
+<tr><td>omit_subgoal</td><td>the plate was served with units missing, or an item that comes after the skipped one was plated while the skipped one was still missing.</td></tr>
+<tr><td>premature_serve</td><td>the plate was served with units missing (counted as units, not as a set of names).</td></tr>
+<tr><td>forget_next_step</td><td>the stall block ran to its end (<code>deviated_block_executed</code>).</td></tr>
+<tr><td>leave_unattended</td><td>a busywork walk finished after the injection <b>and</b> the component's own food began to smoke or burnt after the injection. Running the block out without smoke is not a commit.</td></tr>
+</tbody></table></div></div>
+<p>In the run, 235 of the 238 fired mistakes committed. The three that did not are all <code>repeat_step</code>, and
+their records say why in the engine's own words: <code>"error_undetermined": "no extra potato entered processing (2 of 2)"</code>.</p>
+
+<h3>1.7 The live grading window</h3>
+<p>A detection is graded against a window, and since the ruling of 2026-09-20 that window is a property of <i>the
+episode that was run</i>, not of a headless scripted replay. It <b>opens at the first observable deviated act</b> and
+<b>closes at the commit</b> — the last tick on which a correct call could still have prevented the harm.</p>
+<pre>lo = the first OBSERVABLE deviated act of the live run  (report["dev"], the dev_live latch, with its two standing
+     special cases kept: an idle-type deviation — forget_next_step, `__wander__` macros, a qa_probe question —
+     opens at the injection, and a first deviated step that had already been executed when the injection landed
+     also opens at the injection).
+
+hi = the tick the mistake COMMITS in the live run — the last moment a correct call could still have prevented the
+     harm. ... If the mistake never commits — it was prevented, the takeover was released early, or the episode
+     ended first — the window closes at the release / archive tick.
+
+A flag inside [lo, hi] is `valid`; after hi it is `late` (a miss, charged in DT, not a false alarm); before lo it
+keeps the early / early_correct / true_observation / fp_preinjection treatment it has today.</pre>
+<p>Every report written under this rule stamps <code>window_rule = "live"</code>, so no consumer can silently mix it
+with the old reference windows. All 238 fired sub-cases in the run carry that stamp, and 235 of them carry a live
+<code>committed_at</code>, so no window in the table below is reconstructed.</p>
+<div class="tbl"><div class="tcap"><b>Measured window length, by the realization that actually ran.</b> <code>hi − lo</code> in ticks, over the fired error
+sub-cases of <code>tmp/suite_v5r4/llm_final3</code>. One tick is about 1.2 s of the assistant's wall clock. The right-hand
+column is the same measurement grouped by the name the record carries, which for two types is <i>not</i> the realization
+— see §6.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>realization (fn)</th><th class="n">n</th><th class="n">median</th><th class="n">mean</th><th class="n">min</th><th class="n">max</th><th>grouped by recorded name</th></tr></thead>
+<tbody>
+<tr><td>forget_next_step</td><td class="n">30</td><td class="n">62.0</td><td class="n">64.2</td><td class="n">61</td><td class="n">75</td><td>forget_next_step: 62.0 (n 30)</td></tr>
+<tr><td>wrong_order</td><td class="n">24</td><td class="n">37.0</td><td class="n">34.5</td><td class="n">18</td><td class="n">47</td><td>wrong_order: 37.0 (n 24)</td></tr>
+<tr><td>leave_unattended</td><td class="n">21</td><td class="n">31.0</td><td class="n">30.0</td><td class="n">18</td><td class="n">32</td><td>leave_unattended: 31.0 (n 21)</td></tr>
+<tr><td>repeat_step</td><td class="n">20</td><td class="n">30.0</td><td class="n">28.4</td><td class="n">17</td><td class="n">41</td><td>repeat_step: 30.0 (n 20)</td></tr>
+<tr><td>mis_prep</td><td class="n">26</td><td class="n">25.0</td><td class="n">25.7</td><td class="n">16</td><td class="n">38</td><td>mis_prep: 25.0 (n 26)</td></tr>
+<tr><td>misidentify_assemble</td><td class="n">29</td><td class="n">18.0</td><td class="n">17.3</td><td class="n">5</td><td class="n">30</td><td rowspan="2">add_foreign: 12.0 (n 55)</td></tr>
+<tr><td>add_foreign</td><td class="n">26</td><td class="n">8.5</td><td class="n">10.7</td><td class="n">5</td><td class="n">25</td></tr>
+<tr><td>omit_subgoal</td><td class="n">19</td><td class="n">17.0</td><td class="n">18.9</td><td class="n">10</td><td class="n">30</td><td rowspan="2">omit_subgoal: 15.0 (n 38)</td></tr>
+<tr><td>premature_serve</td><td class="n">19</td><td class="n">8.0</td><td class="n">9.9</td><td class="n">3</td><td class="n">24</td></tr>
+<tr><td>serve_raw</td><td class="n">24</td><td class="n">13.0</td><td class="n">14.0</td><td class="n">11</td><td class="n">25</td><td>serve_raw: 13.0 (n 24)</td></tr>
+<tr><td><b>all</b></td><td class="n">238</td><td class="n">22.5</td><td class="n">—</td><td class="n">3</td><td class="n">75</td><td>16 windows (7%) are shorter than 8 ticks</td></tr>
+</tbody></table></div></div>
+<p>A question's window is degenerate by construction: the question itself is the deviation, so
+<code>report["window"] = [dev, dev]</code> with <code>window_lo_why = "question_is_the_deviation"</code>. A plan change
+carries <code>case_offsets = {"lo": 0, "hi": 0}</code> for the same reason.</p>
+
+<h3>1.8 What an assistant must say to be credited</h3>
+<p>Detection is a <b>named</b> act. The assistant's reply carries a <code>flag</code> field with an error name, and the
+name must be one of the eight in the taxonomy it is given:</p>
+<pre>TAXONOMY_DEFS = {
+    "repeat_step": "re-does a step it already completed",
+    "forget_next_step": "stalls doing NOTHING for a long time, as if it lost its plan",
+    "omit_subgoal": "a required step silently never happens",
+    "wrong_order": "plates the right items in the WRONG order (when the recipe is order-strict)",
+    "mis_prep": "preps the WRONG ingredient at the station",
+    "add_foreign": "scoops an ingredient onto the plate that does NOT belong",
+    "serve_raw": "plates an ingredient RAW when the recipe requires it cooked",
+    "leave_unattended": "leaves done food on a hot station until it smokes",
+}</pre>
+<p>The verdict ladder is <code>verdict_live()</code>. A flag whose name equals the sub-case's name and whose tick lies
+in <code>[lo, hi]</code> is <code>valid</code>; before <code>lo</code> but at or after the injection it is
+<code>early_correct</code> (and arms the prevention path); after <code>hi</code> it is <code>late</code> — a miss,
+charged in the timing score, never a false alarm. A declared <i>twin</i> name (<code>TWINS</code>: e.g.
+<code>serve_raw ↔ mis_prep</code>, <code>wrong_order ↔ omit_subgoal, repeat_step</code>) inside the window is
+<code>alias_in_window</code> and counts as correct; just before the window it is <code>early_alias</code> and is
+neutral. Any other name is a <code>true_observation</code> if the kitchen genuinely supports it at that moment, and a
+<code>false_alarm</code> if it does not. Three verdicts count as a detection everywhere:
+<code>CORRECT_VERDICTS = ("valid", "early_correct", "alias_in_window")</code>.</p>
+<p>Since 2026-09-12 the cook is also a grader (<code>COOKSIM_GRADER=cook</code>, the default, and the setting of this
+run). Each turn the cook returns <code>assistant_error_call ∈ {none, correct, wrong}</code>, and a crediting
+<code>correct</code> counts as a detection even under a wrong flag name. The archived field every scorer reads is
+<code>flagged_valid = bool(engine flag) or bool(cook call)</code>; the engine-only value is kept beside it as
+<code>flagged_valid_engine</code>. A cook call credits nothing if the assistant has said nothing at all since the
+injection, or if the mistake is a walk-away that has not yet been executed.</p>
+<p>Finally, the timing tier <code>DT</code> converts a detection into a number. Prevention is 1.0. A correct call inside
+the window scores <code>0.9 − 0.4 · (t − lo)/(hi − lo)</code>, so the reward for speed is linear across the window
+measured in §1.7. A correct call after the window closed is 0.3. A twin or an early-correct call with no later valid one
+is 0.5. Nothing is 0.0.</p>
+
+<h2 id="errors">2 · The ten error types, one by one</h2>
+<p>Each block below gives, in order: the mistake in plain words; the firing condition as the scheduler checks it, step by
+step, with the wait note it prints while each step holds; what the forced block does command by command; what counts as
+committed; what the assistant must say; whether the mistake ruins the dish; and one real instance from the run.</p>
+<p>The checks always run in this order, and a sub-case waits (it is never dropped) while any of them holds:
+<b>(i)</b> a stated progress floor, if the sub-case declares one; <b>(ii)</b> <code>live_trigger()</code> — the type's
+own moment; <b>(iii)</b> <code>error_precondition()</code> — is the mistake executable and meaningful at all, including
+the smoke ban; <b>(iv)</b> can the block be composed on the live kitchen; <b>(v)</b> the takeover gap and the body slot.</p>
+<p>Two shared gates are quoted once here rather than ten times. The <b>force gate</b> is the bar every forced plating
+mistake shares:</p>
+<pre>def force_gate():
+    """The shared bar for a FORCED plating block: the dish is under way and the plate is neither finished nor
+    on its way to the pass. None when it is clear."""
+    if not dish_under_way(game, ro, prep_max):
+        return "the dish is not under way yet (nothing prepped, nothing plated)"
+    if complete():
+        return "the plate is already complete"
+    if about_to_serve():
+        return "the cook's own serve is already queued"
+    return None</pre>
+<p>The <b>smoke ban</b> stops a body mistake from being injected while a station is smoking, because the takeover would
+take the very hands the rescue needs. It is narrowed, not absolute: a scoop-type plating mistake may still fire while
+something smokes, provided none of its own items is the smoking one, its block does not walk to the smoking station, and
+the block is at most four commands long. In the run it was narrowed four times.</p>
+<pre>SMOKE_WAIT = "a station is smoking (the cook needs its hands)"
+SMOKE_OK_ERRS = {"serve_raw", "misidentify_assemble", "add_foreign", "wrong_order", "repeat_step", "omit_subgoal"}
+SMOKE_SHORT_BLOCK = int(os.environ.get("COOKSIM_SMOKE_SHORT_BLOCK", 4))</pre>
+
+<div class="etype">
+<h3>add_foreign<span class="badge ruin">ruinous</span><span class="badge name">15 sub-cases of this name run a different function</span></h3>
+<p><b>The mistake.</b> An ingredient the recipe never asked for is scooped onto the plate <i>in addition</i> to
+everything that belongs there. The dish is rejected at the pass.</p>
+<h4>Firing condition</h4>
+<ol>
+<li>If the target is <code>before: "serve"</code> — the extra goes onto a dish the cook already believes is finished —
+the dish must be under way, and then the plate must be complete or the cook's own serve already queued. Otherwise it
+waits: <span class="quote" style="display:inline;padding:.1rem .3rem">the plate is not finished yet</span></li>
+<li>For any other target, no unit of the slot's item may be finishing cooking on this very tick
+(<span class="quote" style="display:inline;padding:.1rem .3rem">the {x} finishes on this very tick</span>), and then the
+force gate must be clear.</li>
+<li><code>error_precondition</code>: the plate must not be full (<span class="quote" style="display:inline;padding:.1rem .3rem">the plate is full (5 items): a scoop cannot land</span>); the map must
+have a source for the wrong item (<span class="quote" style="display:inline;padding:.1rem .3rem">no source for {w}</span>);
+and if the target is an <code>assemble(c)</code> whose item is already correctly plated, the moment has passed
+(<span class="quote" style="display:inline;padding:.1rem .3rem">{target} already done</span>).</li>
+<li>The smoke ban, narrowable.</li>
+</ol>
+<h4>The forced block</h4>
+<p>A <code>foreign_scoop(wrong)</code> node — <code>go to the {wrong} source</code>, <code>scoop</code> — inserted
+before the target. Because the block scoops, <code>_ensure_plate_for_block()</code> walks the hands through it and
+inserts the plate fetch (<code>go to the plates</code>, <code>pick up</code>, or a walk to the parked plate) immediately
+before the walk that leads to that scoop; if the cook's hands are full and nothing has parked them yet, a
+<code>go to the empty counter</code>, <code>put down</code> is prefixed.</p>
+<h4>Committed / released / credit</h4>
+<p>Committed the tick a <i>new</i> unit of the wrong item lands on the plate. Released on
+<code>max_hold_plate_committed</code>. The assistant must flag the name <code>add_foreign</code>; its declared twin is
+<code>repeat_step</code>. Ruinous: all 30 designed instances carry <code>ruinous: true</code>.</p>
+<h4>Real instance</h4>
+<div class="quote">tmp/suite_v5r4/llm_final3/baseline/b3_easy_nops_hard_map_1.json — sub b3_easy_nops_hard_map_1_add_foreign
+kwargs {"before": "serve", "wrong": "onion"}   design note: "an extra off-recipe item goes on the finished plate"
+injected t106 · dev t107 · window [107, 115] · committed t115 · released t115 (max_hold_plate_committed)
+
+  t105 &gt; t106  scoop                    <i>(the cook's own last recipe item)</i>
+  t107 &gt; t113  go to the onion source   <i>kind=foreign_scoop(onion)</i>
+  t114 &gt; t115  scoop                    <i>kind=foreign_scoop(onion)</i>
+  t116 &gt; t119  go to the serving pass
+  t121         serve
+outcome: wrong_serve, 122 ticks. foreign_units_after_injection = 1.</div>
+</div>
+
+<div class="etype">
+<h3>misidentify_assemble<span class="badge ruin">ruinous</span><span class="badge name">recorded as add_foreign</span></h3>
+<p><b>The mistake.</b> The cook scoops the wrong thing <i>into the slot</i> where a recipe item should have gone —
+lettuce where the cheese belongs. Unlike <code>add_foreign</code>, nothing extra appears; something correct is missing
+and something wrong is in its place.</p>
+<h4>Firing condition</h4>
+<ol>
+<li>No unit of the component may be finishing on this very tick.</li>
+<li>The force gate must be clear.</li>
+<li><code>error_precondition</code>: the plate not full; a source for the wrong item; the component's own slot still
+open (<span class="quote" style="display:inline;padding:.1rem .3rem">{c} already plated</span>).</li>
+<li>The smoke ban, narrowable.</li>
+</ol>
+<p>Nothing is asked of the cook's own plan. Before 2026-09-20 this type also required the plate to be in the cook's
+hands, the component to be the next item to plate, and the cook's own next walk to be heading for that component's
+source. A self-planning LLM cook cooks everything before it fetches a plate, so those conjunctions starved the type.</p>
+<h4>The forced block</h4>
+<p><code>assemble(component)</code> is replaced by <code>foreign_scoop(wrong)</code>; the plate fetch is inserted as
+above. Typical block: <code>go to the plates · pick up · go to the {wrong} source · scoop</code>.</p>
+<h4>Committed / released / credit</h4>
+<p>Same ledger branch as <code>add_foreign</code>. Released on <code>max_hold_plate_committed</code>. <b>The record
+carries the name <code>add_foreign</code></b>, so that is the name an assistant must flag — even though the picture is a
+substitution, and <code>misidentify_assemble</code> is not a label the assistant is offered at all. See §6.</p>
+<h4>Real instance</h4>
+<div class="quote">tmp/suite_v5r4/llm_final3/baseline/b3_medium_nops_medium_map_4.json — sub b3_medium_nops_medium_map_4_add_foreign
+recorded err = "add_foreign"; err_live = "add_foreign"; the string "misidentify_assemble" appears nowhere in the record
+kwargs {"component": "bun", "wrong": "onion"}   design note: "an off-recipe item goes into the bun's slot"
+injected t15 · dev t16 · window [16, 30] · committed t30 · released t30 (max_hold_plate_committed)
+
+  t16 &gt; t18  go to the plates        <i>kind=foreign_scoop(onion)</i>
+  t19 &gt; t20  pick up
+  t21 &gt; t28  go to the onion source
+  t29 &gt; t30  scoop
+cook, later:  t38 "Hands are full, setting the plate down first."   t40 "What is my next step?"
+outcome: won, 131 ticks — the cook trashed and rebuilt the plate (see §6).</div>
+</div>
+
+<div class="etype">
+<h3>mis_prep<span class="badge soft">not ruinous</span></h3>
+<p><b>The mistake.</b> The cook fetches and prepares the <i>wrong ingredient</i> at the station the right one should
+have used — chopping the lettuce on the board meant for the tomato. The later scoop then faithfully plates the wrong
+prepared item, or the right item is simply never made.</p>
+<h4>Firing condition</h4>
+<ol>
+<li>The only moment test is the cook's own reach:
+<pre>if err == "mis_prep":
+    c = kw.get("component")
+    return None if reaching_for(c) else f"the cook is not reaching for the {c} yet"</pre>
+where <code>reaching_for(c)</code> means the cook's current or next command names <code>c</code> or its source, or it is
+already holding a raw <code>c</code>.</li>
+<li><code>error_precondition</code>: the component must not already be fully prepped
+(<span class="quote" style="display:inline;padding:.1rem .3rem">{c} already prepped</span>); the wrong item must have a
+source.</li>
+<li>The <b>full</b> smoke ban — <code>mis_prep</code> is not in <code>SMOKE_OK_ERRS</code>, so it always waits for a
+kitchen that is not smoking.</li>
+</ol>
+<h4>The forced block</h4>
+<p>A whole prep block for the wrong ingredient, built out of steps this kitchen actually allows. The station is inherited
+from the original component's prep; if that station refuses the wrong item (a pan will not take lettuce), the confused
+cook prepares it the only way the kitchen permits — on the cutting board — and the real component is never made. If the
+recipe is a late-ignite one, the orphaned <code>ignite(component)</code> is rewritten to <code>ignite(wrong)</code> or
+dropped, because a cook lights the station it actually loaded. If the cook already holds something (including the very
+component it was reaching for), the block parks it first.</p>
+<h4>Committed / released / credit</h4>
+<p>Committed when the wrong ingredient has been processed — with the excess / off-path refinements when the wrong item is
+itself a recipe component. Released on <code>deviated_block_executed</code>. Flag name <code>mis_prep</code>; twins
+<code>repeat_step</code> and <code>serve_raw</code>. Not ruinous by design, but it costs the dish its real component.</p>
+<h4>Real instance</h4>
+<div class="quote">tmp/suite_v5r4/llm_final3/classic_expert/b3_easy_nops_medium_map_4.json — sub …_mis_prep
+kwargs {"component": "tomato", "wrong": "lettuce"}   design note: "preps the wrong thing for the tomato"
+injected t1 · dev t5 · window [5, 22] · committed t22 · released t23 (max_hold_deviated_block_executed)
+
+  t5  &gt; t9   go to the lettuce source       <i>kind=prep(lettuce)</i>
+  t10 &gt; t11  pick up
+  t12 &gt; t15  go to the empty cutting board
+  t16 &gt; t17  put down
+  t18 &gt; t22  chop
+cook: t24 "Board is done chopping."
+plate verdict: prepped {"lettuce": 17}, processed_at {"lettuce": 22},
+               error_note "lettuce was prepped but caught before plating"
+outcome: wrong_serve, 63 ticks.</div>
+</div>
+
+<div class="etype">
+<h3>forget_next_step<span class="badge soft">not ruinous</span></h3>
+<p><b>The mistake.</b> The cook loses its plan and simply stands there. Nothing wrong is done; time is lost, and if
+something is on the heat the stall becomes a burn. There is no trace on the plate, so the only way to catch it is to be
+watching.</p>
+<h4>Firing condition</h4>
+<ol>
+<li><b>A forget never forgets the serve.</b> This is a standing design rule, enforced in three places. The moment is
+refused whenever every goal item is on the plate by name, the plate is full, or the cook's own next command is the serve:
+<span class="quote" style="display:inline;padding:.1rem .3rem">the only step left is the serve (a forget never forgets the serve)</span></li>
+<li><b>No food may reach smoke inside the freeze.</b> The stall is 60 ticks and the cook needs 5 more to walk back, so
+the check looks 65 ticks ahead, not at this tick only. Freezing beside food that will smoke is
+<code>leave_unattended</code>, not a forget:
+<span class="quote" style="display:inline;padding:.1rem .3rem">food on the heat would smoke within {tts} ticks, inside the {need}-tick freeze (a freeze now would be leave_unattended)</span></li>
+<li>The <code>after</code> anchor as a progress floor: for <code>prep(c)#k</code>, unit <i>k</i> of <code>c</code> must
+be in processing; for <code>ignite(c)</code>, a lit station must hold <code>c</code>; for <code>fetch_plate</code>, the
+plate must be in hand; for <code>assemble(c)</code>, the plate must be through <code>c</code>.</li>
+</ol>
+<h4>The forced block</h4>
+<p>One command: <code>["idle 60"]</code>. Because an absence never appears in the command log, the window opens at the
+injection rather than at a first deviated act — <code>window_lo_why = "idle_type_opens_at_injection"</code>. This is why
+the forget window is by far the longest in §1.7: a median of 62 ticks.</p>
+<h4>Committed / released / credit</h4>
+<p>Committed when the stall runs to its end. Released on <code>deviated_block_executed</code>. Flag name
+<code>forget_next_step</code>; twin <code>repeat_step</code>. It is one of the three <i>attention</i> errors, so the cook
+is given the attention framing: a true reminder ends it at once — nobody defends a stall they can see.</p>
+<h4>Real instance</h4>
+<div class="quote">tmp/suite_v5r4/llm_final3/baseline/b3_easy_nops_medium_map_1.json — sub …_forget_next_step
+kwargs {"after": "fetch_plate"}   design note: "stalls after fetch_plate"
+injected t50 · dev t50 (idle_type_opens_at_injection) · window [50, 114] · committed t114 · released t114
+
+  t45 &gt; t48   put down   <i>illegal-skipped</i>
+  t49 &gt; t52   chop       <i>illegal-skipped</i>
+  t53 &gt; t113  wander/idle (thinking)   <i>kind=lost — the 60-tick stall</i>
+  t114 &gt; t124 go to the counter (1,0)
+cook: t50 "I can't chop while holding this plate."   t124 "Have I gone over to the trash yet?"
+outcome: wrong_serve, 187 ticks.</div>
+</div>
+
+<div class="etype">
+<h3>leave_unattended<span class="badge soft">not ruinous by label — but it is what burns the kitchen</span></h3>
+<p><b>The mistake.</b> The cook walks off to other business while food that is about to be ready sits on a lit station.
+The food goes through the whole warning arc behind its back: done, then 25 ticks of grace, then smoke, then fire.</p>
+<h4>Firing condition</h4>
+<ol>
+<li><b>The anchor as a progress floor</b> (<code>lu_floor_ok</code>): the prep the anchor names must be reached and at
+least as many items plated as the anchor's plate holds. Wait notes:
+<span class="quote" style="display:inline;padding:.1rem .3rem">anchor floor: prep {…} not reached (live {…})</span> and
+<span class="quote" style="display:inline;padding:.1rem .3rem">anchor floor: 1/3 items plated</span></li>
+<li><b>The food must be near done.</b> At ignition, walking off to prep something else is the ordinary plan, and firing
+then made "you left the pan" bad advice. The window is <code>N = max(3, round(smoke_grace/4)) = 6</code> ticks either
+side of the cooked transition, never on smoking food:
+<span class="quote" style="display:inline;padding:.1rem .3rem">the {c} is not near done yet (fires within 6 ticks of done)</span>,
+<span class="quote" style="display:inline;padding:.1rem .3rem">the {c} has been done more than 6 ticks (the walk-away moment has passed)</span>,
+<span class="quote" style="display:inline;padding:.1rem .3rem">no {c} cooking on the heat yet</span></li>
+<li><b>No other food may be lost by the walk.</b> Food elsewhere that would smoke inside the walk-away plus the walk back
+is burned by the takeover, not by the mistake:
+<span class="quote" style="display:inline;padding:.1rem .3rem">other food on the heat would smoke within {tts} ticks, inside the walk-away and the walk back ({need} ticks)</span></li>
+<li><b>Never on the tick a standing request about the same food is made</b>, or within 3 ticks of one: a cook that has
+just handed the watch to the assistant is not walking away negligently.</li>
+<li><code>error_precondition</code>: something must be on the heat, cooking or cooked, and not already smoking
+(<span class="quote" style="display:inline;padding:.1rem .3rem">nothing on the heat (or it is already smoking)</span>).
+Full smoke ban.</li>
+</ol>
+<h4>The forced block</h4>
+<p>Busywork derived from the recipe itself: every other component's source, then <code>plates</code> and
+<code>serving pass</code>, each followed by <code>idle 8</code>, the whole route repeated <code>loops</code> times
+(2 in the suite). If the cook is holding the half-built plate, the block parks it first — otherwise the walk to the pass
+reads as a premature serve and a correct warning gets scored under the wrong name.</p>
+<h4>Committed / released / credit</h4>
+<p>Committed only when <b>both</b> hold: a busywork walk finished after the injection, and the component's own food began
+to smoke or burnt after the injection. Released immediately at that smoke
+(<code>max_hold_smoke_committed</code>) — the rescue is handed back at once. A flag counts only once the first walk away
+has finished (<code>mistake_live()</code>); before that it names nothing an observer can see. Flag name
+<code>leave_unattended</code>; twins <code>forget_next_step</code> and <code>omit_subgoal</code>.</p>
+<h4>Real instance</h4>
+<div class="quote">tmp/suite_v5r4/llm_final3/baseline/b3_medium_nops_medium_map_4.json — sub …_leave_unattended
+kwargs {"component": "meat", "loops": 2}   design note: "walks away from the meat near done"
+injected t57 · dev t57 · window [57, 89] · committed t89 · released t89 (max_hold_smoke_committed)
+block (16 commands): go to the bun source · idle 8 · go to the cheese source · idle 8 · go to the plates · idle 8 ·
+                     go to the serving pass · idle 8   … the whole route twice
+
+  t57 &gt; t61  go to the bun source     <i>kind=busywork</i>
+  t62 &gt; t70  wander/idle (thinking)
+  t71 &gt; t77  go to the cheese source
+  t78 &gt; t86  wander/idle (thinking)
+  t87 &gt; t95  go to the plates
+cook: t50 "Meat is cooking, what should I do now?"  t54 "What's next?"  t56 "What should I do now?"
+plate verdict: walkaway_executed true, smoke_after_injection true, error_committed true.</div>
+</div>
+
+<div class="etype">
+<h3>omit_subgoal<span class="badge ruin">ruinous</span><span class="badge name">12 sub-cases of this name run premature_serve</span></h3>
+<p><b>The mistake.</b> The cook believes a required step is already done, skips it, and moves on — so the item is simply
+missing from the finished dish.</p>
+<h4>Firing condition</h4>
+<ol>
+<li>The force gate.</li>
+<li>With a <code>sid</code> (the skip form) the moment is then immediate: the block fetches the plate itself, so the
+skipped component no longer has to be the next item to plate.</li>
+<li><code>error_precondition</code>: the plate not full; the component's slot not already correctly filled
+(<span class="quote" style="display:inline;padding:.1rem .3rem">{comp} already plated</span>); and, decisively, the
+<i>next</i> recipe item must be ready, because the omission is realized by plating it:
+<span class="quote" style="display:inline;padding:.1rem .3rem">{nxt} not ready (the omission plates it next)</span></li>
+<li>The smoke ban, narrowable — with an extra clause: the narrowing also considers the item the omission will plate
+next, because an omission whose block walks the cook to a smoking station burns the kitchen.</li>
+</ol>
+<h4>The forced block</h4>
+<p>The <i>short</i> omission (the default since the round-3 audit): put the plate in hand, skip the component, plate the
+<b>next</b> recipe item, and hand back. When the skipped component is the last one, moving on <i>is</i> the serve. The
+earlier form took the cook's body through the whole remaining recipe and produced 8–18 refused commands and 100-tick
+holds.</p>
+<h4>Committed / released / credit</h4>
+<p>Committed when the plate is served with units missing, or when a component that comes after the omitted one is plated
+while it is still missing. Released on <code>deviated_block_executed</code>. Flag name <code>omit_subgoal</code>; twins
+<code>wrong_order</code> and <code>repeat_step</code>.</p>
+<h4>Real instance</h4>
+<div class="quote">tmp/suite_v5r4/llm_final3/baseline/b3_easy_nops_hard_map_2.json — sub …_omit_subgoal
+kwargs {"sid": "assemble(tomato)"}   design note: "skips the tomato although it is ready and plates the cheese instead"
+injected t30 · dev t31 · window [31, 48] · committed t48 · released t49 (max_hold_deviated_block_executed)
+
+  t26 &gt; t30  chop
+  t31 &gt; t35  go to the plates         <i>kind=omit_skip(tomato)</i>
+  t36 &gt; t37  pick up
+  t38 &gt; t46  go to the cheese source
+  t47 &gt; t48  scoop
+  t49 &gt; t56  go to board 1            <i>the restored remainder of the cook's own plan</i>
+plate verdict: missing_components ["tomato"], prepped {"tomato": 25}
+queue_not_restored: {"cmds": ["go to board 1","chop","chop","chop"],
+                     "why": "the mistake committed; the old queue is stale (the cook re-plans)"}
+This episode contains no spoken cook line at all — the cook acts in silence, by design.
+outcome: wrong_serve, 74 ticks.</div>
+</div>
+
+<div class="etype">
+<h3>premature_serve<span class="badge ruin">ruinous</span><span class="badge name">recorded as omit_subgoal</span></h3>
+<p><b>The mistake.</b> The cook decides the dish is finished when it is not, abandons the rest, and carries an incomplete
+plate to the pass.</p>
+<h4>Firing condition</h4>
+<ol>
+<li>The force gate.</li>
+<li>A <b>position floor</b>: as many units on the plate as the recipe wants up to and including the item named by
+<code>after</code>, whatever those units are. An early serve is premature by how far along the dish is, not by whether
+the cook plated in the template's order:
+<span class="quote" style="display:inline;padding:.1rem .3rem">only {n} of {pos} items are on the plate (an early serve after the {x})</span>.
+For <code>after: "fetch_plate"</code> one item on the plate is enough
+(<span class="quote" style="display:inline;padding:.1rem .3rem">nothing on the plate yet</span>).</li>
+<li><code>error_precondition</code>: an empty plate cannot be served
+(<span class="quote" style="display:inline;padding:.1rem .3rem">nothing plated yet (an empty plate cannot be served)</span>).</li>
+</ol>
+<h4>The forced block</h4>
+<p><code>plate_into_hand()</code>, then <code>go to the serving pass</code>, <code>serve</code>. Because the block ends
+in the serve, it releases at the serve — that is, never before the commit — and in 19 of the run's records the episode
+simply ended there, leaving <code>released_at</code> null.</p>
+<h4>Committed / released / credit</h4>
+<p>Committed when the served plate is short, counted as <i>units</i> (a plate of steak + potato served for steak +
+potato + potato is short by one). Flag name <code>omit_subgoal</code> — the name the record carries.</p>
+<h4>Real instance</h4>
+<div class="quote">tmp/suite_v5r4/llm_final3/baseline/b3_expert_nops_medium_map_5.json — sub …_omit_subgoal
+recorded err = "omit_subgoal"; the realization survives only in the action kind, "premature_serve"
+kwargs {"after": "assemble(steak)"}
+design note: "carries the plate to the pass with only the steak (and what came before) on it"
+injected t111 · dev t112 · window [112, 121] · committed t121 · released null (the episode ended on the serve)
+
+  t108 &gt; t109  go to pan 1
+  t110 &gt; t111  scoop
+  t112 &gt; t119  go to the serving pass   <i>kind=premature_serve</i>
+  t120         serve                    <i>kind=premature_serve</i>
+plate verdict: missing_components ["potato","potato"], plate ["steak"]
+cook: t38 "What's my next step?"   t106 "Is anything on the heat already done and sitting there?"
+outcome: wrong_serve, 121 ticks.</div>
+</div>
+
+<div class="etype">
+<h3>repeat_step<span class="badge soft">not ruinous</span></h3>
+<p><b>The mistake.</b> The cook loses track of having already done a step and goes back to do it again. A repeated
+assembly doubles an ingredient and the serve is rejected; a repeated prep only wastes time.</p>
+<h4>Firing condition</h4>
+<ol>
+<li><b>The <code>at</code> anchor as a progress floor</b>, whichever step is repeated: for
+<code>at = assemble(y)</code>, <i>y</i> must be correctly on the plate
+(<span class="quote" style="display:inline;padding:.1rem .3rem">the {y} is not on the plate yet (repeat at {at})</span>);
+for <code>at = prep(y)</code>, <i>y</i> must be in processing
+(<span class="quote" style="display:inline;padding:.1rem .3rem">{y} not in processing yet (repeat at {at})</span>).
+Without this a prep repeat fired the tick its component first entered a station — loading a second patty two ticks after
+the first is a consecutive re-do, not a memory slip.</li>
+<li>For an assemble repeat: the dish under way, and at least one correct unit of the component already on the plate
+(<span class="quote" style="display:inline;padding:.1rem .3rem">no {c} on the plate yet (nothing to repeat)</span>).
+A <i>complete</i> plate does not bar the duplicate — it is where a duplicate is most visible as one. Only a <i>full</i>
+plate does.</li>
+<li><b>A per-item ban.</b> A second bun on a burger does not read as a duplicate at all; it reads as the top bun. The
+whole type used to be refused for that one item's sake:
+<span class="quote" style="display:inline;padding:.1rem .3rem">a second {comp} does not read as a duplicate (per-item ban)</span></li>
+<li><b>The duplicate must be scoopable.</b> A raw component comes from its crate; a chopped one the block chops itself; a
+cooked one needs a second cooked unit, which only the kitchen can supply:
+<span class="quote" style="display:inline;padding:.1rem .3rem">no second cooked {comp} to scoop (a repeated scoop needs one)</span></li>
+</ol>
+<h4>The forced block</h4>
+<p>The template node is re-run now. For a chopped item with no chopped unit left, the block makes the second unit itself
+— and it parks <i>the dish plate</i> and picks that same plate back up afterwards, because the generic fetch took a fresh
+plate and the duplicate landed on a scratch plate nothing ever served. A prep repeat with full hands parks them first.</p>
+<h4>Committed / released / credit</h4>
+<p>An assemble repeat commits when one build holds more units of the component than the recipe needs; a prep repeat when
+more units than needed have entered processing, counted uncapped. Released on <code>deviated_block_executed</code>.
+Flag name <code>repeat_step</code>; twin <code>add_foreign</code>. It is an attention error.</p>
+<h4>Real instance — and the only type in the run whose window ever closes on the release</h4>
+<div class="quote">tmp/suite_v5r4/llm_final3/classic_expert/b3_hard_nops_medium_map_4.json — sub …_repeat_step
+kwargs {"sid": "prep(potato)", "at": "assemble(potato)"}   design note: "does the potato prep a second time"
+injected t172 · dev t173 · window [173, 204] · committed_at null · released t204, window_closed {"why": "released"}
+
+  t173 &gt; t175  go to the empty counter          <i>kind=prep(potato)#repeat</i>
+  t176 &gt; t177  put down
+  t178 &gt; t187  go to the potato source
+  t188 &gt; t189  pick up
+  t190          go to the empty cutting board   <i>rejected — no free board</i>
+  t190          put down                        <i>orphan-skipped</i>
+plate verdict: error_committed false,
+               error_undetermined "no extra potato entered processing (2 of 2)"
+cook: t202 "Fryer won't take this whole potato."   t204 "Both cutting boards are taken right now."
+outcome: won, 254 ticks. 3 of 20 repeat_step records end this way.</div>
+</div>
+
+<div class="etype">
+<h3>serve_raw<span class="badge ruin">ruinous</span></h3>
+<p><b>The mistake.</b> A food-safety violation: the cook plates an ingredient straight from its crate when the recipe
+requires it cooked or chopped. The cook who believes raw is fine never starts cooking it either, so the prep is dropped
+as part of the same behaviour.</p>
+<h4>Firing condition</h4>
+<ol>
+<li>The component must genuinely still be raw:
+<span class="quote" style="display:inline;padding:.1rem .3rem">the {x} is already {state} (serving it raw now is not the mistake)</span></li>
+<li>No unit of it may be finishing within the block's own walk to the crate — a raw one must not be scooped past a good
+one that is arriving:
+<span class="quote" style="display:inline;padding:.1rem .3rem">the {x} is done in {d} ticks (less than the walk to its crate)</span></li>
+<li>The force gate.</li>
+<li><code>error_precondition</code>: the plate not full; the component not already plated in any state (a raw one already
+there <i>is</i> the mistake); a source for it; and — the meaning test — the recipe must not plate it raw anyway:
+<span class="quote" style="display:inline;padding:.1rem .3rem">the recipe plates the {c} raw anyway (serving it raw is not a mistake)</span></li>
+<li>The smoke ban, narrowable — and this is the type that most often needs the narrowing. Four injections in the run were
+narrowed, with notes such as
+<span class="quote" style="display:inline;padding:.1rem .3rem">narrowed smoke ban: 4-command block, smoking ['steak']</span></li>
+</ol>
+<h4>The forced block</h4>
+<p><code>assemble(component)</code> becomes <code>raw_scoop(component)</code>, and both <code>prep(component)</code> and
+<code>ignite(component)</code> are removed from the plan — keeping them left a cooked item burning in the pan, so every
+<code>serve_raw</code> episode carried a secondary walk-away hazard. With the plate fetch the block is four commands:
+<code>go to the plates · pick up · go to the {c} source · scoop</code>.</p>
+<h4>Committed / released / credit</h4>
+<p>Committed when a unit of the component reaches the current plate build after the injection in the wrong state.
+Released on <code>max_hold_plate_committed</code>. Flag name <code>serve_raw</code>; twins <code>mis_prep</code> and
+<code>repeat_step</code>.</p>
+<h4>Real instance, with the engine's own log</h4>
+<div class="quote">tmp/suite_v5r4/llm_final3/baseline/b3_easy_nops_hard_map_1.json — sub …_serve_raw
+kwargs {"component": "tomato"}   design note: "a raw tomato goes on the plate while no tomato is chopped yet"
+injected t15 · dev t20 · window [20, 34] · committed t34 · released t34
+
+  [t15] INJECTED v5 [0] error/serve_raw (plate=[] prep&gt;={}) block=['go to the plates', 'pick up',
+        'go to the tomato source', 'scoop']
+  [t21] deviation LIVE at t20 window=[20, 1000000000]
+  [t34] WINDOW closed at t34 (commit) -&gt; [20, 34]
+  [t34] RELEASED (max hold: plate_committed) - control back to the human
+
+  t20 &gt; t24  go to the plates        <i>kind=raw_scoop(tomato)</i>
+  t25 &gt; t26  pick up
+  t27 &gt; t32  go to the tomato source
+  t33 &gt; t34  scoop
+plate_seq: [{"item": "tomato", "t": 34, "state": "raw"}]
+cook: t15 "All three cutting boards are open right now."</div>
+</div>
+
+<div class="etype">
+<h3>wrong_order<span class="badge ruin">ruinous</span></h3>
+<p><b>The mistake.</b> On a dish whose assembly order is strict, the cook plates the right items in the wrong order. On
+an order-free dish the same act is a legal reordering and must <i>not</i> be flagged — which is why this type is only
+ever placed on ordered recipes.</p>
+<h4>Firing condition</h4>
+<ol>
+<li>No unit of <code>a</code> (the item that should have gone first) may be finishing on this very tick.</li>
+<li>The force gate. Waiting for <code>a</code> to be the next item to plate was the cook's own plan cooperating, and it
+missed 6 of 20 live swaps.</li>
+<li><code>error_precondition</code>: neither of the pair already correctly plated
+(<span class="quote" style="display:inline;padding:.1rem .3rem">{c} already plated</span>); and <code>b</code> — the item
+that will go down too early — must be ready, or be a chopped item the block can make itself
+(<span class="quote" style="display:inline;padding:.1rem .3rem">{b} not ready</span>). Only the item plated <i>too
+early</i> has to exist; requiring <code>a</code> ready as well starved every live run, because a self-planning cook plates
+<code>a</code> the tick it is done.</li>
+</ol>
+<h4>The forced block</h4>
+<p>The two assembly nodes are swapped. <code>a</code>'s scoop stays in the block only when <code>a</code> is ready,
+plated as it comes, or on a lit station that will be ready by the time the block walks there; otherwise the mistake is
+<code>b</code> alone and the cook adds <code>a</code> itself once it has made it. If <code>b</code> is a chopped item and
+no chopped unit exists, the block parks the plate, chops <code>b</code> itself, retrieves the same plate, and scoops
+<code>b</code> before <code>a</code>. While the block runs, <code>a</code> is held from smoking.</p>
+<h4>Committed / released / credit</h4>
+<p>Committed when some build received <code>b</code> before <code>a</code>, or holds <code>b</code> with no
+<code>a</code> under it. It is deliberately <b>not</b> released at the plate commit: the verdict commits on the first
+scoop, and releasing there dropped the second scoop, turning the swap into an omission in 8 of 9 cases. It releases when
+the whole block has run, or on the cook's accept. Flag name <code>wrong_order</code>; twins <code>omit_subgoal</code>
+and <code>repeat_step</code>.</p>
+<h4>Real instance</h4>
+<div class="quote">tmp/suite_v5r4/llm_final3/baseline/b3_master_nops_hard_map_1.json — sub …_wrong_order
+kwargs {"a": "rice", "b": "tomato"}   design note: "plates the tomato before the rice"
+injected t20 · dev t21 · window [21, 58] · committed t58 · released t59 (max_hold_deviated_block_executed)
+
+  t21 &gt; t25  go to the tomato source        <i>kind=wrong_order_prep(tomato) — the block chops b itself</i>
+  t26 &gt; t27  pick up
+  t28 &gt; t29  go to the empty cutting board
+  t30 &gt; t31  put down
+  t32 &gt; t36  chop
+  t37 &gt; t45  go to the plates
+plate verdict: plate_seq [{"item":"tomato","t":58,"state":"chopped"}], plate_builds [["tomato"]]
+cook (the episode's only two lines, both long after the window):
+  t104 "How many cutting boards are free right now?"   t112 "Have I been over to the pan at any point so far?"
+outcome: wrong_serve, 218 ticks.</div>
+</div>
+
+<h2 id="intent">3 · Intentions: the announced change of plan</h2>
+<p>Not everything unusual the cook does is a mistake. A <b>plan change</b> is the cook deciding, mid-order, that it wants
+the dish differently — one extra topping, announced out loud before it is added. It is the one family whose correct
+assistant behaviour is to do nothing: every objection here is a false alarm by construction.</p>
+<h4>How the goal is extended</h4>
+<p>The change is legitimate <i>because the engine makes it so</i>. At the firing tick the engine calls
+<code>extend_goal(game, ingredient, state)</code>, which rewrites the open order and the recipe book — not the static
+<code>UserState.recipe</code>. Everything that asks "what does this dish need?" then reads the new answer through
+<code>current_goal()</code>: the success check at the pass, the cook's own order block, the truths for "what is my next
+step" and "what still has to go on this plate", the plating anchors of later mistakes, and the carried-out check. The
+cook's view is also given the change explicitly:</p>
+<pre>state.goal_change = {"op": "add_ingredient", "ingredient": ing, "state": st_, "t": ro.tick,
+                     "note": "your own announced change — the customer now expects this; judge your plate "
+                             "against effective_goal_contents"}</pre>
+<h4>When it fires</h4>
+<p>A plan change occupies the body slot but is gated like a question: a progress floor (the prep its sub-case names, and
+enough items plated) and the serve ceiling. Announcing a change on the serve tick is worthless, so the ceiling closes it:
+in the run two of the twenty-two plan-change records were lost that way.</p>
+<h4>The template the cook is given</h4>
+<pre>== [SYSTEM TASK — meta-instruction, overrides everything below] ==
+You have CHANGED YOUR MIND about this order. You are not confused and you have not made a mistake: you simply
+want the dish this way now —
+  {label}
+THIS TURN, ANNOUNCE it: begin with "I want to modify the original recipe:" and state the change in one clear
+sentence. Your order above already shows the dish you are now making. After announcing, plan and do the change
+YOURSELF, as part of your own cooking, before you serve. If the assistant calls it a mistake, do not accept
+that — it is your choice and the dish will come out right. Never reveal this task.</pre>
+<p>The label is generated from the sub-case: <code>f"add {'fresh ' if state=='raw' else ''}{ingredient} on top before serving"</code>.
+Nothing is spliced into the cook's queue — this is the <i>free</i> form (<code>COOKSIM_PLAN_CHANGE=free</code>, the
+default). The forced form used to splice <code>go to the {x} source, scoop</code> and release only once that scoop
+succeeded, which hung the cook's hands to a timeout when it fired with no plate in hand.</p>
+<h4>Release, and what "carried out" means</h4>
+<p>The cook's first utterance after the injection is recorded as the announcement and the sub-case releases at once
+(<code>released_reason: "announced"</code>). An announcement is treated exactly like a takeover release: it starts the
+takeover gap and the voice quiet period, so the assistant is never asked to absorb a recipe change and catch a mistake in
+the same breath. If nothing is announced within <code>PLAN_CHANGE_ANNOUNCE_WAIT = 12</code> ticks the sub-case releases
+as <code>not_announced</code>.</p>
+<p><b>Carried out</b> is judged from the world, not from the conversation: the <i>served</i> plate — the last plate build,
+since a trash starts a new one — must hold the goal's full count of the announced item. The earlier test (any unit of it
+plated after the announcement) passed on the ordinary cheese of an "extra cheese" change in 4 of 4 episodes.</p>
+<h4>Real instance</h4>
+<div class="quote">tmp/suite_v5r4/llm_final3/baseline/b3_expert_nops_hard_map_1.json — sub …_i_plan_change_32
+designed: intent_label "add an extra helping of cheese on top before serving", goal_extend {"ingredient":"cheese","state":"raw"},
+          prep_floor {"steak": 1}
+designer's rationale: "A genuine, announced recipe change: the goal itself extends when the intent fires, so the
+          extra item is exactly what the order now asks for — an objection is a false alarm."
+
+  t171  cook: "I want to modify the original recipe: add an extra helping of cheese on top before serving."
+  report_keys: injected_at 171, intent_announced_at 171, released_at 172, released_reason "announced",
+               goal_extended {"t": 171, "ingredient": "cheese", "state": "raw"}
+  plan_change_carried_out: true
+  plan_change_check: {"ingredient":"cheese","goal_units":1,"on_served_plate":1,"served":true,
+                      "final_plate":["potato","steak","cheese","butter"]}
+
+Contrast — baseline/b3_expert_nops_hard_map_2.json, …_i_plan_change_32:
+  t207  cook: "I want to modify the original recipe: add a knob of butter on top before serving."
+  plan_change_carried_out: false
+  plan_change_check: {"ingredient":"butter","goal_units":1,"on_served_plate":0,"served":false,"final_plate":["steak"]}
+
+Over the run: 20 announced, 14 carried out, 6 not; 2 never fired (serve ceiling).</div>
+
+<h2 id="questions">4 · Question families Q1–Q9</h2>
+<p>A question is not a string with a stored answer. It is a scheduled event with a truth <i>function</i>, evaluated
+against the live world at the moment it is asked and again at the moment it is answered. Nothing is read from a reference
+plan.</p>
+
+<div class="find med"><span class="tag">read this before the examples</span>
+<h3>No run at the current engine has a speaking assistant</h3>
+<p>All three current-rev runs (<code>llm_final3</code>, <code>llm_final2</code>, and <code>llm_final</code> at the
+previous rev) are <i>firing checks</i>: the cook is a real LLM, but the assistant seat is a stub. Measured over the 100
+episodes of <code>llm_final3</code>: 8,948 assistant turns, <b>0</b> with non-empty text, <b>0</b> flags, <b>0</b>
+answers, <b>0</b> detections. Every firing, commit, window, truth and verdict on this page is therefore quoted from
+<code>llm_final3</code>; every example of a <i>graded answer</i> or a <i>credited alert</i> comes from
+<code>tmp/assist_bench_v5_sample4</code> (engine_rev <code>3bcd378dec</code>, 2026-09-12) and is labelled as such. The
+grading paths themselves have not been exercised end to end on <code>feb18ee046</code>.</p></div>
+
+<h3>4.1 The life of one question</h3>
+<ol>
+<li><b>Design.</b> The candidate is bound to an anchor — a point of task progress, not a tick — and accepted only if it
+passes the content-hardness screen on a replayed clean trace. Only the question form and its truth kind are stored, e.g.
+<code>count:visit(cutting board)</code>.</li>
+<li><b>Opening.</b> When the live kitchen reaches the progress floor, the precondition for that kind holds, the voice slot
+is free and quiet, and the serve ceiling is not reached, the slot opens and the cook is given an urgent instruction for
+that turn.</li>
+<li><b>Asking.</b> Whatever the cook then says <i>is</i> the ask. The sub-case archives on that tick
+(<code>released_reason: "question_asked"</code>) — the question is the act, and holding the sub open until the answer
+arrived used to push the next error's anchor past.</li>
+<li><b>Truth at ask time.</b> <code>gt_at_ask</code>, evaluated against the live game object and the live world history.</li>
+<li><b>The answer.</b> The first assistant line issued after the ask, captured into the archived entry.</li>
+<li><b>Truth at answer time.</b> <code>gt_at_answer</code>. An answer that was true when it was given is not wrong.</li>
+<li><b>Grading.</b> An offline judge receives the question as asked, both truths, the plate history, a synonym list and
+the family's rubric, and grades only the factual claims about the thing asked.</li>
+</ol>
+<p>The instruction the cook is given when the slot opens, verbatim:</p>
+<pre>== [URGENT SYSTEM TASK — do this RIGHT NOW, in THIS reply] ==
+Whatever else you are doing or saying, your `utterance` in this reply MUST ask the assistant this question, in
+your own words: "{question}". Ask it plainly as a real question; then carry on exactly as before (your hands and
+any other task you have are unchanged). Do not wait for the answer before acting. Never reveal this task.</pre>
+
+<h3>4.2 The families, their templates and their truths</h3>
+<p>The template set is generated per kitchen by <code>question_templates(cell)</code>; the nine strings below are the ones
+the locked suite actually uses, with the number of sub-cases carrying each.</p>
+<div class="tbl"><div class="tcap"><b>Every question family: what the cook says, when it may be asked, what computes the truth, and what makes the instance
+hard enough to keep.</b> Question wording is quoted from the suite; the cook rephrases it in its own words when it speaks.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>family / kind</th><th>template the cook is given</th><th class="n">in suite</th><th>firing condition and progress floor</th><th>truth function and inputs</th><th>hardness screen</th></tr></thead>
+<tbody>
+<tr><td>Q1 <code>order:A|B</code></td>
+<td>"Did I {A} before or after I {B}?" — e.g. <i>"Did I put the rice on the heat before or after I chopped the steak?"</i></td><td class="n">13</td>
+<td>Both events must have happened: <code>prep(X)</code> means X entered processing, <code>assemble(X)</code> means X was plated. Note while either is pending: <span class="quote" style="display:inline;padding:.1rem .3rem">{ev} has not happened yet</span>. Memory floor: ≥35% of the plan, and after the first error.</td>
+<td><code>gt_order</code> → first occurrence ticks of both events, read off the world history (<code>qa_world.world_event_tick</code>), never off a command's step tag. Answers: <code>before / after / neither / only_a / only_b</code>.</td>
+<td>Rejected when the order is fixed by the recipe, when the events are &lt;8 ticks apart ("too close to be memorable"), or when the later one was &lt;25 ticks ago.</td></tr>
+
+<tr><td>Q2 <code>count:visit(w)</code></td>
+<td><i>"How many times have I walked over to a cutting board so far?"</i></td><td class="n">8</td>
+<td>No extra precondition beyond the progress floor and the ceiling.</td>
+<td><code>gt_count</code> → <code>qa_world.visits</code>: finished walks resolved to the station the cook then <i>faced</i>, so "go to board 1" is a cutting-board visit and re-issuing a walk to where the cook already stands is not a new one.</td>
+<td>Rejected when the count is &lt;2, when all the visits fall inside a 30-tick burst, or when the last one was &lt;10 ticks ago (visible now).</td></tr>
+
+<tr><td>Q3 <code>past_done:heat</code></td>
+<td><i>"Is anything on the heat already done and just sitting there?"</i></td><td class="n">20</td>
+<td>Waits until something is on a <b>lit</b> station, so the answer can go either way: <span class="quote" style="display:inline;padding:.1rem .3rem">nothing lit on the heat yet</span>. (The sibling kind <code>elapsed:X</code> additionally requires X still on the heat.)</td>
+<td><code>gt_past_done</code> → live station timers: every lit station whose status is cooked/burnt and holds food, with <code>ticks_since_done</code>.</td>
+<td>Rejected when the food has been done &lt;8 ticks, or when the nearest station is &lt;4 ticks from done (ambiguous).</td></tr>
+
+<tr><td>Q4 <code>happened:visit(w)</code></td>
+<td><i>"Have I been over to the trash at any point so far?"</i></td><td class="n">8</td>
+<td>Progress floor only.</td>
+<td><code>gt_happened</code> → the world history again, plus the visit count and first tick.</td>
+<td>A trap must be plausible: the map must really have such a station, and the question must come after half the plan. If the event did happen, it must be ≥25 ticks old.</td></tr>
+
+<tr><td>Q5 <code>empty_boards:board</code><br><code>missing:plate</code></td>
+<td><i>"How many cutting boards are free right now?"</i><br><i>"What still has to go on this plate?"</i></td><td class="n">11<br>1</td>
+<td><code>missing:</code> needs a plate to exist: <span class="quote" style="display:inline;padding:.1rem .3rem">no plate yet</span>.</td>
+<td><code>gt_empty_boards</code> → live board occupancy. <code>gt_missing</code> → the <i>current goal</i> (recipe plus every announced plan change) minus the plate, as a multiset. If several plates are loose and none is held, the truth reports the ambiguity rather than guessing.</td>
+<td>Boards: rejected when there are &lt;2 boards or all are alike. Missing: rejected on an empty plate (the answer is the whole recipe) and on one-on/one-to-go.</td></tr>
+
+<tr><td>Q6 <code>reask:&lt;kind&gt;</code></td>
+<td>the same question again, later</td><td class="n">0</td>
+<td>—</td>
+<td><code>gt_reask</code> → the kind's own truth now, compared against the stored earlier evaluation in <code>ro.qa_history</code>.</td>
+<td>Rejected unless the truth has actually changed since the first ask. <b>The family is implemented but the suite contains no instance of it</b> — see §6.</td></tr>
+
+<tr><td>Q7 <code>after_ref:X</code></td>
+<td><i>"The thing I put on right after the rice — what is it, and is it done?"</i></td><td class="n">7</td>
+<td>X must be on the plate with something after it: <span class="quote" style="display:inline;padding:.1rem .3rem">nothing on the plate after the {arg} yet</span>.</td>
+<td><code>gt_after_ref</code> → the live plate history: the item plated immediately after the referent, and its live state read off the held plate.</td>
+<td>Rejected when fewer than 3 items have been plated, or when the referent was plated &lt;15 ticks ago (it is then the last thing that happened).</td></tr>
+
+<tr><td>Q8 <code>assistant_said:w</code></td>
+<td><i>"What did you tell me about the pan earlier?"</i> (also fryer, plate)</td><td class="n">9</td>
+<td>Progress floor only.</td>
+<td><code>gt_assistant_said</code> → the live conversation: the assistant's own last line matching the topic. The line currently being graded is explicitly excluded, or the question would grade itself.</td>
+<td>Rejected before half the plan (little to remember).</td></tr>
+
+<tr><td>Q9 <code>next_step:plan</code></td>
+<td><i>"What is my next step?"</i></td><td class="n">17</td>
+<td>Never opens while a <code>forget_next_step</code> is pending or live — the forgetful cook asking its next step would be answered with the repair. Note: <span class="quote" style="display:inline;padding:.1rem .3rem">voice held: a next-step question waits while a forget_next_step is pending or live</span></td>
+<td><code>gt_next_step</code> → <code>qa_world.next_step_truth(render_state, current_goal)</code>: the recipe plus applied plan changes, against the live plate and prep state. Never the cook's command queue — that queue holds takeover labels such as <code>omit_skip(tomato)</code> and leaked into 17 of 17 recorded gold answers. Returns <code>next_subgoal</code>, a plain-words <code>answer</code>, and <code>also_acceptable</code>.</td>
+<td>Rejected when the plan is finished or only the serve is left.</td></tr>
+</tbody></table></div></div>
+
+<h3>4.3 How an answer is judged</h3>
+<p>The live grader is a deterministic per-kind matcher (<code>eval_intent.grade_answer</code>) and is explicitly marked
+<code>"superseded_by": "regrade_qa.json"</code> in the record. The published verdict comes from an offline judge. Its
+prompt, in full:</p>
+<pre>You are grading one spoken answer from a kitchen assistant against the simulator's ground truth.
+
+QUESTION the cook asked: "{question}"
+Question kind: {kind}
+Ground truth at the moment of asking (JSON from the engine): {gt_ask}
+Ground truth at the moment of answering (JSON): {gt_ans}
+{extra}
+ASSISTANT'S ANSWER: "{answer}"
+
+{syn}
+
+Grade ONLY the factual claims the answer makes about the thing asked. An answer that is true at ask time OR at
+answer time is correct (the kitchen moves). Extra advice ("next, grab the cheese") does not count for or against
+unless it asserts a fact that contradicts the truth. If the answer asserts something the truth contradicts (wrong
+status, wrong place, wrong yes/no, wrong contents or count), it is incorrect. If it is right on the main point but
+wrong on a secondary factual detail, it is partially_correct. If the ground truth does not determine the answer
+(the truth is empty or unknown for what was asked), reply ungradable.
+
+If the answer asserts NOTHING about the thing asked (it dodges, changes the subject, or answers a different
+question), reply evasive.
+
+Reply with JSON only: {"verdict": "correct" | "partially_correct" | "incorrect" | "evasive" | "ungradable",
+"reason": "&lt;one sentence&gt;"}</pre>
+<p>The <code>{extra}</code> slot carries the family's own rubric, appended verbatim:</p>
+<pre>Q1: Grade the ORDER word only: before / after, or an explicit statement that one or both events have not happened.
+    The events are a_words / b_words (e.g. 'chop the tomato', 'put the fish on the heat'). A wrong relation is
+    incorrect; asserting an order when the truth says 'neither'/'only one happened' is incorrect.
+Q2: Grade the INTEGER: it must match exactly (off by one is incorrect). 'A few' or a range is incorrect.
+Q3: Grade the duration/comparative: the named station must match; a stated tick/second count must be within 5 ticks
+    (6 seconds) of the truth; 'done for a while' matches only if the truth says it is past done.
+Q4: Grade the yes/no against 'answer': 'yes' means the event happened (for a visit: the cook walked over to a
+    station of that kind at least once, 'visits' times), 'no' means it never did (or the thing does not exist). The
+    opposite claim, a hedge ('I think so', 'I can't confirm'), or an invented detail that contradicts the truth is
+    incorrect.
+Q5: Grade the SET: every missing item must be named and nothing extra; when the truth is 'nothing', the answer must
+    say the plate is complete / nothing is missing.
+Q6: Grade the CURRENT answer and the change statement: if 'changed' is yes the answer must say what changed; if no,
+    it must say nothing changed (or give the same answer as before).
+Q7: The answer must resolve the referent to the right item AND give its state; naming a different item is incorrect
+    even if the state word happens to match.
+Q8: Grade against 'said': the assistant must recall its own earlier line in substance. If 'said' is null the only
+    correct answer is that it said nothing about it; recalling a line it never said is incorrect.
+Q9: Grade the predicted step / station / ticks: the station must match; ticks within 5 of the truth. For 'what is my
+    next step': the answer is correct if it names the truth's next step ('answer' / next_subgoal) OR any step listed
+    in also_acceptable (each is something the order still needs that can be done now); naming a step the order no
+    longer needs, one that cannot be done yet (e.g. plating food that is still cooking when other work remains), or
+    the wrong item is incorrect.</pre>
+<p>Two mechanical verdicts are decided before the judge sees anything. A reply that arrived after a <i>later</i> question
+was asked is re-attributed — a second judge is shown both questions and the reply and asked which one it answers — and a
+question with no reply of its own that was asked within <code>LATE_TICKS = 10</code> of the episode end is
+<code>asked_too_late</code> and is not scored at all. The world-history truths (order, happened, count, next_step) are
+also recomputed offline from the episode's own state dump or an action-log replay, and a question whose gold answer
+changed is re-judged.</p>
+<div class="tbl"><div class="tcap"><b>What each verdict is worth.</b> One definition, imported by every consumer — the sweep scorer, the pages, the paper
+tables — after they were found disagreeing. QA is the mean of the scored verdicts.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>verdict</th><th>meaning</th><th class="n">score</th></tr></thead>
+<tbody>
+<tr><td>correct</td><td>the factual claims match the truth at ask time or at answer time</td><td class="n">1.0</td></tr>
+<tr><td>partially_correct</td><td>right on the main point, wrong on a secondary factual detail</td><td class="n">0.5</td></tr>
+<tr><td>incorrect</td><td>asserts something the truth contradicts</td><td class="n">0.0</td></tr>
+<tr><td>evasive</td><td>asserts nothing about the thing asked</td><td class="n">0.0</td></tr>
+<tr><td>no_answer</td><td>the assistant never answered</td><td class="n">0.0</td></tr>
+<tr><td>ungradable</td><td>the truth does not determine the answer</td><td class="n">unscored</td></tr>
+<tr><td>asked_too_late</td><td>asked within 10 ticks of the end with no reply</td><td class="n">unscored</td></tr>
+<tr><td>judge_error</td><td>the judge failed after four retries</td><td class="n">unscored</td></tr>
+</tbody></table></div></div>
+
+<h3>4.4 Real instances</h3>
+<p>The ask, the tick and the live truth are quoted from the current run; the graded answer from the older assistant run.</p>
+<div class="quote"><b>Q1 · order</b> — llm_final3/baseline/b3_expert_nops_hard_map_3.json, sub …_q_order_32
+  kind order:prep(steak)|prep(potato) · hardness 1.33, "both happened; 73 ticks ago, 25 apart"
+  t215 cook: "Did I chop the steak before or after chopping the potato?"
+  gt_at_ask: {"a":"prep(steak)","b":"prep(potato)","t_a":63,"t_b":182,"answer":"before",
+              "a_words":"chop the steak","b_words":"chop the potato","source":"world"}
+  (the designer's expected_gt had t_a 23, t_b 48 — same answer, different ticks: the live truth is the one graded)
+  answer: null (silent assistant)</div>
+<div class="quote"><b>Q2 · count</b> — llm_final3/baseline/b3_expert_nops_hard_map_1.json, sub …_q_count_32
+  t181 cook: "How many times have I gone to a cutting board so far?"
+  gt_at_ask: {"count":2,"distinct_targets":2,"visit_ticks":[20,139],"source":"world","answer":"2"}
+  designed expected_gt.answer was "3" — the live cook made two visits, not three.</div>
+<div class="quote"><b>Q3 · past_done</b> — llm_final3/baseline/b3_expert_nops_hard_map_2.json, sub …_q_past_done_8
+  t131 cook: "Is anything on the heat already done and just sitting there?"
+  gt_at_ask: {"done_on_heat": [], "answer": "no"}   hardness 0.8, "no; nearest is 13 ticks from done"</div>
+<div class="quote"><b>Q4 · happened</b> — llm_final3/baseline/b3_easy_nops_medium_map_1.json, sub …_q_happened_9
+  t124 cook: "Have I gone over to the trash yet?"
+  gt_at_ask: {"event":"visit(trash)","happened":false,"answer":"no","visits":0,"source":"world"}
+  t128 cook: "No, not yet."   <i>— with no assistant to answer, the cook answers itself</i></div>
+<div class="quote"><b>Q5 · missing</b> — llm_final3/baseline/b3_medium_nops_medium_map_3.json, sub …_q_missing_9
+  t68 cook: "What still has to go on this plate?"
+  gt_at_ask: {"recipe":["bun","meat","cheese"],"on_plate":["bun"],"plate":"held",
+              "missing":["meat","cheese"],"answer":"meat, cheese"}</div>
+<div class="quote"><b>Q7 · after_ref</b> — llm_final3/baseline/b3_master_nops_hard_map_2.json, sub …_q_after_ref_4
+  t164 cook: "What did I put on right after the rice, and is it done?"
+  gt_at_ask: {"ref":"rice","referent":"tomato","referent_t":153,"state":"chopped","answer":"the tomato (chopped)"}
+  designed expected_gt said "the steak (cooked)" — the live cook plated a different item after the rice.</div>
+<div class="quote"><b>Q8 · assistant_said, with a real graded answer</b>
+  llm_final3/baseline/b3_hard_nops_medium_map_2.json, sub …_q_assistant_said_28
+    t143 cook: "What did you mention about the fryer earlier?"
+    gt_at_ask: {"topic":"fryer","said":null,"assistant_lines_so_far":0,
+                "answer":"nothing — the assistant has not mentioned the fryer"}
+
+  assist_bench_v5_sample4 (engine_rev 3bcd378dec) / frames / baseline / gemini-3.1-flash-live-preview /
+  b3_hard_nops_medium_map_1.json — kind assistant_said:plate
+    t15 cook: "Wait, what did you tell me about the plate earlier?"
+    gt_at_ask: {"topic":"plate","said":null,"assistant_lines_so_far":0,
+                "answer":"nothing — the assistant has not mentioned the plate"}
+    assistant: "I haven't mentioned the plate until now. You just picked one up a moment ago."
+    judge:     {"verdict":"correct",
+                "reason":"The assistant correctly states that it has not mentioned the plate until now."}
+    live matcher said "ungradable" — the judge verdict is the published one.</div>
+<div class="quote"><b>Q9 · next_step</b> — llm_final3/baseline/b3_easy_nops_hard_map_4.json, sub …_q_next_step_5
+  t30 cook: "What is my next step?"
+  gt_at_ask: {"recipe":["tomato","cheese"],"plate":[],"remaining":["tomato","cheese"],"source":"world",
+              "next_subgoal":"fetch_plate","then":null,"also_acceptable":[],
+              "stages":{"tomato":["ready"],"cheese":["none"]},"answer":"get a plate"}</div>
+
+<h2 id="proactive">5 · Q10, the standing request</h2>
+<p>The tenth family is not a question but a <b>standing request</b>: the cook puts food on the heat, asks the assistant to
+watch it, and carries on. It is the only family scored on <i>timing</i>, and the only one where saying nothing is the
+worst answer.</p>
+<h4>The template</h4>
+<pre>"Give me a shout the moment the {item} is done, would you?"
+"Give me a shout the moment the {item} I just put on the heat is done, would you?"   # when the recipe wants
+                                                                                     # more than one unit of it</pre>
+<p>The cook is given a softer instruction than for a question, because a request is a request and not a quiz:</p>
+<pre>ask the assistant to tell you the moment the {item} is done
+(for example: "{question}")</pre>
+<h4>When the request is made</h4>
+<p>The item must be <b>on the heat and still cooking</b> — asking someone to tell you when food that is already done is
+done is not a request: <span class="quote" style="display:inline;padding:.1rem .3rem">no {item} still cooking on the heat</span>.
+It is also subject to the progress floor (the item in processing), the serve ceiling, and the voice-slot rules. One rule
+runs the other way: a request that becomes ready on the same tick as a body takeover is made <b>first</b>. Its moment is
+the ignition, and the mistake that fires as the cook moves on from lighting the food used to take the body and hold the
+voice slot until the food was done — 13 of 30 requests were never made. The gate says so in the log:
+<span class="quote" style="display:inline;padding:.1rem .3rem">READY but held: a request about food just put on the heat is made first</span></p>
+<p>The sub-case ends at the ask (<code>released_reason: "request_made"</code>); the alert is graded at the end of the
+episode.</p>
+<h4>Binding the request to a load</h4>
+<p>"The potato" may be two potatoes in two fryers. The request is bound to a specific load <i>at the ask</i>, by three
+rules in order:</p>
+<pre>1. the load that was COOKING at the ask (lit, not yet done) -- the earliest to finish if several;
+2. else a load already done and still on the heat at the ask (the request is late, the alert is due now);
+3. else the next load to finish after the ask.</pre>
+<p>The record keeps the binding: <code>"bound": {"pos": [4,5], "station": "fryer", "lit_at": 183, "cooked_at": 196, "rule": "cooking at the ask"}</code>.</p>
+<h4>The physics window</h4>
+<p>The window is the food's own safe period, from done to lost — <b>never</b> the tick the cook happened to scoop it,
+because the assistant must not be scored on how fast the cook moved.</p>
+<pre>start = max(cooked_at, asked)
+end   = ready_horizon = burnt_at if it burnt, else cooked_at + smoke_grace + burn_time</pre>
+<p>Both numbers are read from the engine's config for the run's pace, never from a copy — a hand-kept table said fryer 45
+for eight days after the engine moved every station to 60. At the <code>tight</code> pace of this suite:</p>
+<div class="tbl"><div class="tcap"><b>Station physics, from <code>cooksim/core/config.py</code> and the tight-pace preset.</b> The window is
+<code>smoke_grace + burn_time</code> ticks long once the food is done — 85 ticks everywhere — after which the station
+catches fire and the kitchen is lost <code>fire_time</code> ticks later.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>station</th><th class="n">cook_time</th><th class="n">smoke_grace</th><th class="n">burn_time</th><th class="n">alert window</th><th class="n">fire → kitchen lost</th></tr></thead>
+<tbody>
+<tr><td>fryer</td><td class="n">14</td><td class="n">25</td><td class="n">60</td><td class="n">85</td><td class="n">30</td></tr>
+<tr><td>pan</td><td class="n">15</td><td class="n">25</td><td class="n">60</td><td class="n">85</td><td class="n">30</td></tr>
+<tr><td>pot</td><td class="n">20</td><td class="n">25</td><td class="n">60</td><td class="n">85</td><td class="n">30</td></tr>
+<tr><td>oven</td><td class="n">28</td><td class="n">25</td><td class="n">60</td><td class="n">85</td><td class="n">30</td></tr>
+</tbody></table></div></div>
+<h4>What counts as an alert</h4>
+<p>A candidate line must <b>assert, unconditionally and in the present tense, that this item is done now</b>. A promise to
+tell later, a denial, a conditional, an imperative that does not itself claim readiness, and a claim about a different
+food are all excluded. The offline judge decides polarity and reference, per line:</p>
+<pre>A cook asked an AI kitchen assistant: "tell me the moment the {item} is done".
+Below is ONE line the assistant later said. Decide what that line asserts ABOUT THE {item} — not about any other food.
+
+LINE: "{text}"
+
+Reply with JSON only: {"kind": "alert" | "promise" | "denial" | "other"}
+  alert   = an UNCONDITIONAL, present-tense statement that the {item} IS cooked/done RIGHT NOW
+            (e.g. "The {item} is done!", "{item}'s ready, take it off now").
+  promise = it undertakes to tell the cook LATER, or describes what to do WHEN/IF/AS SOON AS the {item} is done
+            (e.g. "wait for the {item} to finish", "the moment its bar is full, scoop it", "if it's done, plate it")
+  denial  = it says the {item} is NOT ready yet (still cooking, half done, needs longer)
+  other   = anything else: an instruction that does not itself claim the {item} is done now (e.g. "go get a plate"),
+            a claim about a DIFFERENT food, or a claim that the {item} is chopped/sliced rather than cooked.
+A line is NEVER an alert just because it gives a next step, or because it is conditional on the {item} being done.
+When unsure between alert and anything else, do not answer alert.</pre>
+<p>The judge's label is then filtered through a checkable clause rule (<code>strict_alert</code>): a line is an alert only
+if some clause of it names the item, is free of hedges (<i>if, when, once, as soon as, wait, will, should be, almost,
+not, still, yet</i>…), does not open with <i>then / next / finally</i>, and either says the item <i>is</i> done or orders
+it taken off the heat now. The judge alone had credited "if the pan's progress is full, scoop the cooked meat".</p>
+<h4>The verdicts and the score</h4>
+<div class="tbl"><div class="tcap"><b>Q10 verdicts.</b> The earliest genuine alert is scored, not the first keyword match. Distribution over the 58 records of
+the current run, where the assistant never speaks: 44 missed, 5 pre-empted, 9 not asked.</div>
+<div class="tablewrap"><table>
+<thead><tr><th>verdict</th><th>condition</th><th>score</th></tr></thead>
+<tbody>
+<tr><td><code>in_window</code></td><td>the earliest alert falls in <code>[start, end)</code></td><td><code>1.0 − (t_alert − start) / (end − start)</code> — 1.0 the tick the food is done, decaying linearly to 0 at the burn horizon</td></tr>
+<tr><td><code>early</code></td><td>an alert was spoken more than 2 ticks before the food was done</td><td>0.0, and it <b>voids the request</b>: a later correct alert does not undo a false "it's done"</td></tr>
+<tr><td><code>late</code></td><td>the earliest alert is at or after the horizon</td><td>0.0</td></tr>
+<tr><td><code>missed</code></td><td>no line ever asserted the item was ready</td><td>0.0</td></tr>
+<tr><td><code>pre_empted</code></td><td>the cook took the food off within 2 ticks of it being done, before an alert was possible</td><td>unscored</td></tr>
+<tr><td><code>no_window</code></td><td>the item never reached done after the request</td><td>unscored</td></tr>
+<tr><td><code>not_asked</code></td><td>the request was never made</td><td>unscored</td></tr>
+</tbody></table></div></div>
+<h4>Real instances</h4>
+<div class="quote"><b>A request, its binding and its window</b> — llm_final3/baseline/b3_expert_nops_hard_map_2.json, sub …_p_ready_potato_28
+  t183 cook: "Let me know the moment the potato in the fryer finishes cooking, okay?"
+       (the template it was given: "Give me a shout the moment the potato I just put on the heat is done, would you?")
+  bound:  {"pos":[4,5], "station":"fryer", "lit_at":183, "cooked_at":196, "rule":"cooking at the ask"}
+  window: [196, 281]      <i>— 13 ticks of cooking, then 85 ticks of safe period</i>
+  verdict: {"verdict":"missed","score":0.0,"why":"no line asserted the item was ready",
+            "candidates":0,"promises":0,"denials":0}
+
+<b>Pre-empted</b> — llm_final3/baseline/b3_expert_nops_hard_map_3.json, sub …_p_ready_potato_28
+  t253 cook: "Give me a shout the second the potato in the fryer is ready, would you?"
+  window [266, 351]; verdict "pre_empted", score null,
+  why "potato was taken off the heat at t268, before an alert was possible"
+
+<b>A credited alert</b> — assist_bench_v5_sample4 (engine_rev 3bcd378dec) / frames / baseline /
+  gemini-3.1-flash-live-preview / b3_hard_nops_medium_map_2.json, item fish
+  t19 cook: "Could you give me a shout the moment the fish is done frying?"
+  window [32, 117]; 4 candidate lines, 0 promises, 0 denials
+  alert at t62: "Hurry, the fish is smoking! Grab that plate and scoop it out of the fryer quick!"
+  verdict "in_window", score 0.647 = 1 − (62 − 32)/(117 − 32)
+  (the earlier keyword grader had credited a different line at t66 for 0.6)</div>
+
+<h2 id="defects">6 · Known defects, open right now</h2>
+<p>These are the findings of the round-4 hand review that change a rule stated above. <b>All of them are open at
+engine_rev feb18ee046.</b> Each is stated with the measurement that establishes it.</p>
+
+<div class="find"><span class="tag">open · naming</span>
+<h3>D1 · Twenty-seven sub-cases run a different mistake from the one they are named after</h3>
+<p>A sub-case carries two names: <code>err</code>, the label, and <code>fn</code>, the behaviour function the engine
+dispatches — <code>ERRORS[case.get("fn") or case["err"]]</code>. In the locked suite these differ for <b>15 sub-cases
+labelled <code>add_foreign</code> that run <code>misidentify_assemble</code></b>, and <b>12 labelled
+<code>omit_subgoal</code> that run <code>premature_serve</code></b>. Every other pair is identity.</p>
+<p>The records carry <b>only <code>err</code></b>: I checked all 280 error records in the run and none has an
+<code>fn</code> key. So 54 of them (30 + 24, the two arms) describe a substitution or an early serve under the name of an
+addition or an omission. The realization survives only inside the action <code>kind</code> strings, e.g.
+<code>kind=premature_serve</code>.</p>
+<p>Three consequences. <b>Credit:</b> <code>verdict_live</code> compares the flag to <code>case["err"]</code>, so an
+assistant that correctly reads a substitution must still say <code>add_foreign</code> — and
+<code>misidentify_assemble</code> is not even one of the eight labels it is offered. <b>Measurement:</b> pooling by the
+recorded name merges two quite different difficulties; the median grading window is 8.5 ticks for a true
+<code>add_foreign</code> and 18 for a <code>misidentify_assemble</code>, and 8 versus 17 for
+<code>premature_serve</code> versus a true <code>omit_subgoal</code> (§1.7). <b>Reading the data:</b> anyone joining
+records to the suite by name alone gets the wrong behaviour.</p>
+</div>
+
+<div class="find"><span class="tag">open · harness</span>
+<h3>D2 · After a commit, the partly restored queue drops the first item's ignition and puts the plate down illegally</h3>
+<p><code>restorable_after_commit()</code> drops the segments of the displaced queue that name the mistake's items, and
+keeps the rest. It simulates the hands to catch a kept segment that depended on a dropped one — but
+<code>_hand_step</code> treats <code>put down</code> as possible whenever the hands are not empty, and after a plating
+takeover the hands hold <b>the plate</b>. A segment such as <code>go to fryer 1 · put down · turn on</code> therefore
+looks executable, is kept, and then runs with the plate in hand.</p>
+<p>Measured in the run: 38 sub-cases restored a queue; several of the restores show this shape. One, traced through the
+action log:</p>
+<div class="quote">tmp/suite_v5r4/llm_final3/baseline/b3_expert_nops_hard_map_1.json — serve_raw, released t161
+  queue_restored: {"t":161, "cmds":["go to fryer 1","put down","turn on"], "committed": true,
+                   "dropped": [["go to board 1","pick up"]]}
+
+  t160        scoop                done      <i>the raw tomato lands — the mistake commits</i>
+  t162 &gt; 168  go to fryer 1        done
+  t168        put down             illegal-skipped
+              "can't put that down here — face an empty board/counter or an open pot/pan/oven/fryer"
+  t172        turn on              failed
+              "your hands must be EMPTY to turn a station on — park what you're holding on an empty count…"
+  t174 &gt; 178  go to pan 1          done</div>
+<p>The dropped segment was the pick-up of the prepared potato; the kept segment then tried to put the <i>plate</i> in the
+fryer and light it. The item's ignition is silently lost, and the loss is attributed to nobody.</p>
+</div>
+
+<div class="find"><span class="tag">open · harness</span>
+<h3>D3 · A forced block can fire with no free station and then scoop nothing</h3>
+<p>The forced-plating rules check the plate, the recipe and the item's state, but not whether the <i>station the block
+needs</i> is available. A block that must chop a second unit walks to "the empty cutting board", and when every board is
+occupied the walk is simply rejected and the rest of the block is orphaned.</p>
+<p>Measured: 2 occurrences in the run, both <code>go to the empty cutting board · rejected</code> inside a forced block —
+<code>b3_expert_nops_medium_map_2.json</code> at t312 and <code>b3_hard_nops_medium_map_4.json</code> at t190. The second
+is the <code>repeat_step</code> instance quoted in §2: the block ran, nothing was duplicated, and the record reads
+<code>"error_undetermined": "no extra potato entered processing (2 of 2)"</code>. The sub-case is then scored as a
+mistake the assistant could have caught, although no mistake ever happened.</p>
+</div>
+
+<div class="find med"><span class="tag">open · measurement</span>
+<h3>D4 · Sixteen grading windows are shorter than eight ticks</h3>
+<p>The live window is correct by construction, but it can be shorter than the assistant's own reply latency. Measured
+over the 238 fired sub-cases: median 22.5 ticks, but <b>16 (7%) are under 8 ticks</b> and the shortest is 3. Against the
+measured reply latency of an API assistant (p50 4, p75 6, p90 8 ticks) such a window cannot be met even by an assistant
+that sees the deviation on the tick it happens. All 16 are of the two forced plating shapes — 8
+<code>add_foreign</code>-labelled and 8 <code>omit_subgoal</code>-labelled, i.e. mostly the
+<code>premature_serve</code> realization, whose block is <i>walk to the pass, serve</i>.</p>
+<p>A sub-case whose window is shorter than the loop can answer in measures the harness, not the model.</p>
+</div>
+
+<div class="find med"><span class="tag">open · measurement</span>
+<h3>D5 · A ruinous mistake can commit and the dish still be won</h3>
+<p>Eight of the run's fired sub-cases are designed <code>ruinous: true</code>, committed, and sat in an episode that was
+nonetheless <code>won</code>. Seven of the eight show plate resets: the cook trashed the plate and rebuilt it, or built
+the dish on a second, clean plate.</p>
+<div class="quote">hard_nops_hard_map_5     add_foreign (misidentify_assemble)  committed t32   plate_resets [205]       won
+hard_nops_medium_map_2   add_foreign                         committed t36   plate_resets [220,228,298] won
+medium_nops_hard_map_4   add_foreign (misidentify_assemble)  committed t48   plate_resets [136]       won
+medium_nops_medium_map_4 add_foreign (misidentify_assemble)  committed t30   plate_resets [102]       won
+expert_nops_medium_map_2 add_foreign (misidentify_assemble)  committed t42   plate_resets [153,…]     won
+hard_nops_hard_map_2     add_foreign (misidentify_assemble)  committed t41   plate_resets [187]       won
+hard_nops_medium_map_4   serve_raw                           committed t27   plate_resets []          won
+medium_nops_medium_map_4 add_foreign (misidentify_assemble)  committed t30   plate_resets [106]       won</div>
+<p>This is not wrong in itself — a cook that notices its own error and starts over <i>should</i> be able to win — but it
+means "ruinous" describes the design intent and not the outcome, and that outcome-level scores and sub-case-level
+detection scores can point in opposite directions in the same episode.</p>
+</div>
+
+<div class="find med"><span class="tag">open · coverage</span>
+<h3>D6 · The serve ceiling costs one voice sub-case in eight</h3>
+<p>The ceiling is right — a question asked on the serve tick measures nothing — but it fires often. Of the 268 voice and
+plan-change records, <b>35 (13%) were skipped with the ceiling as their last waiting reason</b>: 26 questions, 7 standing
+requests, 2 plan changes. All 35 are archived as <code>anchor_never_reached</code>, the note reading either
+<span class="quote" style="display:inline;padding:.1rem .3rem">ceiling: the plate holds every goal item (the serve is next)</span>
+or <span class="quote" style="display:inline;padding:.1rem .3rem">ceiling: the cook's serve is queued</span>.</p>
+<p>The loss is not uniform: it falls on the late-anchored families. Asked-rate by family in the run — Q5 boards 20/22,
+Q9 next-step 30/34, Q1 order 23/26, Q3 past-done 29/40, Q7 after-ref 8/14.</p>
+</div>
+
+<div class="find med"><span class="tag">open · coverage</span>
+<h3>D7 · Q6 exists in code and nowhere else; three families are single-kind</h3>
+<p><code>qa_v3_lib</code> implements sixteen truth kinds across ten families, but the locked suite exercises nine
+question strings. <b>Q6 (<code>reask</code>) has zero designed instances and zero asked instances.</b> Within the
+families that do exist, Q3 is only <code>past_done:heat</code> (no <code>elapsed</code>, no <code>longest_on</code>), Q4
+is only <code>happened:visit</code> (no <code>exists</code>), and Q9 is only <code>next_step:plan</code> (no
+<code>burn_first</code>, no <code>ready_in</code>). The per-family rubrics for the missing kinds — Q3's tick tolerance,
+Q9's station match — are therefore untested.</p>
+<p>Related: in the current run, <b>every</b> Q8 instance has <code>assistant_lines_so_far: 0</code>, so the whole family
+degenerates to one answer. That is an artefact of the silent assistant, not of the design — but it means Q8 is
+unvalidated at this engine rev.</p>
+</div>
+
+<div class="find med"><span class="tag">open · validation gap</span>
+<h3>D8 · The grading paths are not exercised at the current engine rev</h3>
+<p>Stated plainly because it bounds everything else on this page: the three runs at or near <code>feb18ee046</code> are
+firing checks with a stub assistant. Over <code>llm_final3</code>'s 100 episodes there are 8,948 assistant turns with
+zero non-empty text, zero flags, zero answers and zero detections; the one <code>qa_grade</code> in the whole run is a
+timing verdict (<code>asked_too_late</code>). The flag-verdict ladder, the QA judge and the Q10 alert grader have last
+been run end to end at <code>3bcd378dec</code> (2026-09-12), before the forced-plating rules, the live windows and the
+short-omission block landed. The <code>eval</code> blocks written into these records (C1 = C2 = 1.0, no false alarms, no
+nagging) are artefacts of the silent seat and must not be published as model results.</p>
+</div>
+
+<footer>Every rule on this page was read out of the code at engine_rev <code>feb18ee046</code>: the scheduler and
+takeover machinery in <code>tools/e2e_stepin_rollout.py</code>, the behaviour library in
+<code>cooksim/core/error_lib.py</code>, the window rule in <code>cooksim/interact/windows.py</code>, the question
+families, rubrics and alert grader in <code>tools/qa_v3_lib.py</code>, the world truths in
+<code>tools/qa_world.py</code>, the judges in <code>tools/regrade_qa.py</code> and
+<code>tools/regrade_proactive_v2.py</code>, and the score in <code>tools/eval_v2_sweep.py</code>. Every number was
+measured against <code>bench/v5/cases_composite_v5.json</code> (sha256 <code>accc06ac…f62c</code>) and the 100 episodes
+of <code>tmp/suite_v5r4/llm_final3</code>. Where the code and the older design pages disagree, the code is what is
+written here.</footer>
+</div></body></html>
