@@ -16,12 +16,13 @@ Designed at the final **5.5-inch / 396-point manuscript width**. These are propo
 - Only the simulated user acts on the world. The assistant receives user-view video and dialogue and responds through guidance.
 - User persona and scheduled events condition the simulated user. No task-input arrow, evaluation box, assistant-to-world control edge, or enclosing user/world frame.
 - The action-space contribution appears as **Semantic actions** on the execution interface. API signatures belong in the action table, not in unreadable figure microtext.
-- World state supports subgoal checks. The labeled graph in A/B/C is an illustrative partial cooking state, not a reconstruction of the screenshot or a measured result. The checks are schematic, not reported benchmark outcomes.
+- World state supports subgoal checks. The labeled graph in A/B/C illustrates the current VHSim `groceries_hard` task: milk and juice are inside the fridge, but the fridge is still open. The three schematic checks correspond to storing milk, storing juice, and closing the fridge. This is an illustrative state, not a reconstruction of the screenshot or a measured benchmark result. The task and checks were verified in `vh-streaming-engine/tools/episode_goals.py`.
 - Environment thumbnails in B/C identify the domains; their UI text is not part of the figure's explanatory content. A/D avoid this small-image issue entirely.
+- Schematic options A/D use domain names (Cooking, Household, Mobile UI), so the overview is intelligible before engine names are introduced. The photographic options B/C identify the concrete implementations as CookSim, VHSim, and ScreenSim.
 
 ## Files and editing
 
-`*.svg` are layered, self-contained Inkscape masters with live text. `*.pdf` are vector Inkscape exports with embedded fonts, ready for LaTeX. `*.png` are previews. `*.drawio` are native online editing copies with separate text, shapes, and arrows (not flattened images).
+`*.svg` are layered, self-contained Inkscape masters with live text. `*.pdf` are vector Inkscape exports with embedded fonts, ready for LaTeX. `*.png` are previews. `*.drawio` are native online editing copies with separate text, shapes, and arrows (not flattened images). Actors and interfaces are grouped so their components can be moved together; individual labels remain editable.
 
 Review: https://hellomuffin.github.io/cooksim-results-v6/figure1/
 
@@ -36,9 +37,10 @@ Requirements: Python 3, Pillow, Inkscape, a Liberation Sans or Arial font, and a
 ```sh
 python build.py
 tectonic proof.tex
+python check.py  # optional: requires PyMuPDF
 ```
 
-The generator rejects text below 8 pt. Main labels are 9.5–10 pt. `proof.pdf` shows all four candidates at manuscript width alongside 10-pt text. Text, not color alone, identifies actors and interfaces; arrows and line styles preserve the relationships in grayscale. Source figures use no shadows or decorative gradients.
+The generator rejects text below 8 pt. Main labels are 9.5–10 pt. `proof.pdf` shows all four candidates at manuscript width alongside 10-pt text. `quality_checks.json` records PDF dimensions, minimum type sizes, embedded fonts, and native editable-object counts. Text, not color alone, identifies actors and interfaces; arrows and line styles preserve the relationships in grayscale. Source figures use no shadows or decorative gradients.
 
 The old `01_simulation_system_v4.pdf` has a minimum font size of approximately 3.3 pt when scaled to this width. The new figures have a minimum of 8 pt. This is a final-size comparison, not the SVG's unscaled coordinate size.
 
