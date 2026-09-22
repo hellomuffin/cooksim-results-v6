@@ -26,6 +26,8 @@ Designed at the final **5.5-inch / 396-point manuscript width**. These are propo
 
 Review: https://hellomuffin.github.io/cooksim-results-v6/figure1/
 
+`figure1_proposals.drawio` is a four-page editable designbook containing all candidates, with A–D as separate tabs. The per-candidate files are also provided for focused editing.
+
 The review page includes two editing modes: **Edit a copy** opens the public source without requiring an account; **Edit shared file** opens the GitHub-backed document and requires GitHub authorization to save. This is versioned collaboration, not a claim of simultaneous Figma-style co-editing. Online edits do not automatically regenerate the manuscript PDF.
 
 After manual editing, treat the edited SVG or draw.io document as authoritative. Do not rerun the generator over hand edits unless those changes have been incorporated into `build.py`. Inkscape is the publication export tool; the browser editor is provided for convenient collaboration. Exporting from draw.io may require setting the final output width back to 5.5 inches: its editing canvas is deliberately 2× larger.
