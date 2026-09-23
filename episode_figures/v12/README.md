@@ -20,6 +20,12 @@ to retain matching panel heights; no dialogue is rewritten or reflowed.
 The author's horizontal world-engine and subcaption adjustments from commit
 `9cbe597` are preserved. See `actor_match.json` for the source comparison.
 
+Latest typography update starts from author commit `900db5b`, preserving the
+wider persona card and increased panel gap. World-engine heading and content
+fonts are enlarged by approximately 14–18%; the engine is slightly wider so
+its text remains single-line. All cells outside the world engine are unchanged.
+See `world_type.json` for exact font sizes and source checks.
+
 All labels, shapes, icons, and arrows remain editable. The observation images
 retain their original pixels. Prior variants and the Overleaf manuscript are
 unchanged. Editing the native source does not automatically refresh exports.
