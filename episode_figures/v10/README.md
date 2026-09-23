@@ -1,5 +1,11 @@
 # Stacked actor cards and larger dialogue · revision 10
 
+Shared-edit update: preserved the author's wider panel gap from commit
+`3176f87` and added aligned, editable subcaptions: “(a) System overview”
+and “(b) Example interaction trajectories”. Every existing figure cell is
+unchanged. The combined SVG, PDF, and PNG have been regenerated; the shared
+editing URL remains the same. The updated PDF is approximately 693 × 230 pt.
+
 Based on the author's second saved native drawing, commit `42331b2`.
 All wording and intentional deletions are retained. Shortened dialogue is
 rewrapped, Assistant A's shorter episode frame is fitted to its contents,
