@@ -102,56 +102,78 @@ for key, _ in ENGINES:
             **{dim: value(row[dim]) for dim in DIMS}}
 qa_table = read_tables('03_qa_proactive/cooksim.md')[0]
 qa = {r[0]: dict(zip(qa_table[0][1:], r[1:])) for r in qa_table[1]}
+# CookSim is the common ordering anchor: native configurations exist only there.
+GROUPS = [(name, sorted(models, key=lambda m: -task['cooksim'][m[0]]['success'][0]))
+          for name, models in GROUPS]
+MODELS = [m for _, models in GROUPS for m in models]
 
 STYLE = r'''% Shared packages/macros for the three input-ready table files.
 \usepackage[T1]{fontenc}
-\usepackage{times,booktabs,array,amsmath}
+\usepackage{times,booktabs,array,amsmath,graphicx}
 \usepackage{xcolor,colortbl}
-\definecolor{ivgink}{HTML}{274B63}
-\definecolor{ivgband}{HTML}{EDF3F6}
+\definecolor{ivgink}{HTML}{172F39}
+\definecolor{ivgcook}{HTML}{FAF6F0}
+\definecolor{ivgvh}{HTML}{EDF8F5}
+\definecolor{ivgscreen}{HTML}{F4EFF8}
+\definecolor{ivgquality}{HTML}{EFF5F9}
 \definecolor{ivgmuted}{HTML}{5F6C76}
 \newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{K}[2]{>{\columncolor{#1}\centering\arraybackslash}p{#2}}
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
-\newcommand{\ivghead}[1]{{\fontsize{7.3}{8.5}\selectfont\bfseries #1}}
-\newcommand{\ivgband}[2]{\addlinespace[3pt]\rowcolor{ivgband}\multicolumn{#1}{@{}l@{}}{\strut\hspace{3pt}{\fontsize{7.8}{9}\selectfont\color{ivgink}\textit{#2}}}\\[1pt]}
+\newcommand{\ivghead}[1]{{\sffamily\fontsize{7.3}{8.5}\selectfont\bfseries #1}}
+\newcommand{\ivgvhead}[1]{{\sffamily\fontsize{7.2}{8.5}\selectfont\rotatebox{90}{\strut #1}}}
+\newcommand{\ivgband}[2]{\midrule\rowcolor{white}\multicolumn{#1}{@{}l@{}}{\strut{\sffamily\fontsize{7.6}{9}\selectfont\bfseries #2}}\\[1pt]}
 \newcommand{\ivgmissing}{\textcolor{ivgmuted}{---}}
 \newcommand{\ivgsd}[2]{#1\,{\fontsize{6.5}{7}\selectfont\textcolor{ivgmuted}{$\pm$#2}}}
 \newcommand{\ivgnote}[1]{\par\vspace{5pt}{\fontsize{8}{9.5}\selectfont\noindent #1\par}}
 '''
 
 
-def score(v, best=False):
+def score(v, rank=None):
     if v is None:
         return r'\ivgmissing'
     s = str(round(v * 100))
-    return r'\textbf{' + s + '}' if best else s
+    if rank == 1:
+        return r'\textbf{' + s + '}'
+    if rank == 2:
+        return r'\underline{' + s + '}'
+    return s
 
 
-def cell(v, highest=None):
-    return score(v, highest is not None and v is not None and round(v*100) == round(highest*100))
+def ranking(values):
+    levels = sorted({round(v*100) for v in values if v is not None}, reverse=True)
+    return {v: i+1 for i, v in enumerate(levels[:2])}
+
+
+def cell(v, ranks=None):
+    rank = ranks.get(round(v*100)) if ranks and v is not None else None
+    return score(v, rank)
 
 
 def begin(spec, font='8.1', leading='10.2'):
     return [r'\begingroup', r'\setlength{\tabcolsep}{0pt}',
-            r'\renewcommand{\arraystretch}{1.04}',
+            r'\renewcommand{\arraystretch}{1.02}',
             rf'\fontsize{{{font}}}{{{leading}}}\selectfont',
             r'\begin{tabular}{@{}' + spec + r'@{}}', r'\toprule']
 
 
 def finish(lines, note):
-    return '\n'.join(lines + [r'\bottomrule', r'\end{tabular}', r'\endgroup',
+    return '\n'.join(lines + [r'\bottomrule', r'\end{tabular}\par', r'\endgroup',
                              r'\ivgnote{' + note + '}']) + '\n'
 
 
 def task_table():
     # Sum of column widths = linewidth. No resizebox or scaled typography.
-    spec = r'L{.25\linewidth}' + (r'C{.085\linewidth}C{.055\linewidth}C{.055\linewidth}C{.055\linewidth}' * 3)
+    colors = ['ivgcook', 'ivgvh', 'ivgscreen']
+    spec = r'L{.25\linewidth}' + ''.join(''.join(r'K{' + col + '}{' + width + r'\linewidth}'
+                for width in ['.085', '.055', '.055', '.055']) for col in colors)
     lines = begin(spec)
-    lines += [r'& \multicolumn{4}{c}{\textbf{CookSim}} & \multicolumn{4}{c}{\textbf{VHSim}} & \multicolumn{4}{c}{\textbf{ScreenSim}} \\',
+    lines += [r'& \multicolumn{4}{c}{\ivghead{CookSim}} & \multicolumn{4}{c}{\ivghead{VHSim}} & \multicolumn{4}{c}{\ivghead{ScreenSim}} \\',
               r'\cmidrule(lr){2-5}\cmidrule(lr){6-9}\cmidrule(lr){10-13}',
-              r'\ivghead{Assistant} & ' + ' & '.join([r'\ivghead{Success}', r'\ivghead{Act.}', r'\ivghead{Conv.}', r'\ivghead{F1}']*3) + r'\\', r'\midrule']
-    maxima = {e: {m: max(task[e][k][m][0] for k, _ in MODELS if k in task[e])
-                   for m in ('success', 'f1')} for e, _ in ENGINES}
+              r'\ivghead{Assistant} & ' + ' & '.join([r'\ivgvhead{In-time success}', r'\ivgvhead{Action efficiency}', r'\ivgvhead{Conversation efficiency}', r'\ivgvhead{Detection F1}']*3) + r'\\']
+    maxima = {e: {m: ranking(task[e][k][m][0] if m in ('success', 'f1') else task[e][k][m]
+                            for k, _ in MODELS if k in task[e])
+                   for m in ('success', 'f1', 'action', 'conversation')} for e, _ in ENGINES}
     def row(key, label, highlight=True):
         cells = [label]
         for engine, _ in ENGINES:
@@ -162,7 +184,8 @@ def task_table():
             s, sd = d['success']
             mark = cell(s, maxima[engine]['success'] if highlight else None)
             cells.extend([r'\ivgsd{' + mark + '}{' + str(round(sd*100)) + '}',
-                          score(d['action']), score(d['conversation']),
+                          cell(d['action'], maxima[engine]['action'] if highlight else None),
+                          cell(d['conversation'], maxima[engine]['conversation'] if highlight else None),
                           cell(d['f1'][0], maxima[engine]['f1'] if highlight else None)])
         return ' & '.join(cells) + r'\\'
     for group, models in GROUPS:
@@ -173,24 +196,23 @@ def task_table():
     task['screensim']['Silent control'] = task['screensim']['Silent floor (reference)']
     lines.append(row('Silent control', 'No assistance', False))
     lines.append(row('Oracle ceiling (reference)', 'Scripted reference', False))
-    return finish(lines, r'Scores are on a 0--100 scale. Success: in-time task completion (mean $\pm$ SD across three runs). Act. / Conv.: action / conversation efficiency; F1: error-detection F1 (three-run means). Bold: highest assistant success or F1 per environment. Dashes: unavailable results.')
+    return finish(lines, r'Scores are on a 0--100 scale; success includes run SD. Within each family, models are ordered by CookSim success. Bold and underline mark the highest and second-highest assistant values in each metric column, with ties at displayed precision. Reference conditions are not ranked; dashes indicate unavailable results.')
 
 
 def rubric_table(engine=None):
     if engine:
-        spec = r'L{.28\linewidth}C{.10\linewidth}' + r'C{.124\linewidth}'*5
+        spec = r'L{.28\linewidth}K{ivgscreen}{.10\linewidth}' + r'K{ivgquality}{.124\linewidth}'*5
         lines = begin(spec, '8.6', '10.7')
         labels = [r'\ivghead{Assistant}', r'\ivghead{Overall}']
     else:
-        spec = r'L{.25\linewidth}' + r'C{.09\linewidth}'*3 + r'C{.096\linewidth}'*5
+        spec = (r'L{.25\linewidth}K{ivgcook}{.09\linewidth}K{ivgvh}{.09\linewidth}K{ivgscreen}{.09\linewidth}'
+                + r'K{ivgquality}{.096\linewidth}'*5)
         lines = begin(spec, '8.1', '10.2')
-        lines.extend([r'& \multicolumn{3}{c}{\textbf{Overall quality}} & \multicolumn{5}{c}{\textbf{Rubric dimensions: three-environment mean}} \\',
+        lines.extend([r'& \multicolumn{3}{c}{\ivghead{Overall quality}} & \multicolumn{5}{c}{\ivghead{Rubric dimensions: three-environment mean}} \\',
                       r'\cmidrule(lr){2-4}\cmidrule(lr){5-9}'])
-        labels = [r'\ivghead{Assistant}'] + [r'\ivghead{' + name + '}' for _, name in ENGINES]
-    labels += [r'\ivghead{Factual\newline grounding}', r'\ivghead{Situational\newline relevance}',
-               r'\ivghead{Actionable\newline guidance}', r'\ivghead{User intent\newline uptake}',
-               r'\ivghead{Guidance\newline conciseness}']
-    lines += [' & '.join(labels) + r'\\', r'\midrule']
+        labels = [r'\ivghead{Assistant}'] + [r'\ivgvhead{' + name + '}' for _, name in ENGINES]
+    labels += [r'\ivgvhead{' + name + '}' for name in DIMS]
+    lines += [' & '.join(labels) + r'\\']
     rows = {}
     for key, _ in MODELS:
         if engine:
@@ -201,7 +223,7 @@ def rubric_table(engine=None):
             vals = [d['overall'] if d else None for d in ds]
             vals.extend([sum(d[x] for d in ds)/3 for x in DIMS] if all(ds) else [None]*5)
             rows[key] = vals
-    maxima = [max(x[i] for x in rows.values() if x[i] is not None) for i in range(len(next(iter(rows.values()))))]
+    maxima = [ranking(x[i] for x in rows.values()) for i in range(len(next(iter(rows.values()))))]
     for group, models in GROUPS:
         present = [(k, label) for k, label in models if not engine or k in rubric[engine]]
         if not present:
@@ -212,25 +234,25 @@ def rubric_table(engine=None):
     note = (r'Scores are on a 0--100 scale (run 1). Overall: full 16-item CookSim rubric with mandatory-failure gating, not the mean of the five displayed dimensions. '
             + (r'Dimension scores are averaged within episodes and then across episodes.' if engine else
                r'Dimensions: equal-weight means across all three environments; unavailable for CookSim-only native configurations.')
-            + r' Bold: highest score per column.')
+            + r' Bold / underline: highest / second-highest per column. Row order follows CookSim success within each family.')
     return finish(lines, note.replace(r'CookSim\textquotesingle s', "CookSim's"))
 
 
 def qa_table_tex():
     fields = ['Q1 order', 'Q2 count', 'Q3 timing', 'Q4 did-it', 'Q10 proactive']
-    spec = r'L{.27\linewidth}C{.08\linewidth}' + r'C{.13\linewidth}'*5
+    spec = r'L{.27\linewidth}C{.08\linewidth}' + r'K{ivgcook}{.13\linewidth}'*4 + r'K{ivgvh}{.13\linewidth}'
     lines = begin(spec, '8.6', '10.7')
-    lines.extend([r'& & \multicolumn{4}{c}{\textbf{Question answering}} & \textbf{Requests} \\',
+    lines.extend([r'& & \multicolumn{4}{c}{\ivghead{Question answering}} & \ivghead{Requests} \\',
                   r'\cmidrule(lr){3-6}\cmidrule(lr){7-7}',
-                  r'\ivghead{Assistant} & \ivghead{Items} & \ivghead{Temporal\newline order} & \ivghead{Action\newline counting} & \ivghead{Cooking\newline time} & \ivghead{Event\newline recall} & \ivghead{Timely\newline alerts} \\', r'\midrule'])
-    maxima = {f: max(value(qa[k][f]) for k, _ in MODELS if value(qa[k][f]) is not None) for f in fields}
+                  r'\ivghead{Assistant} & \ivghead{Items} & \ivghead{Temporal\newline order} & \ivghead{Action\newline counting} & \ivghead{Cooking\newline time} & \ivghead{Event\newline recall} & \ivghead{Timely\newline alerts} \\'])
+    maxima = {f: ranking(value(qa[k][f]) for k, _ in MODELS) for f in fields}
     for group, models in GROUPS:
         lines.append(r'\ivgband{7}{' + group + '}')
         for key, label in models:
             d = qa[key]
             cells = [label, d['n items']] + [cell(value(d[f]), maxima[f]) for f in fields]
             lines.append(' & '.join(cells) + r'\\')
-    return finish(lines, r'CookSim, run 1; all scores on a 0--100 scale. Questions receive full, partial, or no credit; alerts must fall within the valid response window. Items: scored questions and requests. Dashes: no scored items. Bold: highest score per category.')
+    return finish(lines, r'CookSim, run 1; scores on a 0--100 scale. Items: scored questions and requests; dashes: no scored items. Bold / underline: highest / second-highest per category. Rows follow CookSim success within each family. Alerts receive credit only within the valid response window.')
 
 
 CAPTIONS = {
@@ -248,9 +270,11 @@ def wrapper(name, title, caption, number):
 \pagestyle{{empty}}
 \setlength{{\parindent}}{{0pt}}
 \begin{{document}}
-{{\fontsize{{9.5}}{{11.5}}\selectfont Table {number}: \textbf{{{title}}} {caption}\par}}
-\vspace{{7pt}}
+\newcommand{{\ivgnotes}}{{}}
+\renewcommand{{\ivgnote}}[1]{{\gdef\ivgnotes{{#1}}}}
 \input{{{name}.tex}}
+\par\vspace{{6pt}}
+{{\fontsize{{8.8}}{{10.3}}\selectfont\textsf{{\textbf{{Table {number} {title}}}}} {caption} \ivgnotes\par}}
 \end{{document}}
 '''
 
@@ -269,7 +293,7 @@ def render(name, tectonic):
     for block in blocks[1:]:
         box |= fitz.Rect(block[:4])
     # Preserve the exact paper text width; trim only page margins / unused height.
-    crop = fitz.Rect(24.8, max(0, box.y0-5), page.rect.width-24.8, box.y1+7)
+    crop = fitz.Rect(24.8, 20, page.rect.width-24.8, box.y1+7)
     page.set_cropbox(crop)
     doc.save(HERE / f'{name}.pdf')
     page.get_pixmap(matrix=fitz.Matrix(3, 3), alpha=False).save(HERE / f'{name}.png')
@@ -305,7 +329,8 @@ def main():
                   'Rubric overall = full 16 items, including VHSim AQ (full 16).',
                   'Rubric dimensions = equal-weight average of three environment means.',
                   'Task success +/- SD copied from exports; efficiency = average of three reported run means.',
-                  'No significance tests computed; bold denotes only a numerical maximum.',
+                  'No significance tests computed; bold/underline denote numerical first/second at displayed precision.',
+                  'Within each family, every table uses descending three-run CookSim success as the shared row order.',
                   'Model roster follows the latest user list; native and polled configurations remain separate.']}, indent=2))
     with zipfile.ZipFile(HERE / 'latex_sources.zip', 'w', zipfile.ZIP_DEFLATED) as z:
         for path in sorted(HERE.glob('*.tex')):
