@@ -20,11 +20,19 @@ to retain matching panel heights; no dialogue is rewritten or reflowed.
 The author's horizontal world-engine and subcaption adjustments from commit
 `9cbe597` are preserved. See `actor_match.json` for the source comparison.
 
-Latest typography update starts from author commit `900db5b`, preserving the
+The earlier typography update started from author commit `900db5b`, preserving the
 wider persona card and increased panel gap. World-engine heading and content
 fonts are enlarged by approximately 14–18%; the engine is slightly wider so
 its text remains single-line. All cells outside the world engine are unchanged.
 See `world_type.json` for exact font sizes and source checks.
+
+The current spacing revision further enlarges the task and action text to 82
+native units, with labels at 80–82. The heading stays at 90. Task and action
+rows are taller; action chips have 32 units of horizontal and 17 units of
+vertical text padding. “Action space” occupies two lines. The world is widened
+about its original author-set center so it does not narrow the panel gap.
+Actor and conditioning cards stay unchanged. The conversation is uniformly
+scaled to keep panel heights equal. See `roomier_world.json`.
 
 All labels, shapes, icons, and arrows remain editable. The observation images
 retain their original pixels. Prior variants and the Overleaf manuscript are
