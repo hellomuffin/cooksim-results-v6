@@ -14,7 +14,7 @@ GROUPS = [
       ('gpt-realtime-2.1','GPT-Realtime 2.1')]),
     ('Open-weight non-streaming VLMs', [('qwen3.8-27b','Qwen3.8-27B'),
       ('molmo2-8b','Molmo2-8B'),('internvideo3-8b','InternVideo3-8B'),
-      ('glm-4.6v-flash','GLM-4.6V-Flash'),('kimi-vl-thinking','Kimi-VL-A3B-Thinking'),
+      ('kimi-vl-thinking','Kimi-VL-A3B-Thinking'),
       ('museglimmer','Muse Glimmer')]),
     ('Open-weight streaming VLMs', [('minicpmo','MiniCPM-o 4.5'),
       ('qwen3-omni-30b-a3b','Qwen3-Omni-30B'),('proact-vl','Proact-VL'),
