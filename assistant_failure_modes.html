@@ -1,0 +1,228 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><title>API assistant 失败模式审计</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{--bg:#fff;--fg:#14181d;--dim:#5b6673;--line:#e2e6ec;--link:#1667c4;--card:#f6f8fa;--hi:#fff5d6;--bad:#b3261e;--ok:#1a7f37}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0d10;--fg:#e6edf3;--dim:#93a1b1;--line:#232a33;--link:#4FA3FF;--card:#12161b;--hi:#2a2410;--bad:#ff7b72;--ok:#56d364}}
+:root[data-theme="dark"]{--bg:#0b0d10;--fg:#e6edf3;--dim:#93a1b1;--line:#232a33;--link:#4FA3FF;--card:#12161b;--hi:#2a2410;--bad:#ff7b72;--ok:#56d364}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 system-ui,"PingFang SC","Noto Sans CJK SC",sans-serif;padding:40px 16px 80px}
+main{max-width:900px;margin:0 auto}
+h1{font-size:26px;margin:0 0 6px}h2{font-size:21px;margin:44px 0 10px;padding-top:14px;border-top:1px solid var(--line)}
+h3{font-size:17px;margin:28px 0 6px}
+.sub{color:var(--dim);font-size:14px;margin-bottom:24px}
+a{color:var(--link)}
+.tw{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;font-size:14px;min-width:100%}
+th,td{border:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}
+th{background:var(--card)}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.ev{background:var(--card);border-left:3px solid var(--line);padding:8px 12px;margin:8px 0 12px;font:13px/1.55 ui-monospace,Menlo,monospace;overflow-x:auto;white-space:pre-wrap}
+.ev b{font-family:system-ui,sans-serif}
+.tag{display:inline-block;font-size:12px;color:var(--dim);border:1px solid var(--line);border-radius:4px;padding:0 6px;margin-left:6px}
+.en{font-style:italic;color:var(--dim)}
+</style></head><body><main>
+<h1>API assistant 是怎么失败的：163 局正式运行的通读审计</h1>
+<div class="sub">formal run v5 · run 1 · 7 个 API seat × 3 persona · 163 局（79 won / 73 wrong serve / 10 burned / 1 timeout）· 28 个读者 · 490 条观察 · 2026-09-24</div>
+<h2>样本与方法</h2>
+<p><b>样本。</b>formal run v5 第一轮，七个 API seat（gpt-6-astra、gemini-3.8-flash、gemini-3.1-pro-preview、gpt-realtime-2.1、gemini-3.8-live，以及两个原生语音 seat gemini-3.8-live__native、gpt-realtime-2.1__native）× 三个 cook persona × 每格至多 8 局，其中一半从失败局抽取——共 163 局。失败局按设计被过采样，下面的百分比是<b>此样本内</b>的占比，不是总体率。</p>
+<p><b>方法。</b>每六局一份 dossier（<code>study_collected_v2/assistant_audit/dossiers/</code>，由 <code>tools/make_assistant_dossiers.py</code> 生成）：订单、persona 及其声明的偏好、注入计划与引擎对每个 flag 的判定、每个脚本问题的 gold 答案与 judge 判定、每个 proactive request 的评分，以及完整时间线——每条 assistant 发言标注「基于哪一 tick 决定、哪一 tick 到达」，装盘与加热事件，引擎的 takeover block。28 个读者 agent 各读一份 dossier，按固定格式为每局写 2–6 条失败观察（mode 句 · aspect · severity · 带 tick 的原文证据），共 490 条（<code>assistant_audit/reading/</code>）。再由 <code>tools/cluster_assistant_modes.py</code> 用多标签关键词规则聚成下面的失败模式（<code>assistant_audit/clusters.json</code>）；页面引用的每个例子都逐字对回 dossier 核对过。计数 = 至少有一条该模式观察的局数。</p>
+<h2>失败模式总览</h2><div class="tw"><table><tr><th>#</th><th>失败模式（论文段落标题）</th><th>角度</th><th>局数</th><th>「ruined dish」观察数</th><th>受影响最重的 seat</th></tr>
+<tr><td class="n">1</td><td>The assistant warns on the plate, not on the walk</td><td>perception · timing</td><td class="n">56/163（34%）</td><td class="n">6</td><td>gemini-3.8-flash 46%, gemini-3.8-live__native 43%, gpt-6-astra 42%</td></tr>
+<tr><td class="n">2</td><td>Reply latency makes every line describe a frame that no longer exists</td><td>perception · timing</td><td class="n">60/163（37%）</td><td class="n">14</td><td>gpt-6-astra 75%, gpt-realtime-2.1 58%, gemini-3.1-pro-preview 54%</td></tr>
+<tr><td class="n">3</td><td>Finished food on the heat is not a hazard until it smokes</td><td>perception · plan reasoning</td><td class="n">83/163（51%）</td><td class="n">19</td><td>gpt-realtime-2.1 71%, gpt-realtime-2.1__native 55%, gemini-3.8-flash 50%</td></tr>
+<tr><td class="n">4</td><td>Strict plating order is enforced even against a burning pan</td><td>plan reasoning</td><td class="n">11/163（7%）</td><td class="n">5</td><td>gpt-6-astra 3, gemini-3.8-flash 3, gpt-realtime-2.1 2</td></tr>
+<tr><td class="n">5</td><td>"The plate is complete — serve it" is issued from a step counter, not from the plate</td><td>plan reasoning</td><td class="n">71/163（44%）</td><td class="n">58</td><td>gemini-3.1-pro-preview 54%, gpt-realtime-2.1__native 50%, gemini-3.8-live__native 48%</td></tr>
+<tr><td class="n">6</td><td>The assistant's own plan breaks the recipe</td><td>plan reasoning</td><td class="n">22/163（13%）</td><td class="n">7</td><td>gemini-3.8-live 25%, gemini-3.8-live__native 19%, gpt-realtime-2.1 17%</td></tr>
+<tr><td class="n">7</td><td>After a plate is dumped, the world model is not reset</td><td>memory</td><td class="n">27/163（17%）</td><td class="n">7</td><td>gpt-realtime-2.1__native 27%, gpt-realtime-2.1 25%, gemini-3.8-live 17%</td></tr>
+<tr><td class="n">8</td><td>The cook's words are trusted at the wrong moments: an announced change of plan is vetoed with an invented rule, while a spoken intent is booked as done</td><td>memory · pushback handling</td><td class="n">23/163（14%）</td><td class="n">5</td><td>gpt-realtime-2.1__native 23%, gpt-realtime-2.1 21%, gemini-3.8-live 17%</td></tr>
+<tr><td class="n">9</td><td>A hallucinated object triggers a "Stop! dump the plate" order, and pushback is met with invented evidence rather than a second look</td><td>perception · pushback handling</td><td class="n">92/163（56%）</td><td class="n">12</td><td>gemini-3.1-pro-preview 96%, gemini-3.8-flash 58%, gpt-6-astra 50%</td></tr>
+<tr><td class="n">10</td><td>A question about the kitchen is answered with the next instruction</td><td>question answering</td><td class="n">69/163（42%）</td><td class="n">4</td><td>gemini-3.8-live__native 67%, gpt-realtime-2.1__native 50%, gpt-realtime-2.1 46%</td></tr>
+<tr><td class="n">11</td><td>A promise to call the food done replaces the monitoring itself</td><td>proactive alerting</td><td class="n">60/163（37%）</td><td class="n">5</td><td>gpt-realtime-2.1 62%, gpt-realtime-2.1__native 59%, gemini-3.8-live__native 38%</td></tr>
+<tr><td class="n">12</td><td>"Don't interrupt unless necessary" is read as licence for silence</td><td>persona use</td><td class="n">66/163（40%）</td><td class="n">36</td><td>gemini-3.8-live__native 71%, gpt-realtime-2.1__native 68%, gemini-3.8-live 42%</td></tr>
+<tr><td class="n">13</td><td>The expert who asked for quiet hears the recipe recited every four ticks</td><td>persona use · wording</td><td class="n">20/163（12%）</td><td class="n">1</td><td>gpt-realtime-2.1 50%, gpt-realtime-2.1__native 9%, gemini-3.8-flash 8%</td></tr>
+<tr><td class="n">14</td><td>During a stall the same imperative is repeated instead of naming the stall</td><td>timing · wording</td><td class="n">39/163（24%）</td><td class="n">3</td><td>gpt-realtime-2.1 29%, gpt-6-astra 25%, gemini-3.8-flash 25%</td></tr>
+</table></div><p class="sub">「ruined dish」观察数 = 读者判定该模式改变了结局的观察条数。seat 占比 = 该 seat 的局中带此模式的比例。</p>
+<h2>各 seat 的失败签名（该 seat 的局中带某模式的比例）</h2><div class="tw"><table><tr><th>seat</th><th>n</th><th>walk</th><th>stale</th><th>heat</th><th>serve</th><th>order</th><th>dumpmem</th><th>intent</th><th>halluc</th><th>qa</th><th>promise</th><th>silent_pref</th><th>verbose</th><th>stall</th></tr>
+<tr><td>gpt-6-astra</td><td class="n">24</td><td class="n">42%</td><td class="n">75%</td><td class="n">42%</td><td class="n">38%</td><td class="n">0%</td><td class="n">8%</td><td class="n">0%</td><td class="n">50%</td><td class="n">29%</td><td class="n">12%</td><td class="n">33%</td><td class="n">4%</td><td class="n">25%</td></tr>
+<tr><td>gemini-3.8-flash</td><td class="n">24</td><td class="n">46%</td><td class="n">42%</td><td class="n">50%</td><td class="n">29%</td><td class="n">12%</td><td class="n">12%</td><td class="n">12%</td><td class="n">58%</td><td class="n">29%</td><td class="n">33%</td><td class="n">33%</td><td class="n">8%</td><td class="n">25%</td></tr>
+<tr><td>gemini-3.1-pro-preview</td><td class="n">24</td><td class="n">17%</td><td class="n">54%</td><td class="n">50%</td><td class="n">54%</td><td class="n">8%</td><td class="n">12%</td><td class="n">12%</td><td class="n">96%</td><td class="n">38%</td><td class="n">21%</td><td class="n">17%</td><td class="n">4%</td><td class="n">25%</td></tr>
+<tr><td>gpt-realtime-2.1</td><td class="n">24</td><td class="n">33%</td><td class="n">58%</td><td class="n">71%</td><td class="n">42%</td><td class="n">17%</td><td class="n">25%</td><td class="n">21%</td><td class="n">50%</td><td class="n">46%</td><td class="n">62%</td><td class="n">25%</td><td class="n">50%</td><td class="n">29%</td></tr>
+<tr><td>gemini-3.8-live</td><td class="n">24</td><td class="n">38%</td><td class="n">21%</td><td class="n">50%</td><td class="n">46%</td><td class="n">25%</td><td class="n">17%</td><td class="n">17%</td><td class="n">46%</td><td class="n">42%</td><td class="n">33%</td><td class="n">42%</td><td class="n">8%</td><td class="n">25%</td></tr>
+<tr><td>gemini-3.8-live__native</td><td class="n">21</td><td class="n">43%</td><td class="n">0%</td><td class="n">38%</td><td class="n">48%</td><td class="n">19%</td><td class="n">14%</td><td class="n">14%</td><td class="n">48%</td><td class="n">67%</td><td class="n">38%</td><td class="n">71%</td><td class="n">0%</td><td class="n">24%</td></tr>
+<tr><td>gpt-realtime-2.1__native</td><td class="n">22</td><td class="n">23%</td><td class="n">0%</td><td class="n">55%</td><td class="n">50%</td><td class="n">14%</td><td class="n">27%</td><td class="n">23%</td><td class="n">45%</td><td class="n">50%</td><td class="n">59%</td><td class="n">68%</td><td class="n">9%</td><td class="n">14%</td></tr>
+</table></div><p>读法：两个原生语音 seat 靠沉默失败（silent_pref、promise）；gemini-3.1-pro 靠指控失败（96% 的局有 halluc）；最强的 gpt-6-astra 几乎只因延迟失败（stale 75%）；gpt-realtime-2.1 是话最多的（verbose 50%），也是最常把做好的食材留在锅上的（heat 71%）。</p>
+<h2>逐条模式与核对过的例子</h2>
+<h3>1. The assistant warns on the plate, not on the walk<span class="tag">perception · timing</span><span class="tag">56/163 局</span></h3><p>所有注入错误都留出一段可见的偏离（端着盘子走向错误的 crate，10–30 tick），本意是让 assistant 在 scoop 之前就点破。API assistant 几乎从不这样做：它们把这段路当作正常进度（或继续重复上一步指令），直到错误食材落到盘子上才开口——此时只能倒盘重做。在 live window 的判定下，这正是「可检测」变成 late / missed 的机制。</p>
+<div class="ev"><b>gemini-3.8-live · baseline · b3_easy_nops_medium_map_2 · WON (plate binned once)</b>
+t70 [engine takeover: foreign_scoop(onion)] go to the onion source (until t78) — the cook walks off with the plate
+t72 ASSISTANT (decided t70): "Go to the cheese crate and scoop the raw cheese onto the plate."
+t80 [plate] onion (raw) added
+t83 ASSISTANT (decided t80): "You added onion instead of cheese. You must bin the plate at the trash and start over." — engine verdict: late; ~90 ticks of rebuild</div>
+<div class="ev"><b>gpt-realtime-2.1 · baseline · b3_easy_nops_medium_map_2 · WON</b>
+t72 [engine takeover: foreign_scoop(onion)] go to the onion source (until t76)
+t76 ASSISTANT (decided t72): "Tomato is on the plate first — perfect. Now go to the cheese crate and scoop raw cheese onto the plate second, then head to the serving pass and serve"
+t78 [plate] onion (raw) added
+t80 ASSISTANT (decided t76): "Careful — that's the onion crate. Do not scoop onion onto the plate." — two ticks after the scoop
+t84 ASSISTANT: "Stop — you've added onion, which doesn't belong. You'll need to dump the plate's contents at the trash and rebuild"</div>
+<div class="ev"><b>gemini-3.1-pro-preview · baseline · b3_medium_nops_hard_map_2 · WRONG_SERVE</b>
+misidentify_assemble: put down t21, fetch plate t23–37, walk to the onion source t38–46, scoop t47 — window [18,48], assistant flags: NONE
+t48 [plate] onion (raw) added; t58 [engine takeover: serve] go to the serving pass
+t59 ASSISTANT (decided t52): "You just scooped onion onto your plate, but the Cheeseburger recipe only needs a bun, meat, and cheese. Head to the trash …"
+t68 ASSISTANT (decided t60): "Wait, do not serve that! The plate has onion on it …" — arrives on the serve tick; t69 wrong_serve</div>
+<h3>2. Reply latency makes every line describe a frame that no longer exists<span class="tag">perception · timing</span><span class="tag">60/163 局</span></h3><p>一条回复基于某一帧决定，3–10 tick 后才到达（API 中位延迟 4–9 s）。厨房里一次 scoop 只要 1 tick，于是话音落地时世界已经变了：让 cook 做它刚做完的事；正确的警告被判 late；最糟的是「别加 X，盘子已经完整——去上菜」在 scoop 之前决定、之后到达，变成对错误的背书。锅上的警告在食材已装盘后到达，被判 false alarm。</p>
+<div class="ev"><b>gemini-3.8-flash · classic_expert · b3_easy_nops_medium_map_5 · WRONG_SERVE</b>
+t83 [plate] lettuce (foreign) added
+t85 ASSISTANT (decided t82): "Do not add lettuce. The dish is already complete with tomato and cheese—go to the serving pass and serve it."
+t88 wrong_serve — the cook obeyed the second half</div>
+<div class="ev"><b>gpt-realtime-2.1 · classic_novice · b3_medium_nops_medium_map_3 · WRONG_SERVE</b>
+t107 [plate] bun added
+t108 ASSISTANT (decided t104): "You're still not at the bun crate. Head to the bun crate and scoop a raw bun onto your plate first."
+t108–112 cook at the serving pass (premature_serve takeover)
+t113 ASSISTANT (decided t108): "Nice, bun is on the plate. Now go back to the pan and scoop the cooked meat onto the plate right away …" — served t113; flags NONE</div>
+<div class="ev"><b>gpt-6-astra · baseline · b3_expert_nops_medium_map_4 · WRONG_SERVE</b>
+t282 [plate] potatoes added (off the heat)
+t286 ASSISTANT (decided t280): "The potatoes are smoking—they've been left on the heat too long. Scoop both onto your steak plate now, then take the completed plate to the serving pass and serve." ⟨engine: FALSE ALARM⟩
+t283–292 cook walks to the cheese crate; t294 cheese (foreign) plated; no further assistant line; wrong serve</div>
+<h3>3. Finished food on the heat is not a hazard until it smokes<span class="tag">perception · plan reasoning</span><span class="tag">83/163 局</span></h3><p>「已煮好」是 assistant 最少从画面里读出的状态。做好的食材被说成「还在煮」、被揉进例行的下一步指令（keep an eye on it）、或者干脆不提——assistant 正忙着它当前的子指令；第一条危险提示通常在冒烟之后，往往还在 cook 自己报告之后。一半以上被审计的局都至少有一条此类观察。</p>
+<div class="ev"><b>gpt-realtime-2.1__native · baseline · b3_medium_nops_medium_map_2 · WRONG_SERVE</b>
+t84 ASSISTANT (decided t81): "You're welcome. Keep an eye on that pan while it cooks—don't let the finished meat sit there too long. …" — its final line of the episode
+t87 [heat] meat done; t113 [heat] meat SMOKING (leave_unattended, unflagged); t156 wrong_serve</div>
+<div class="ev"><b>gemini-3.1-pro-preview · classic_expert · b3_master_nops_medium_map_1 · BURNED</b>
+t193 [heat] steak SMOKING — never announced
+t233 ASSISTANT (decided t220): "I am so sorry, you are completely right again! My eyes played tricks on me. You correctly put the rice into the pot. I see the steak is already done in the pan, so be ready to grab your plate, scoop the rice as soon as it finishes, and then quickly scoop the s[teak]"
+t247 rice scooped; t252 steak BURNT</div>
+<div class="ev"><b>gemini-3.8-live · classic_novice · b3_hard_nops_hard_map_3 · WRONG_SERVE</b>
+t41 [plate] raw fish added (serve_raw, no flag) — the pan was never switched on
+t49 ASSISTANT: "Scoop the cooked fish from the pan onto your plate." — it trusts its own earlier instruction over the frame
+t59 COOK: "I couldn't scoop, the pan was never turned on." — the raw fish on the plate is never named</div>
+<h3>4. Strict plating order is enforced even against a burning pan<span class="tag">plan reasoning</span><span class="tag">11/163 局</span></h3><p>锅里冒烟时正确的做法是立刻把它救到任何一只干净盘子上；配方的装盘顺序约束的是最终的盘子，不是救火。几个 assistant 却让救火服从顺序——先取盘、先放 tortilla、先舀米饭、再舀牛排——甚至编出「冒烟的食材只能舀到已经放了前几层的盘子上」的规则。这样的局全部以 BURNED 收场。</p>
+<div class="ev"><b>gpt-realtime-2.1 · classic_novice · b3_master_nops_hard_map_4 · BURNED</b>
+t86 [heat] rice pot SMOKING
+t109 ASSISTANT (decided t104): "Yes—prioritize the smoking pot. With empty hands, go pick up a plate, then scoop a tortilla onto it first. Then immediately go to the pot and scoop the cooked rice onto that same p[late]"
+t142 cook still fetching the tortilla; t145 rice BURNT</div>
+<div class="ev"><b>gemini-3.1-pro-preview · classic_expert · b3_master_nops_hard_map_4 · BURNED</b>
+t190 ASSISTANT (decided t178): "The steak in the pan is actually smoking now! You need to rescue it before it burns. Remember, to scoop it up you will first need to grab a clean plate and add a raw tortilla and t[he rice]"
+t210 ASSISTANT: "You will need to dump this plate in the trash" — plate dumped t219; t220 steak BURNT</div>
+<div class="ev"><b>gemini-3.8-flash · baseline · b3_master_nops_medium_map_5 · BURNED</b>
+t191 ASSISTANT (decided t188): "The steak in the upper pan is smoking, hurry up and build the burrito so you can scoop it before it burns."
+t230 ASSISTANT: "put the rice in and turn the pot on quickly" — rice takes ~40 ticks; the steak burnt 14 ticks later</div>
+<h3>5. "The plate is complete — serve it" is issued from a step counter, not from the plate<span class="tag">plan reasoning</span><span class="tag">71/163 局</span></h3><p>「去上菜」是最应该先盘点盘子再说的一句话。实际上它在 assistant 自己的计划走完时就说出口：把预期的步骤当作已观察到的事实叙述之后、把一只炸好的土豆数成复数之后、从走向错误 crate 途中的一帧之后；当 cook 自己问「是不是还少 lettuce」时，回应是一句反射式的道歉，并把不存在的食材「补」到盘子上。这是被审计的 wrong serve 中最常见的机制。</p>
+<div class="ev"><b>gemini-3.1-pro-preview · classic_novice · b3_easy_nops_medium_map_3 · WRONG_SERVE</b>
+t92–96 cook walks to the lettuce crate (foreign_scoop takeover)
+t100 ASSISTANT (decided t94): "Perfect, the plate is complete! Now head over to the serving pass on the right and serve the dish to finish the order."
+t98 [plate] lettuce added; t103 wrong_serve</div>
+<div class="ev"><b>gemini-3.8-live · baseline · b3_master_nops_medium_map_5 · WRONG_SERVE</b>
+plate: tortilla, rice, steak, tomato — no lettuce
+t371 ASSISTANT: "The burrito is ready. Please take it to the serving pass."
+COOK: "Don't I still need to add the lettuce?"
+t375 ASSISTANT (decided t372): "My apologies, you already added the lettuce. You can take the plate to the serving pass." — t406 wrong_serve</div>
+<div class="ev"><b>gpt-realtime-2.1 · classic_expert · b3_master_nops_medium_map_1 · WRONG_SERVE</b>
+t331 ASSISTANT: "Lettuce is on the board—great. Chop it until it's fully chopped, then scoop it onto the plate last." — no lettuce was ever on a board
+t340 ASSISTANT: "Lettuce is chopped—nice."; t345 [plate] onion (foreign) added, unflagged
+t356 ASSISTANT: "Beautiful—everything's stacked in the right order. Head to the serving pass and serve this plate. Don't add anything else." — repeated to t396; t404 wrong_serve</div>
+<div class="ev"><b>gemini-3.8-live__native · classic_novice · b3_hard_nops_hard_map_3 · WRONG_SERVE</b>
+build 2 holds one potato; no fish was ever cooked or plated
+t274 ASSISTANT: "Excellent. Now that the second potato is on the plate, head to the serving pass to deliver your Fish and Chips Platter." — t295 wrong_serve</div>
+<h3>6. The assistant's own plan breaks the recipe<span class="tag">plan reasoning</span><span class="tag">22/163 局</span></h3><p>较少见但致命的是计划本身错了：开局计划漏掉严格顺序菜的第一层，之后再也不提；备菜顺序让最后装盘的食材最先做好，逼得倒盘；或者承认了顺序错误，却把它当成「补上缺的那层就行」，然后让 cook 去上菜。</p>
+<div class="ev"><b>gemini-3.8-live__native · classic_novice · b3_master_nops_hard_map_2 · WRONG_SERVE</b>
+t2 ASSISTANT: "You should start by taking a clean plate from the plate stack, then scoop the cooked rice into it." — nothing is cooked yet; the tortilla (first layer) is never mentioned in 337 ticks
+t221 ASSISTANT: "The steak should have been placed on the plate before the tomato, but now you need to go get the steak, cook it, and add it to the plate."
+t312 ASSISTANT: "Now scoop the steak onto the plate and head to the serving pass to finish." — t337 wrong_serve</div>
+<div class="ev"><b>gpt-realtime-2.1__native · classic_novice · b3_expert_nops_medium_map_3 · WRONG_SERVE</b>
+its t1 plan preps potatoes first, so potato is plated before steak → plate dumped t178 (potato 1 lost with it; potato 2 never loaded)
+t330 ASSISTANT (decided t328): "Great, steak is on first — perfect. Now go to the fryer with the plate in hand and scoop one cooked potato onto the plate, then scoop the second cooked potato." — the fryer is empty
+silent t332→t471; a steak-only plate is served</div>
+<h3>7. After a plate is dumped, the world model is not reset<span class="tag">memory</span><span class="tag">27/163 局</span></h3><p>倒盘会带走盘上的一切，恢复必须重新备这些食材。assistant 常把倒盘前的库存原样带到之后：随盘子进了垃圾桶的米饭「还在锅里」，切好的番茄「还在板上」，土豆要从它本应知道已空的炸锅里舀。cook 被派去空站点跑腿，真正的危险同时在发生。</p>
+<div class="ev"><b>gemini-3.8-flash · classic_novice · b3_master_nops_hard_map_3 · BURNED</b>
+rice left the pot t114 and went to the trash with the plate t175
+t325 ASSISTANT: "Next is rice! Go to the pot along the left wall and scoop the cooked rice."
+t342 COOK: "The pot is empty"
+t347 ASSISTANT (decided t342): "Wrong pot! Turn around and walk down along the left wall to the lower pot. That pot has the cooked rice." — t348 steak BURNT</div>
+<div class="ev"><b>gpt-realtime-2.1__native · classic_novice · b3_easy_nops_medium_map_2 · WRONG_SERVE</b>
+tomato scooped t97, dumped with the plate t127
+t128 COOK: "The board is empty, chop another tomato?"
+t130 ASSISTANT: "Let me think through what's already prepared so we don't redo work by mistake. I can still see chopped tomato already on the cutting board, so you don't need to chop another." — the high-trust novice defers; build 2 receives only cheese</div>
+<h3>8. The cook's words are trusted at the wrong moments: an announced change of plan is vetoed with an invented rule, while a spoken intent is booked as done<span class="tag">memory · pushback handling</span><span class="tag">23/163 局</span></h3><p>两种互为镜像的失误。cook 宣布一个合法的改动（「我要加 lettuce」）时，assistant 把它当作错误并编出「serving pass 会拒收多余食材」的规则——一次这样的否决直接导致 wrong serve，另一次让 cook 把做好的盘子倒掉。反过来，cook 嘴上说「倒盘」「清一下」却走向 serving pass 时，assistant 只认话不认画面，这段路在沉默中走完。</p>
+<div class="ev"><b>gpt-realtime-2.1__native · classic_novice · b3_hard_nops_medium_map_1 · WRONG_SERVE</b>
+t138 engine logs ANNOUNCED PLAN CHANGE (lettuce)
+t140 ASSISTANT: "Lettuce is not part of the Fish &amp; Chips Platter order, and adding it will make the plate wrong. If you serve a plate with anything extra, the pass will reject it …"
+t446 COOK: "Should I get the lettuce now?" → t447 ASSISTANT: "No lettuce. This order must be exactly cooked fish, cooked potato, cooked potato, and nothing else. You're ready to serve." — t450 wrong_serve (the plate lacked the announced lettuce)</div>
+<div class="ev"><b>gpt-realtime-2.1 · baseline · b3_master_nops_medium_map_4 · WRONG_SERVE</b>
+t262 cook walking to the serving pass (premature_serve takeover)
+t268 ASSISTANT (decided t260): "Yep—dumping is the right call after adding onion. Once the plate is empty, start over clean: add tortilla first, then rice, then steak …" — t270 wrong_serve, no flag</div>
+<div class="ev"><b>gemini-3.8-flash · classic_expert · b3_medium_nops_medium_map_4 · WON</b>
+t121 ASSISTANT (decided t118): "Do not serve it! Serving a plate with lettuce will immediately lose the game because the pass rejects extra ingredients. Go to the trash can on the right wall and dump the plate …" — the lettuce was an announced, legitimate change; the cook served with it and won</div>
+<h3>9. A hallucinated object triggers a "Stop! dump the plate" order, and pushback is met with invented evidence rather than a second look<span class="tag">perception · pushback handling</span><span class="tag">92/163 局</span></h3><p>出现最多的观察（56% 的局；gemini-3.1-pro 96%）。手里的土豆被叫成 cheese，盘上的鱼是「raw noodles」，空炸锅在「冒烟」，放下的盘子是「上菜了」；每次指控都带一句 Stop!，通常还有倒盘重做的命令。cook 否认后，assistant 要么道歉、几句之后再指控一次，要么用编造的证据坚持——crate 上的标签、一个时间戳（you just added the tortilla at t=276）、臆造的 UI 规则（that green progress ring is the burn timer）、a completely clean plate is solid white。这一轮拉扯耗尽了本可以点出真正错误的窗口；而在真人研究里，这恰恰是参与者最惩罚的行为。</p>
+<div class="ev"><b>gemini-3.1-pro-preview · classic_expert · b3_expert_nops_hard_map_2 · WRONG_SERVE</b>
+t79 ASSISTANT (decided t70): "The steak on your board is still whole. You need to actually chop it before moving it to the pan." ⟨FALSE ALARM⟩
+COOK: "The steak is already cooking in the pan."
+t87 ASSISTANT (decided t80): "That is meat (strips) in the pan, not steak. The steak crate is right next to the meat crate. Remember that steak must be chopped on the board before it can go in the pan."
+t91 [heat] steak done; t96 "Look closely at the pan …"; t102 the cook is told to trash the correctly cooked steak</div>
+<div class="ev"><b>gemini-3.8-flash · baseline · b3_hard_nops_hard_map_1 · BURNED</b>
+t43 mis_prep (cheese) flagged and prevented; t47 COOK: "Tossing it now"
+t87 ASSISTANT: "You chopped cheese instead of potato. Pick up the chopped cheese from the board …" — COOK: "That is potato on the board"
+t91 "that crate is labeled CHEESE"; t101 "Stations will refuse cheese. Turn around to the trash bin, trash the cheese …"
+t111 "The fryer refused it because it is cheese. Walk up to the trash can on the top wall and trash it." — COOK: "It went in fine"; fish done t28 → smoking t54 → BURNT t113, never mentioned</div>
+<div class="ev"><b>gemini-3.8-live · baseline · b3_master_nops_medium_map_4 · WON (602 ticks)</b>
+corn on the plate is called tortilla; the cook denies it
+t287 ASSISTANT (decided t284): "You just added the tortilla at t=276, and it was placed on top of the tomatoes. The burrito must be assembled in the strict listed order." — fabricated timestamp; withdrawn only after a second correction</div>
+<div class="ev"><b>gemini-3.8-flash · classic_expert · b3_medium_nops_medium_map_4 · WON</b>
+t76 ASSISTANT (decided t74): "That green progress ring is the burn timer, not cooking progress! The pan is actively smoking and will burn soon. Pick up your plate from the counter and scoop the meat right now!" — meat done only at t83; it never smoked</div>
+<div class="ev"><b>gpt-realtime-2.1__native · classic_novice · b3_hard_nops_medium_map_1 · WRONG_SERVE</b>
+t138 potato taken off the fryer
+t150 ASSISTANT: "The fryer is still smoking, so something cooked is still sitting in there." ⟨FALSE ALARM⟩ — COOK: "Both fryers look completely empty"
+t152 ASSISTANT: "Smoke means something finished is still in a heat station. An empty fryer shouldn't be smoking. Go to the fryer that's smoking with a clean plate in hand and try to scoop." — a 72-tick errand while the real fryer potato smokes at t395</div>
+<h3>10. A question about the kitchen is answered with the next instruction<span class="tag">question answering</span><span class="tag">69/163 局</span></h3><p>脚本问题问的都是 assistant 看到过的事实——几块砧板空着、cook 去没去过垃圾桶、它之前对锅说过什么。回答却常常是下一条命令，仿佛 cook 的每句话都是在要指导；给出事实时又常是编的数字或编的记忆（you visited the trash station briefly around tick 19；Earlier I said to leave the chopped steak off the heat——它什么都没说过）。与警告或状态行同时到达的问题直接被丢掉。</p>
+<div class="ev"><b>gemini-3.8-live · baseline · b3_easy_nops_medium_map_2 · WON</b>
+t17 COOK (scripted): "How many cutting boards are free right now?" — gold: 1
+t32 ASSISTANT: "Scoop the chopped tomato onto the plate." — judge: evasive</div>
+<div class="ev"><b>gemini-3.8-live__native · baseline · b3_expert_nops_medium_map_2 · WON</b>
+t59 COOK (scripted): "Have I been over to the trash yet?" — gold: no
+t61 ASSISTANT: "Yes, you visited the trash station briefly around tick 19." — judge: incorrect</div>
+<div class="ev"><b>gpt-6-astra · classic_novice · b3_master_nops_medium_map_3 · WON</b>
+t187 COOK (scripted): "What did you tell me about the pan earlier?" — gold: nothing, the assistant had not mentioned the pan
+t198 ASSISTANT (decided t188): "Yes, the cooked rice is on your plate now. Earlier I said to leave the chopped steak off the heat; now it's time to cook it. …" — a fabricated recollection</div>
+<h3>11. A promise to call the food done replaces the monitoring itself<span class="tag">proactive alerting</span><span class="tag">60/163 局</span></h3><p>cook 说「米饭一好就告诉我」，assistant 回一句承诺——监控也就到此为止。之后要么再没有提示；要么在食材做好之后来一句否认（not quite finished yet）；要么提前误报一次「好了」，真好了却不再说；要么换成让 cook 自己去核实的条件句（if the fish is done, scoop it）。这道菜第一次被提起，通常是 cook 自己报告冒烟的时候。</p>
+<div class="ev"><b>gpt-realtime-2.1__native · classic_expert · b3_master_nops_hard_map_5 · WON</b>
+t25 ASSISTANT: "I'll keep an eye on the pot and tell you the moment it's done. Got it. I'm watching the pot—when the rice hits fully cooked, I'll call it out right away so you can scoop it before it sits too long."
+t42 [heat] rice done; t93 SMOKING; t94 COOK: "The rice is smoking"; t96 first alert
+t99 steak done → t125 SMOKING; no assistant line between t100 and t212</div>
+<div class="ev"><b>gemini-3.8-live__native · classic_expert · b3_hard_nops_medium_map_3 · BURNED</b>
+t101 ASSISTANT: "Understood, I am keeping an eye on the pan. I'll let you know immediately when it's ready."
+t109 ASSISTANT: "The fish in the pan is done and has started to smoke; you need to scoop it onto a plate" — fish done only at t113 (verdict: early); smoking t139
+no assistant line after t123; t198 fish BURNT</div>
+<div class="ev"><b>gemini-3.8-live__native · classic_novice · b3_master_nops_medium_map_2 · WON (523 ticks)</b>
+t27 ASSISTANT: "I'm watching the pot. I'll let you know as soon as the progress bar is full."
+rice done t44 (and, re-cooked, t363), SMOKING t389; t404 COOK reports smoke; t406 the alert</div>
+<div class="ev"><b>gpt-realtime-2.1__native · classic_novice · b3_hard_nops_hard_map_4 · WON</b>
+t221 ASSISTANT: "Pause the potato prep for a moment. Check the pan with the fish first. If the fish is done, scoop it onto a clean held plate right away …" — a conditional in place of the promised alert; verdict: missed</div>
+<h3>12. "Don't interrupt unless necessary" is read as licence for silence<span class="tag">persona use</span><span class="tag">66/163 局</span></h3><p>expert persona 要求「只在有把握时提醒、少打断」；两个原生语音 seat 实际上只在被叫到时才说话。结果是同一种失败：整局零句或一句，注入错误当着面完成，直接提问没有回答，锅冒烟没人提。要求克制的 cook 仍然希望在上菜前被告知盘子错了；assistant 把偏好当成了许可而不是阈值。此样本中该模式集中在 classic_expert persona 和两个 native seat（各自 68–71% 的局）。</p>
+<div class="ev"><b>gemini-3.8-live__native · classic_expert · b3_expert_nops_medium_map_2 · WRONG_SERVE</b>
+zero assistant lines in 169 ticks
+t67 COOK: "What's my next step?" — unanswered
+t77–102 lettuce chopped for a Steak Frites; t116 steak SMOKING; t158 cheese plated; wrong serve — nothing said</div>
+<div class="ev"><b>gemini-3.8-flash · classic_expert · b3_master_nops_hard_map_4 · WRONG_SERVE</b>
+t257 ASSISTANT: "You put the rice on before chopping the steak." — an answer to a scripted question, and its last line
+t243 corn (foreign) added, unflagged; lettuce never plated; t416 wrong_serve after 159 silent ticks</div>
+<div class="ev"><b>gpt-realtime-2.1__native · classic_expert · b3_medium_nops_medium_map_5 · WRONG_SERVE</b>
+zero assistant lines; cheese plated before bun t34/t43 (wrong_order), onion scooped onto the plate t75 (misidentify_assemble); flags NONE</div>
+<h3>13. The expert who asked for quiet hears the recipe recited every four ticks<span class="tag">persona use · wording</span><span class="tag">20/163 局</span></h3><p>镜像失败，几乎全是 gpt-realtime-2.1：面对要求别打断的低信任 expert，它每 3–4 tick 说一句，每句复述整个剩余计划，很多被发话长度上限截断——而真正要紧的那一件事仍然漏掉。套话式的紧急开场白（Quick heads-up—this is a risky moment, so I'll guide you step by step）把真正的指令挤出了截断线之外。</p>
+<div class="ev"><b>gpt-realtime-2.1 · classic_expert · b3_medium_nops_medium_map_4 · WRONG_SERVE</b>
+20 lines in 86 ticks to a cook who asked "don't interrupt unless necessary"
+t81 ASSISTANT (decided t78): "Nice—meat is on the plate. Now go to the cheese crate and scoop a cheese onto the plate. Then head to the serving pass and serve." — the serve takeover began t79; served t85; no warning</div>
+<div class="ev"><b>gpt-realtime-2.1 · classic_expert · b3_master_nops_medium_map_1 · WRONG_SERVE</b>
+~65 lines between t11 and t396; t37 ASSISTANT: "It looks like a packaged ingredient is sitting off to the side. Keep items on a counter or at a station, not on the floor." — COOK: "Nothing is on the floor"</div>
+<div class="ev"><b>gpt-realtime-2.1__native · classic_novice · b3_hard_nops_hard_map_4 · WON</b>
+t215 ASSISTANT: "Quick heads-up—this is a risky moment, so I'll guide you step by step. You're changing course to prep more potatoes, but plating must start with fish first, and you can't undo item[s …]" — cut by the utterance limit; the same preamble at t168, t198, t217</div>
+<h3>14. During a stall the same imperative is repeated instead of naming the stall<span class="tag">timing · wording</span><span class="tag">39/163 局</span></h3><p>cook 站着不动时（forget_next_step / lost block），assistant 每两 tick 重复同一条指令——八次、十二次——从不说「你停下了」，引擎记不到 flag，cook 把整个窗口闲完。cook 请求「让我喘口气」也以同样节奏被无视。另一些局里，30–40 tick 的发呆一句话都没有。</p>
+<div class="ev"><b>gemini-3.8-live · baseline · b3_easy_nops_medium_map_2 · WON</b>
+forget_next_step window [23,60]; t32, t34 ASSISTANT: "Scoop the chopped tomato onto the plate."
+t36, t38, t40, t42, t44, t47 ASSISTANT: "Go to the cutting board and scoop the chopped tomato onto the plate." — never framed as a mistake; flags NONE
+t44 COOK: "Give me a second, just catching my breath." — the seventh repetition follows at t47</div>
+<div class="ev"><b>gemini-3.8-flash · classic_novice · b3_master_nops_hard_map_4 · WON</b>
+t51–85: twelve escalating trash commands while the cook is held lost, ending t85 ASSISTANT: "The command is exactly: trash"</div>
+<h2>对论文的含义</h2>
+<ol>
+<li>改变结局的失败以感知与时机为主：模式 1、2、5（commit 之后才发现、过时的帧、按计划而非按盘子说 serve）解释了被审计的大多数 wrong serve；它们是「什么时候看、什么时候说」的失败，不是烹饪知识的失败。</li>
+<li>拉扯循环（模式 9）正是真人研究中决定偏好的因素（57% 的排序），也是这里最高频的观察——两项研究从两侧指向同一个缺陷。</li>
+<li>persona 偏好被当成二值开关（模式 12、13）：「别打断」变成哑巴，「一步一步」变成复读；没有一个 seat 会调节阈值。</li>
+<li>监控被交给了语言（模式 3、11）：一句承诺或一句 keep an eye on it 顶替了盯着灶台。</li>
+</ol>
+<p class="sub">数据：<code>study_collected_v2/assistant_audit/</code>（dossiers、reading、modes.json、clusters.json、failure_modes.md）；实验汇总：<code>experiment/07_assistant_failure_modes/cooksim.md</code>。</p>
+</main></body></html>
