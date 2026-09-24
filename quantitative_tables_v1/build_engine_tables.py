@@ -3,7 +3,7 @@
 from pathlib import Path
 import json
 import zipfile
-import build_review as shared
+import table_render as shared
 
 HERE = Path(__file__).resolve().parent
 ENGINES = [('cooksim', 'CookSim'), ('vhhome', 'VHSim'), ('screensim', 'ScreenSim')]
@@ -38,15 +38,19 @@ def displayed(v):
 def table(engine, data):
     # 397.486 pt total at 5.5 in. Horizontal, two-line subheaders.
     widths = [82,29,24,41,24,33,35,34,33,38,24]
-    colors = ['ivgsuccess']+['ivgeff']*3+['ivgrubric']*6
+    colors = ['ivgsuccess','white','white','ivgeff']+['white']*5+['ivgrubric']
     spec = f'L{{{.999*widths[0]/sum(widths):.6f}\\linewidth}}'+''.join(f'K{{{c}}}{{{.999*w/sum(widths):.6f}\\linewidth}}' for c,w in zip(colors,widths[1:]))
     lines = shared.begin(spec, '8', '10.5')
-    lines += [r'& \multicolumn{1}{c}{\ivghead{Success}} & \multicolumn{3}{c}{\ivghead{Efficiency}} & \multicolumn{6}{c}{\ivghead{Interaction quality}} \\',
-              r'\cmidrule(lr){2-2}\cmidrule(lr){3-5}\cmidrule(lr){6-11}']
-    heads = ['Assistant','In-time','Action','Conversation','Overall',
+    lines += [r'& \multicolumn{1}{c}{} & \multicolumn{3}{c}{\ivghead{Efficiency}} & \multicolumn{6}{c}{\ivghead{Interaction quality}} \\',
+              r'\cmidrule(lr){3-5}\cmidrule(lr){6-11}']
+    heads = ['Assistant','','Action','Conversation','Overall',
              r'Factual\\grounding',r'Situational\\relevance',r'Actionable\\guidance',
              r'User intent\\uptake',r'Guidance\\conciseness','Overall']
-    lines.append(' & '.join(r'\ivgsub{'+h+'}' for h in heads)+r'\\[2pt]')
+    header_cells = [r'\ivgsub{'+h+'}' for h in heads]
+    header_cells[1] = r'\multirow{-2}{*}[4pt]{\shortstack{\ivghead{In-time}\\\ivghead{success}}}'
+    for i in (1,4,10):
+        header_cells[i] = r'\multicolumn{1}{c}{'+header_cells[i]+'}'
+    lines.append(' & '.join(header_cells)+r'\\[2pt]')
     selected = [data[tag_for(engine,t)] for _,members in GROUPS for t,_ in members]
     ranks = {m:sorted({displayed(value(d,m)) for d in selected if value(d,m) is not None},reverse=True)[:2] for m in METRICS}
     def row(tag,label,rank=True):
@@ -66,11 +70,6 @@ def table(engine, data):
         lines.append(r'\ivgband{11}{'+group+'}')
         members = sorted(members,key=lambda x:-data[tag_for(engine,x[0])]['success'])
         lines.extend(row(tag_for(engine,t),label) for t,label in members)
-    references = [('silent','No assistance'),('silent floor','No assistance'),('oracle ceiling','Scripted reference')]
-    references = [(t,l) for t,l in references if t in data]
-    if references:
-        lines.append(r'\ivgband{11}{Reference conditions}')
-        lines.extend(row(t,l,False) for t,l in references)
     return shared.finish(lines, r'All scores are on a 0--100 scale ($\uparrow$). Success and efficiency are three-run means; efficiency is measured on in-time successes, with persona-weighted overall scores. Rubrics use run 1 and the full 16-item overall score. Bold/underline indicate the best/second-best assistant in each column; dashes denote unavailable scores.')
 
 
@@ -87,6 +86,7 @@ def webpage():
 
 def main():
     style = shared.STYLE + r'''
+\usepackage{multirow}
 \definecolor{ivgsuccess}{HTML}{F8EDF0}
 \definecolor{ivgeff}{HTML}{EDF6F0}
 \definecolor{ivgrubric}{HTML}{EFF3FA}
@@ -109,7 +109,7 @@ def main():
     with zipfile.ZipFile(HERE/'engine_latex_sources.zip','w',zipfile.ZIP_DEFLATED) as z:
         for path in sorted(HERE.glob('engine_*.tex')):
             z.write(path,path.name)
-        for name in ['engine_source_data.json','build_engine_tables.py','build_review.py','collect_engine_metrics.py']:
+        for name in ['engine_source_data.json','build_engine_tables.py','table_render.py','collect_engine_metrics.py']:
             z.write(HERE/name,name)
 
 
