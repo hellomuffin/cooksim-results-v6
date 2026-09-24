@@ -23,16 +23,14 @@ def main():
         page.on('pageerror', lambda err: errors.append(str(err)))
         page.goto(args.url)
         page.wait_for_function('Array.from(document.images).every(i => i.complete && i.naturalWidth > 0)')
-        assert page.locator('section#task').count() == 1
+        for key in ['cooksim', 'vhhome', 'screensim']:
+            assert page.locator(f'section#{key}').count() == 1
         page.screenshot(path=str(out/'desktop.png'), full_page=True)
         page.locator('#paper').click()
         assert page.locator('body').evaluate('(el) => el.classList.contains("paper-size")')
-        page.locator('#task').screenshot(path=str(out/'paper-width.png'))
-        page.locator('#rubric-detail summary').click()
-        for key in ['vhhome', 'screensim', 'cooksim']:
-            page.locator(f'[data-engine="{key}"]').click()
-            page.wait_for_function('document.getElementById("engine-image").complete && document.getElementById("engine-image").naturalWidth > 0')
-            assert page.locator('#engine-tex').get_attribute('href') == f'rubric_{key}.tex'
+        page.locator('#cooksim').screenshot(path=str(out/'paper-width.png'))
+        page.locator('details summary').click()
+        assert page.locator('details').get_attribute('open') is not None
         page.locator('#fit').click()
         page.set_viewport_size({'width':390, 'height':844})
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), 'mobile page overflow'
