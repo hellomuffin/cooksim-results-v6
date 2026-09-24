@@ -25,6 +25,12 @@ def main():
         page.wait_for_function('Array.from(document.images).every(i => i.complete && i.naturalWidth > 0)')
         for key in ['cooksim', 'vhhome', 'screensim']:
             assert page.locator(f'section#{key}').count() == 1
+        assert page.locator('section#tradeoff').count() == 1
+        for key in ['cooksim', 'vhhome', 'screensim', 'overall']:
+            page.locator('#plot-view').select_option(key)
+            page.wait_for_function('document.getElementById("plot-image").complete && document.getElementById("plot-image").naturalWidth > 0')
+            assert page.locator('#plot-pdf').get_attribute('href') == f'success_quality_{key}.pdf'
+            assert page.locator('#plot-svg').get_attribute('href') == f'success_quality_{key}.svg'
         page.screenshot(path=str(out/'desktop.png'), full_page=True)
         page.locator('#paper').click()
         assert page.locator('body').evaluate('(el) => el.classList.contains("paper-size")')
